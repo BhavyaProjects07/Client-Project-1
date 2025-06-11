@@ -110,11 +110,14 @@ import dj_database_url
 from decouple import config
 import dj_database_url
 
-DATABASES = {
-    'default': dj_database_url.parse(
-        config('DATABASE_URL', default='sqlite:///db.sqlite3'),
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+DATABASE_URL = config("DATABASE_URL")
+
+if DATABASE_URL.startswith("sqlite"):
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL)
+    }
+else:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+    }
 
