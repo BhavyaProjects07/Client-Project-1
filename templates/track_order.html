@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Track Order</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Boxicons for icons -->
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+  {% include 'nav.html' %}
+<body class="bg-gray-100 py-10">
+  <div class="max-w-3xl mx-auto bg-white shadow p-6 rounded-lg">
+    <h2 class="text-2xl font-bold mb-6 text-green-600">Tracking Order #{{ order.id }}</h2>
+
+    <div class="mb-8">
+      <h3 class="text-lg font-semibold mb-2">Status Progress</h3>
+      <ol class="flex justify-between items-center text-sm">
+        {% for step in steps %}
+          <li class="flex-1 text-center">
+            <div class="relative mb-2">
+            <div class="w-6 h-6 mx-auto rounded-full {% if step.completed %}bg-green-500{% else %}bg-gray-300{% endif %}"></div>
+              {% if not forloop.last %}
+                <div class="absolute top-3 left-1/2 transform -translate-x-1/2 w-full h-0.5 bg-gray-300"></div>
+              {% endif %}
+            </div>
+            <p class="{% if step.completed %}text-green-600{% else %}text-gray-400{% endif %}">{{ step.label }}</p>
+          </li>
+        {% endfor %}
+      </ol>
+    </div>
+
+    <div class="border-t pt-4 mt-6">
+      <p><strong>Delivery Address:</strong> {{ order.address }}, {{ order.city }}, {{ order.postal_code }}</p>
+      <p><strong>Phone:</strong> {{ order.phone_number }}</p>
+      <p><strong>Payment:</strong> {{ order.payment_method }} | {% if order.paid %}<span class="text-green-600">Paid</span>{% else %}<span class="text-red-600">Unpaid</span>{% endif %}</p>
+      <p><strong>Status:</strong> <span class="text-blue-600">{{ order.order_status }}</span></p>
+    </div>
+    
+    <div class="mt-6">
+  <h3 class="text-lg font-semibold mb-2">Estimated Delivery Location</h3>
+  <iframe class="w-full h-64 rounded-lg" src="https://maps.google.com/maps?q={{ order.city }}&output=embed"></iframe>
+</div>
+
+</body>
+</html>

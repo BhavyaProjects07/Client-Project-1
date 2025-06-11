@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Devki Mart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Boxicons for icons -->
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-in {
+      animation: fade-in 0.6s ease-out;
+    }
+    
+    .pending {
+      background-color: #fef3c7; color: #b45309;
+    }
+    
+    .delivered {
+      background-color: #d1fae5; color: #065f46;
+    }
+    
+    .shipped {
+      background-color: #e0f2fe; color: #1d4ed8;
+    }
+    
+    .paid {
+      background-color: #d1fae5; color: #065f46;
+    }
+    
+    .unpaid {
+      background-color: #fee2e2; color: #b91c1c;
+    }
+    
+    .card-gradient {
+      background: linear-gradient(145deg, #ffffff, #f3f4f6);
+      box-shadow: 5px 5px 15px #d1d5db, -5px -5px 15px #ffffff;
+    }
+    
+    .header-gradient {
+      background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%);
+    }
+    
+    .footer-gradient {
+      background: linear-gradient(90deg, #064e3b 0%, #065f46 100%);
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #22c55e;
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #16a34a;
+    }
+    
+    .table-container {
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #22c55e #f1f1f1;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen flex flex-col">
+  <!-- Navbar -->
+  {% include 'nav.html' %}
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-8 animate-fade-in">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+        <p class="text-gray-500 mt-1">Manage your store and monitor performance</p>
+      </div>
+      <div class="mt-4 md:mt-0 flex items-center">
+        <a href="/admin/" target="_blank" class="flex items-center text-primary-600 hover:text-primary-700 transition duration-300">
+          <i class='bx bx-cog mr-1'></i>
+          <span>Django Admin</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div class="card-gradient p-6 rounded-xl border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-gray-500 font-medium">Total Orders</p>
+          <span class="bg-primary-100 text-primary-600 p-2 rounded-lg">
+            <i class='bx bx-package text-xl'></i>
+          </span>
+        </div>
+        <h2 class="text-3xl font-bold text-primary-600">{{ total_orders }}</h2>
+        <div class="mt-2 text-xs text-gray-400">All time orders</div>
+      </div>
+      
+      <div class="card-gradient p-6 rounded-xl border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-gray-500 font-medium">Pending</p>
+          <span class="bg-yellow-100 text-yellow-600 p-2 rounded-lg">
+            <i class='bx bx-time text-xl'></i>
+          </span>
+        </div>
+        <h2 class="text-3xl font-bold text-yellow-500">{{ pending_orders }}</h2>
+        <div class="mt-2 text-xs text-gray-400">Awaiting processing</div>
+      </div>
+      
+      <div class="card-gradient p-6 rounded-xl border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-gray-500 font-medium">Delivered</p>
+          <span class="bg-blue-100 text-blue-600 p-2 rounded-lg">
+            <i class='bx bx-check-circle text-xl'></i>
+          </span>
+        </div>
+        <h2 class="text-3xl font-bold text-blue-500">{{ delivered_orders }}</h2>
+        <div class="mt-2 text-xs text-gray-400">Successfully delivered</div>
+      </div>
+      
+      <div class="card-gradient p-6 rounded-xl border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-gray-500 font-medium">Total Users</p>
+          <span class="bg-purple-100 text-purple-600 p-2 rounded-lg">
+            <i class='bx bx-user text-xl'></i>
+          </span>
+        </div>
+        <h2 class="text-3xl font-bold text-purple-600">{{ total_users }}</h2>
+        <div class="mt-2 text-xs text-gray-400">Registered customers</div>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="flex items-center justify-between p-6 border-b">
+        <h2 class="text-xl font-bold text-gray-800">Recent Orders</h2>
+        <div class="text-sm text-gray-500">
+          <i class='bx bx-refresh'></i> Last updated: Today
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Status</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for order in orders %}
+            <tr class="hover:bg-gray-50 transition duration-150">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium text-gray-900">#{{ order.id }}</span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-8 w-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center">
+                    <i class='bx bx-user text-sm'></i>
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-900">{{ order.full_name }}</div>
+                    <div class="text-xs text-gray-500">{{ order.user.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ order.order_status|lower }}">
+                  {{ order.order_status }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ order.created_at|date:"d M Y H:i" }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if order.paid %}paid{% else %}unpaid{% endif %}">
+                  {% if order.paid %}Paid{% else %}Not Paid{% endif %}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-end gap-2">
+                  <a href="{% url 'admin_order_detail' order.id %}" class="inline-flex items-center justify-center px-3 py-1 bg-primary-50 text-primary-600 text-sm rounded-md hover:bg-primary-100 transition-colors">
+                    <i class='bx bx-detail mr-1'></i> Details
+                  </a>
+                  
+                  <form method="POST" action="{% url 'update_order_status' order.id %}" class="flex flex-wrap items-center gap-2">
+                    {% csrf_token %}
+                    <select name="status" class="border border-gray-300 px-2 py-1 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                      <option value="Pending" {% if order.order_status == 'Pending' %}selected{% endif %}>Pending</option>
+                      <option value="Shipped" {% if order.order_status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                      <option value="Delivered" {% if order.order_status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                    </select>
+                    <button type="submit" class="px-3 py-1 bg-primary-600 text-white text-sm rounded-md hover:bg-primary-700 transition-colors">
+                      Update
+                    </button>
+                  </form>
+
+                  <!-- payment status update  -->
+                  <form method="POST" action="{% url 'update_payment_status' order.id %}" class="flex flex-wrap items-center gap-2">
+                    {% csrf_token %}
+                    <select name="paid" class="border border-gray-300 px-2 py-1 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                      <option value="True" {% if order.paid %}selected{% endif %}>Paid</option>
+                      <option value="False" {% if not order.paid %}selected{% endif %}>Not Paid</option>
+                    </select>
+                    <button type="submit" class="px-3 py-1 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700 transition-colors">
+                      Set
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-8">
+                <div class="flex flex-col items-center justify-center">
+                  <i class='bx bx-package text-4xl text-gray-300'></i>
+                  <p class="mt-2 text-gray-500">No orders found.</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="px-6 py-4 bg-gray-50 border-t flex items-center justify-between">
+        <div class="text-sm text-gray-500">
+          Showing <span class="font-medium">{{ orders|length }}</span> orders
+        </div>
+        <div class="flex items-center space-x-2">
+          <a href="#" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors">Previous</a>
+          <a href="#" class="px-3 py-1 bg-primary-600 text-white rounded-md text-sm hover:bg-primary-700 transition-colors">1</a>
+          <a href="#" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors">2</a>
+          <a href="#" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors">Next</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-gradient text-white mt-12">
+    <div class="container mx-auto px-4 py-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Devki Mart</h3>
+          <p class="text-sm text-gray-200">Your one-stop shop for all your needs. Quality products at affordable prices.</p>
+          <div class="flex space-x-4 mt-4">
+            <a href="#" class="text-white hover:text-green-200 transition duration-300">
+              <i class='bx bxl-facebook text-xl'></i>
+            </a>
+            <a href="#" class="text-white hover:text-green-200 transition duration-300">
+              <i class='bx bxl-twitter text-xl'></i>
+            </a>
+            <a href="#" class="text-white hover:text-green-200 transition duration-300">
+              <i class='bx bxl-instagram text-xl'></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/" class="hover:text-green-200 transition duration-300">Home</a></li>
+            <li><a href="/products/" class="hover:text-green-200 transition duration-300">Products</a></li>
+            <li><a href="/categories/" class="hover:text-green-200 transition duration-300">Categories</a></li>
+            <li><a href="/about/" class="hover:text-green-200 transition duration-300">About Us</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Customer Service</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/contact/" class="hover:text-green-200 transition duration-300">Contact Us</a></li>
+            <li><a href="/faq/" class="hover:text-green-200 transition duration-300">FAQs</a></li>
+            <li><a href="/shipping/" class="hover:text-green-200 transition duration-300">Shipping Policy</a></li>
+            <li><a href="/returns/" class="hover:text-green-200 transition duration-300">Returns & Refunds</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Contact Info</h3>
+          <ul class="space-y-2 text-sm">
+            <li class="flex items-start">
+              <i class='bx bx-map mr-2 mt-1'></i>
+              <span>123 Market St, New Delhi, India</span>
+            </li>
+            <li class="flex items-center">
+              <i class='bx bx-phone mr-2'></i>
+              <span>+91 98765 43210</span>
+            </li>
+            <li class="flex items-center">
+              <i class='bx bx-envelope mr-2'></i>
+              <span>info@devkimart.com</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-green-800 mt-8 pt-6 text-sm text-center text-gray-300">
+        <p>&copy; 2023 Devki Mart. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

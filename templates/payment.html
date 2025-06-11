@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment - Devki Mart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Alpine.js for interactivity -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            green: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            },
+          },
+          boxShadow: {
+            'soft': '0 4px 20px rgba(0, 0, 0, 0.05)',
+            'glow': '0 0 15px rgba(34, 197, 94, 0.3)',
+          }
+        },
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafb;
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(34, 197, 94, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 75% 75%, rgba(34, 197, 94, 0.05) 0%, transparent 40%);
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    .slide-up {
+      animation: slideUp 0.5s ease-out forwards;
+    }
+    
+    .scale-in {
+      animation: scaleIn 0.5s ease-out forwards;
+    }
+    
+    .payment-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .payment-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .payment-card:hover::before {
+      opacity: 1;
+    }
+    
+    .payment-card.selected::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 30px 30px 0;
+      border-color: transparent #16a34a transparent transparent;
+    }
+    
+    .payment-card.selected .check-icon {
+      display: block;
+    }
+    
+    .check-icon {
+      display: none;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      z-index: 10;
+    }
+    
+    .payment-icon {
+      transition: transform 0.3s ease;
+    }
+    
+    .payment-card:hover .payment-icon {
+      transform: scale(1.1);
+    }
+    
+    .submit-btn {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .submit-btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.5s ease-out;
+    }
+    
+    .submit-btn:hover::after {
+      transform: translate(-50%, -50%) scale(2);
+    }
+    
+    .payment-container {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      background: linear-gradient(to bottom, #ffffff, #f9fafb);
+      border: 1px solid rgba(229, 231, 235, 0.8);
+    }
+    
+    .staggered-item {
+      animation: scaleIn 0.5s ease-out forwards;
+    }
+    
+    .staggered-item:nth-child(1) {
+      animation-delay: 0ms;
+    }
+    
+    .staggered-item:nth-child(2) {
+      animation-delay: 100ms;
+    }
+    
+    .staggered-item:nth-child(3) {
+      animation-delay: 200ms;
+    }
+    
+    .staggered-item:nth-child(4) {
+      animation-delay: 300ms;
+    }
+    
+    .payment-header {
+      position: relative;
+    }
+    
+    .payment-header::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 3px;
+      background-color: #22c55e;
+      border-radius: 3px;
+    }
+    
+    .secure-badge {
+      transition: all 0.3s ease;
+    }
+    
+    .secure-badge:hover {
+      transform: translateY(-2px);
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: .5;
+      }
+    }
+    
+    /* Custom position for SweetAlert2 */
+    .custom-swal-position {
+      top: 20%; /* Adjust this value to set the position between top and center */
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-3xl mx-auto payment-container bg-white shadow-lg rounded-xl p-8 slide-up">
+    
+    <div class="text-center mb-8 payment-header">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-green-50 rounded-full mb-4 animate-pulse">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-center text-gray-900 mb-2">🧾 Choose Your Payment Method</h2>
+      <p class="text-gray-500">Select your preferred way to pay</p>
+    </div>
+    
+    <form method="POST" class="space-y-8">
+      {% csrf_token %}
+
+      <!-- Payment Options -->
+      <div class="grid sm:grid-cols-2 gap-6">
+        <!-- Credit/Debit Card -->
+        <div class="staggered-item">
+          <label class="cursor-pointer block border-2 border-gray-200 rounded-lg p-6 hover:border-green-300 hover:shadow-md transition-all duration-300 payment-card">
+            <input type="radio" name="payment_method" value="card" class="hidden" checked>
+            <div class="check-icon text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="#16a34a">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="bg-white p-3 rounded-lg shadow-sm payment-icon">
+                <img src="https://img.icons8.com/color/48/000000/bank-card-back-side.png" class="h-10 w-10 object-contain" alt="">
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg">Credit/Debit Card</h3>
+                <p class="text-sm text-gray-500">Visa, MasterCard, Rupay</p>
+              </div>
+            </div>
+          </label>
+        </div>
+        
+        <!-- UPI -->
+        <div class="staggered-item">
+          <label class="cursor-pointer block border-2 border-gray-200 rounded-lg p-6 hover:border-green-300 hover:shadow-md transition-all duration-300 payment-card">
+            <input type="radio" name="payment_method" value="upi" class="hidden">
+            <div class="check-icon text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="#16a34a">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="bg-white p-3 rounded-lg shadow-sm payment-icon">
+                <img src="https://img.icons8.com/color/48/000000/google-pay-india.png" class="h-10 w-10 object-contain" alt="">
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg">UPI</h3>
+                <p class="text-sm text-gray-500">Google Pay, PhonePe, Paytm</p>
+              </div>
+            </div>
+          </label>
+        </div>
+        
+        <!-- Net Banking -->
+        <div class="staggered-item">
+          <label class="cursor-pointer block border-2 border-gray-200 rounded-lg p-6 hover:border-green-300 hover:shadow-md transition-all duration-300 payment-card">
+            <input type="radio" name="payment_method" value="netbanking" class="hidden">
+            <div class="check-icon text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="#16a34a">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="bg-white p-3 rounded-lg shadow-sm payment-icon">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJOQfwPo4FZRrYdBgh7mLKtMJKQCc-VWLTFg&s" class="h-10 w-10 object-contain" alt="">
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg">Net Banking</h3>
+                <p class="text-sm text-gray-500">All major banks supported</p>
+              </div>
+            </div>
+          </label>
+        </div>
+        
+        <!-- Cash on Delivery -->
+        <div class="staggered-item">
+          <label class="cursor-pointer block border-2 border-gray-200 rounded-lg p-6 hover:border-green-300 hover:shadow-md transition-all duration-300 payment-card">
+            <input type="radio" name="payment_method" value="cod" class="hidden">
+            <div class="check-icon text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="#16a34a">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="bg-white p-3 rounded-lg shadow-sm payment-icon">
+                <img src="https://cdn-icons-png.flaticon.com/512/9198/9198192.png" class="h-10 w-10 object-contain">
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg">Cash on Delivery</h3>
+                <p class="text-sm text-gray-500">Pay when you receive</p>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="border-t pt-6">
+        <div class="bg-green-50 p-4 rounded-lg mb-6">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-700">Subtotal:</span>
+            <span class="font-medium">₹{{ total }}</span>
+          </div>
+          <div class="flex justify-between items-center mt-2">
+            <span class="text-gray-700">Shipping:</span>
+            <span class="font-medium text-green-600">Free</span>
+          </div>
+          <div class="flex justify-between items-center mt-2 text-lg font-bold">
+            <span class="text-gray-900">Total:</span>
+            <span class="text-green-600">₹{{ total }}</span>
+          </div>
+        </div>
+        
+        <button type="submit" class="submit-btn w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]">
+          🛒 Confirm and Place Order
+        </button>
+      </div>
+    </form>
+
+    <!-- Payment Methods -->
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <img src="https://img.icons8.com/color/48/000000/visa.png" class="h-8" alt="Visa">
+      <img src="https://img.icons8.com/color/48/000000/mastercard.png" class="h-8" alt="Mastercard">
+      <img src="https://img.icons8.com/color/48/000000/amex.png" class="h-8" alt="American Express">
+      <img src="https://img.icons8.com/color/48/000000/rupay.png" class="h-8" alt="RuPay">
+      <img src="https://img.icons8.com/color/48/000000/google-pay.png" class="h-8" alt="Google Pay">
+      <img src="https://img.icons8.com/ios-filled/50/000000/paytm.png" class="h-8" alt="Paytm">
+    </div>
+
+    <!-- Secure Note -->
+    <div class="mt-6 flex items-center justify-center text-sm text-gray-500 secure-badge">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      </svg>
+      100% Secure Payment
+    </div>
+
+  </div>
+
+{% if messages %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  {% for message in messages %}
+    Swal.fire({
+      toast: true,
+      icon: "{{ message.tags }}",
+      title: "{{ message }}",
+      position: 'top',
+      customClass: {
+        popup: 'custom-swal-position'
+      },
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+    });
+  {% endfor %}
+</script>
+<style>
+  /* Custom position for SweetAlert2 */
+  .custom-swal-position {
+    top: 20%;
+  }
+</style>
+{% endif %}
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit Review</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'blinkit-green': '#0c831f',
+            'blinkit-green-hover': '#0a6e1a',
+          },
+          fontFamily: {
+            'inter': ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 font-inter">
+  <div class="min-h-screen py-6 px-4 sm:py-12">
+    <div class="max-w-lg mx-auto">
+      <!-- Main Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        
+        <!-- Header Section -->
+        <div class="px-6 py-6 border-b border-gray-50">
+          <div class="text-center">
+            <h1 class="text-xl font-semibold text-gray-900 mb-1">
+              Write a Review
+            </h1>
+            <p class="text-sm text-gray-500">
+              Share your experience with this product
+            </p>
+          </div>
+        </div>
+
+        <!-- Product Info Section -->
+        <div class="px-6 py-6 bg-gray-25">
+          <div class="flex items-start space-x-4">
+            <div class="flex-shrink-0">
+              <img 
+                src="{{ product.image.url }}" 
+                alt="{{ product.name }}" 
+                class="w-20 h-20 object-cover rounded-xl border border-gray-100"
+              >
+            </div>
+            <div class="flex-1 min-w-0">
+              <h2 class="text-base font-medium text-gray-900 mb-1 line-clamp-2">
+                {{ product.name }}
+              </h2>
+              <p class="text-sm text-gray-500">
+                Rate and review this product
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="px-6 py-6">
+          <form method="POST" class="space-y-5">
+            {% csrf_token %}
+            
+            <!-- Form Fields -->
+            <div class="form-container space-y-5">
+              {{ form.as_p }}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-2">
+              <button 
+                type="submit" 
+                class="w-full bg-blinkit-green hover:bg-blinkit-green-hover text-white font-medium py-3.5 px-4 rounded-xl transition-colors duration-200 shadow-sm hover:shadow-md"
+              >
+                Submit Review
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 bg-gray-25 border-t border-gray-50">
+          <p class="text-xs text-gray-400 text-center">
+            Your review helps other customers make informed decisions
+          </p>
+        </div>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="mt-6 text-center">
+        <p class="text-sm text-gray-400">
+          Reviews are public and include your account info
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Form Styling -->
+  <style>
+    /* Form field styling */
+    .form-container p {
+      margin-bottom: 0;
+    }
+    
+    .form-container label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-container input,
+    .form-container textarea,
+    .form-container select {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      color: #111827;
+      background-color: #ffffff;
+      transition: all 0.2s ease;
+    }
+    
+    .form-container input:focus,
+    .form-container textarea:focus,
+    .form-container select:focus {
+      outline: none;
+      border-color: #0c831f;
+      box-shadow: 0 0 0 3px rgba(12, 131, 31, 0.1);
+    }
+    
+    .form-container input::placeholder,
+    .form-container textarea::placeholder {
+      color: #9ca3af;
+    }
+    
+    .form-container textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .form-container select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.75rem center;
+      background-repeat: no-repeat;
+      background-size: 1.25rem;
+      padding-right: 2.5rem;
+    }
+    
+    /* Checkbox and radio styling */
+    .form-container input[type="checkbox"],
+    .form-container input[type="radio"] {
+      width: 1.125rem;
+      height: 1.125rem;
+      margin-right: 0.5rem;
+      accent-color: #0c831f;
+    }
+    
+    /* Error styling */
+    .form-container .errorlist {
+      list-style: none;
+      padding: 0;
+      margin: 0.25rem 0 0 0;
+    }
+    
+    .form-container .errorlist li {
+      color: #dc2626;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    /* Help text styling */
+    .form-container .helptext {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 0.25rem;
+    }
+    
+    /* Required field indicator */
+    .form-container label.required::after {
+      content: " *";
+      color: #dc2626;
+    }
+    
+    /* Line clamp utility */
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</body>
+</html>

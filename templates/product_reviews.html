@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ product.name }} - Reviews</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            blinkit: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              200: '#fed7aa',
+              300: '#fdba74',
+              400: '#fb923c',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+              800: '#9a3412',
+              900: '#7c2d12',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .star-filled {
+      color: #22c55e;
+    }
+    
+    .star-empty {
+      color: #e5e7eb;
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-100 sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto px-4 py-4">
+      <div class="flex items-center">
+        <button onclick="history.back()" class="mr-4 p-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 class="text-lg font-semibold text-gray-900">Customer Reviews</h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto bg-white min-h-screen">
+    <div class="flex flex-col lg:flex-row gap-8 p-4">
+      <!-- Product Section (Left Side) -->
+      <div class="lg:w-1/3 lg:sticky lg:top-24 lg:self-start">
+        <!-- Product Image -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-48 lg:h-64 object-contain rounded-lg">
+        </div>
+        
+        <!-- Product Info -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h2 class="text-lg font-semibold text-gray-900 mb-3">{{ product.name }}</h2>
+          
+          <!-- Rating Summary -->
+          <div class="flex items-center mb-4">
+            <div class="flex items-center mr-3">
+              {% for i in "12345" %}
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {% if forloop.counter <= product.average_rating|default:0 %}text-yellow-400{% else %}text-gray-300{% endif %}" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              {% endfor %}
+            </div>
+            <span class="text-sm text-gray-800 font-medium">{{ product.average_rating|floatformat:1 }}</span>
+            <span class="text-xs text-gray-500 ml-2">({{ product.review_count }} reviews)</span>
+          </div>
+
+          
+          <p class="text-gray-600 text-sm mb-4">{{ reviews|length }} customer review{{ reviews|length|pluralize }}</p>
+          
+          <!-- Rating Breakdown -->
+          <div class="space-y-2 mb-6">
+            {% for rating in "54321" %}
+              <div class="flex items-center text-sm">
+                <span class="w-8 text-gray-600">{{ rating }} ★</span>
+                <div class="flex-1 mx-3 bg-gray-200 rounded-full h-2">
+                  <div class="bg-green-500 h-2 rounded-full" style="width: {% if rating == '5' %}60{% elif rating == '4' %}25{% elif rating == '3' %}10{% elif rating == '2' %}3{% else %}2{% endif %}%"></div>
+                </div>
+                <span class="text-gray-500 text-xs">{% if rating == '5' %}60{% elif rating == '4' %}25{% elif rating == '3' %}10{% elif rating == '2' %}3{% else %}2{% endif %}%</span>
+              </div>
+            {% endfor %}
+          </div>
+          
+          <!-- Write Review Button -->
+          <a href="{% url 'submit_review' order.id product.id %}">
+            <button class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+              Write a review
+            </button>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- Reviews Section (Right Side) -->
+      <div class="lg:w-2/3">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-semibold text-gray-900">Customer Reviews</h3>
+          <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <option>Most recent</option>
+            <option>Most helpful</option>
+            <option>Highest rated</option>
+            <option>Lowest rated</option>
+          </select>
+        </div>
+
+        {% if reviews %}
+          <div class="space-y-6">
+            {% for review in reviews %}
+              <div class="border-b border-gray-100 pb-6 last:border-b-0">
+                <!-- User Info -->
+                <div class="flex items-start mb-4">
+                  <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <span class="text-sm font-medium text-gray-600">{{ review.user.username|slice:":1"|upper }}</span>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                      <p class="font-medium text-gray-900">{{ review.user.username }}</p>
+                      <span class="text-sm text-gray-500">{{ review.created_at|date:"d M Y" }}</span>
+                    </div>
+                    <div class="flex items-center">
+                      <div class="flex mr-2">
+                        {% for i in "12345" %}
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {% if forloop.counter <= review.rating %}star-filled{% else %}star-empty{% endif %}" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        {% endfor %}
+                      </div>
+                      <span class="text-sm font-medium text-gray-700">{{ review.rating }}/5</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Review Content -->
+                <div class="ml-13">
+                  <p class="text-gray-700 leading-relaxed mb-4">{{ review.comment }}</p>
+                  
+                  <!-- Review Actions -->
+                  <div class="flex items-center space-x-6">
+                    <button class="flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                      </svg>
+                      Helpful (0)
+                    </button>
+                    <button class="flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      Reply
+                    </button>
+                    <button class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                      Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          
+          <!-- Load More Button -->
+          <div class="mt-8 text-center">
+            <button class="border border-gray-300 hover:border-gray-400 text-gray-700 font-medium py-2 px-6 rounded-lg transition-colors">
+              Load more reviews
+            </button>
+          </div>
+        {% else %}
+          <!-- Empty State -->
+          <div class="text-center py-16">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
+            <p class="text-gray-500 mb-6">Be the first to review this product and help other customers make informed decisions.</p>
+            <button class="bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+              Write first review
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

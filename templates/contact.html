@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - Devki Mart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    /* Animated Background */
+    .animated-bg {
+      background: linear-gradient(-45deg, #f0fdf4, #dcfce7, #bbf7d0, #86efac);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+    }
+    
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    /* Floating Elements */
+    .float {
+      animation: floating 3s ease-in-out infinite;
+    }
+    
+    .float-delay-1 {
+      animation-delay: 0.5s;
+    }
+    
+    .float-delay-2 {
+      animation-delay: 1s;
+    }
+    
+    @keyframes floating {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    /* Pulse Animation */
+    .pulse-slow {
+      animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    /* Glass Effect */
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Input Focus Animation */
+    .input-effect {
+      position: relative;
+    }
+    
+    .input-effect input,
+    .input-effect textarea {
+      border: none;
+      border-bottom: 2px solid #e5e7eb;
+      transition: all 0.3s ease;
+    }
+    
+    .input-effect input:focus,
+    .input-effect textarea:focus {
+      border-bottom: 2px solid #22c55e;
+      box-shadow: none;
+      outline: none;
+    }
+    
+    .input-effect label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #9ca3af;
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .input-effect input:focus ~ label,
+    .input-effect input:not(:placeholder-shown) ~ label,
+    .input-effect textarea:focus ~ label,
+    .input-effect textarea:not(:placeholder-shown) ~ label {
+      top: -10px;
+      left: 0;
+      font-size: 0.75rem;
+      color: #22c55e;
+    }
+    
+    /* Button Animation */
+    .btn-animated {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-animated:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: all 0.6s ease;
+    }
+    
+    .btn-animated:hover:before {
+      left: 100%;
+    }
+    
+    /* Social Icons Animation */
+    .social-icon {
+      transition: all 0.3s ease;
+    }
+    
+    .social-icon:hover {
+      transform: translateY(-5px) scale(1.1);
+    }
+    
+    /* Decorative Circles */
+    .circle {
+      border-radius: 50%;
+      position: absolute;
+      opacity: 0.5;
+      z-index: -1;
+    }
+    
+    .circle-1 {
+      width: 300px;
+      height: 300px;
+      background: linear-gradient(to right, #4ade80, #22c55e);
+      top: -150px;
+      right: -150px;
+      animation: moveAround 20s linear infinite;
+    }
+    
+    .circle-2 {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(to right, #bbf7d0, #86efac);
+      bottom: -100px;
+      left: -100px;
+      animation: moveAround 15s linear infinite reverse;
+    }
+    
+    @keyframes moveAround {
+      0% { transform: rotate(0deg) translateX(30px) rotate(0deg); }
+      100% { transform: rotate(360deg) translateX(30px) rotate(-360deg); }
+    }
+    
+    /* Animated Border */
+    .animated-border {
+      position: relative;
+    }
+    
+    .animated-border:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #22c55e;
+      transition: width 0.3s ease;
+    }
+    
+    .animated-border:hover:after {
+      width: 100%;
+    }
+    
+    /* Map Animation */
+    .map-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    
+    .map-container:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, rgba(34, 197, 94, 0.4), transparent);
+      z-index: 1;
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+    
+    .map-container:hover:before {
+      opacity: 1;
+    }
+    
+    /* Animated List */
+    .animated-list li {
+      transform: translateX(-20px);
+      opacity: 0;
+      animation: slideIn 0.5s forwards;
+    }
+    
+    .animated-list li:nth-child(1) { animation-delay: 0.1s; }
+    .animated-list li:nth-child(2) { animation-delay: 0.2s; }
+    .animated-list li:nth-child(3) { animation-delay: 0.3s; }
+    .animated-list li:nth-child(4) { animation-delay: 0.4s; }
+    
+    @keyframes slideIn {
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Decorative Elements -->
+  <div class="circle circle-1"></div>
+  <div class="circle circle-2"></div>
+  
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <i class='bx bx-store text-2xl'></i>
+          <span class="ml-2 text-xl font-bold">Devki Mart</span>
+        </div>
+        <nav class="hidden md:flex space-x-6 text-sm">
+          <a href="/" class="hover:text-green-200 transition duration-300">Home</a>
+          <a href="/products/" class="hover:text-green-200 transition duration-300">Products</a>
+          <a href="/categories/" class="hover:text-green-200 transition duration-300">Categories</a>
+          <a href="/about/" class="hover:text-green-200 transition duration-300">About</a>
+          <a href="/contact/" class="hover:text-green-200 transition duration-300 font-medium">Contact</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="animated-bg py-20 relative overflow-hidden">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-primary-800 mb-4">Get in Touch</h1>
+        <p class="text-lg text-gray-700 mb-8">We'd love to hear from you! Reach out with any questions, feedback, or inquiries.</p>
+        
+        <!-- Animated Icons -->
+        <div class="flex justify-center space-x-12 mb-8">
+          <div class="float text-center">
+            <div class="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mx-auto mb-3">
+              <i class='bx bx-envelope text-3xl text-primary-500'></i>
+            </div>
+            <p class="text-sm font-medium text-gray-700">Email Us</p>
+          </div>
+          <div class="float float-delay-1 text-center">
+            <div class="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mx-auto mb-3">
+              <i class='bx bx-phone text-3xl text-primary-500'></i>
+            </div>
+            <p class="text-sm font-medium text-gray-700">Call Us</p>
+          </div>
+          <div class="float float-delay-2 text-center">
+            <div class="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mx-auto mb-3">
+              <i class='bx bx-map text-3xl text-primary-500'></i>
+            </div>
+            <p class="text-sm font-medium text-gray-700">Visit Us</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Wave Divider -->
+    <div class="absolute bottom-0 left-0 w-full">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" fill="#ffffff">
+        <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="py-16">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- Contact Form -->
+        <div class="glass rounded-2xl p-8 shadow-xl">
+          <h2 class="text-2xl font-bold text-primary-700 mb-6">Send Us a Message</h2>
+          
+          <form action="{% url 'contact_submit' %}" method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="input-effect">
+                <input type="text" name="name" id="name" class="w-full bg-transparent px-3 py-2 placeholder-transparent" placeholder=" " required>
+                <label for="name">Your Name</label>
+              </div>
+              
+              <div class="input-effect">
+                <input type="email" name="email" id="email" class="w-full bg-transparent px-3 py-2 placeholder-transparent" placeholder=" " required>
+                <label for="email">Your Email</label>
+              </div>
+            </div>
+            
+            <div class="input-effect">
+              <input type="text" name="subject" id="subject" class="w-full bg-transparent px-3 py-2 placeholder-transparent" placeholder=" " required>
+              <label for="subject">Subject</label>
+            </div>
+            
+            <div class="input-effect">
+              <textarea name="message" id="message" rows="5" class="w-full bg-transparent px-3 py-2 placeholder-transparent" placeholder=" " required></textarea>
+              <label for="message">Your Message</label>
+            </div>
+            
+            <div class="flex items-center">
+              <input type="checkbox" id="newsletter" name="newsletter" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+              <label for="newsletter" class="ml-2 block text-sm text-gray-700">Subscribe to our newsletter</label>
+            </div>
+            
+            <button type="submit" class="btn-animated w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl">
+              Send Message
+            </button>
+          </form>
+        </div>
+        
+        <!-- Contact Information -->
+        <div class="space-y-8">
+          <!-- Info Cards -->
+          <div class="glass rounded-2xl p-6 shadow-lg">
+            <div class="flex items-start">
+              <div class="bg-primary-100 rounded-full p-3 mr-4">
+                <i class='bx bx-map text-2xl text-primary-600'></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">Our Location</h3>
+                <p class="text-gray-600">123 Grocery Lane, Fresh City, FC 12345</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="glass rounded-2xl p-6 shadow-lg">
+            <div class="flex items-start">
+              <div class="bg-primary-100 rounded-full p-3 mr-4">
+                <i class='bx bx-phone text-2xl text-primary-600'></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">Phone Number</h3>
+                <p class="text-gray-600">+91 98765 43210</p>
+                <p class="text-gray-600">+91 12345 67890</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="glass rounded-2xl p-6 shadow-lg">
+            <div class="flex items-start">
+              <div class="bg-primary-100 rounded-full p-3 mr-4">
+                <i class='bx bx-envelope text-2xl text-primary-600'></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">Email Address</h3>
+                <p class="text-gray-600">info@devkimart.com</p>
+                <p class="text-gray-600">support@devkimart.com</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="glass rounded-2xl p-6 shadow-lg">
+            <div class="flex items-start">
+              <div class="bg-primary-100 rounded-full p-3 mr-4">
+                <i class='bx bx-time text-2xl text-primary-600'></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">Business Hours</h3>
+                <ul class="text-gray-600 animated-list">
+                  <li class="flex justify-between">
+                    <span>Monday - Friday:</span>
+                    <span>9:00 AM - 8:00 PM</span>
+                  </li>
+                  <li class="flex justify-between">
+                    <span>Saturday:</span>
+                    <span>9:00 AM - 7:00 PM</span>
+                  </li>
+                  <li class="flex justify-between">
+                    <span>Sunday:</span>
+                    <span>10:00 AM - 6:00 PM</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Social Media -->
+          <div class="glass rounded-2xl p-6 shadow-lg">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Connect With Us</h3>
+            <div class="flex space-x-4">
+              <a href="#" class="social-icon bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <i class='bx bxl-facebook'></i>
+              </a>
+              <a href="#" class="social-icon bg-pink-600 text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <i class='bx bxl-instagram'></i>
+              </a>
+              <a href="#" class="social-icon bg-blue-400 text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <i class='bx bxl-twitter'></i>
+              </a>
+              <a href="#" class="social-icon bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <i class='bx bxl-youtube'></i>
+              </a>
+              <a href="#" class="social-icon bg-green-600 text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <i class='bx bxl-whatsapp'></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Map Section -->
+      <div class="mt-16">
+        <h2 class="text-2xl font-bold text-primary-700 mb-6 text-center">Find Us</h2>
+        <div class="map-container shadow-xl">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3505.0738262364924!2d77.21763731507907!3d28.535726982456438!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce26f903969d7%3A0x8f89b5e7f76b5262!2sLajpat%20Nagar%2C%20New%20Delhi%2C%20Delhi!5e0!3m2!1sen!2sin!4v1623825647452!5m2!1sen!2sin" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- FAQ Section -->
+  <section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+      <h2 class="text-2xl font-bold text-primary-700 mb-8 text-center">Frequently Asked Questions</h2>
+      
+      <div class="max-w-3xl mx-auto">
+        <div class="space-y-6">
+          <div class="glass rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2 animated-border inline-block">What are your delivery areas?</h3>
+            <p class="text-gray-600">We currently deliver to all major areas within the city and some surrounding suburbs. Enter your pincode on our website to check if we deliver to your area.</p>
+          </div>
+          
+          <div class="glass rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2 animated-border inline-block">How can I track my order?</h3>
+            <p class="text-gray-600">Once your order is confirmed, you'll receive a tracking link via SMS and email. You can also track your order in real-time through our mobile app or website.</p>
+          </div>
+          
+          <div class="glass rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2 animated-border inline-block">What is your return policy?</h3>
+            <p class="text-gray-600">We have a hassle-free return policy. If you're not satisfied with any product, you can return it within 7 days of delivery for a full refund or replacement.</p>
+          </div>
+          
+          <div class="glass rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2 animated-border inline-block">How can I become a vendor?</h3>
+            <p class="text-gray-600">We're always looking for quality vendors to partner with. Please fill out the vendor application form on our website or contact our business development team.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Section -->
+  <section class="py-16 bg-gradient-to-r from-primary-600 to-primary-700 text-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-4">Stay Updated</h2>
+        <p class="mb-8">Subscribe to our newsletter for the latest products, offers, and updates.</p>
+        
+        <form class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+          <input type="email" placeholder="Your email address" class="flex-1 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-gray-800">
+          <button type="submit" class="btn-animated bg-white text-primary-600 hover:bg-gray-100 font-medium px-6 py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl">
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-300">
+    <div class="container mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-xl font-bold text-white mb-4">Devki Mart</h3>
+          <p class="mb-4">Your one-stop shop for fresh, organic groceries delivered right to your doorstep.</p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+              <i class='bx bxl-facebook text-xl'></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+              <i class='bx bxl-instagram text-xl'></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+              <i class='bx bxl-twitter text-xl'></i>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold text-white mb-4">Quick Links</h3>
+          <ul class="space-y-2">
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">Home</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">About Us</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">Products</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">Blog</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">Contact</a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold text-white mb-4">Customer Service</h3>
+          <ul class="space-y-2">
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">FAQ</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">Shipping & Delivery</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">Returns & Refunds</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">Privacy Policy</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-white transition-colors duration-200">Terms & Conditions</a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold text-white mb-4">Contact Info</h3>
+          <ul class="space-y-4">
+            <li class="flex items-start">
+              <i class='bx bx-map text-primary-400 mr-3 mt-1'></i>
+              <span>123 Grocery Lane, Fresh City, FC 12345</span>
+            </li>
+            <li class="flex items-center">
+              <i class='bx bx-phone text-primary-400 mr-3'></i>
+              <span>+91 98765 43210</span>
+            </li>
+            <li class="flex items-center">
+              <i class='bx bx-envelope text-primary-400 mr-3'></i>
+              <span>info@devkimart.com</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
+        <p>&copy; <span id="current-year">2023</span> Devki Mart. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
