@@ -4,14 +4,10 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import login, get_user_model,logout
 from store.models import CustomUser, Product,OrderItem,Order
-import firebase_admin
-from firebase_admin import auth, credentials
+
 import random
 from django.db.models import Avg, Count
 # Initialize Firebase
-cred = credentials.Certificate("C:/Users/Dell/OneDrive/Desktop/Whole python/Django/Devki_Mart/Firebase Key/smssend-766b5-firebase-adminsdk-fbsvc-c784cb746c.json")
-if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred)
 
 User = get_user_model()
 otp_storage = {}  # Temporary OTP store
