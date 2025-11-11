@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = ['.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['sona-enterprises.onrender.com', 'localhost', '127.0.0.1']
 
 # -----------------------------
 # INSTALLED APPS
@@ -125,7 +125,8 @@ LOGIN_URL = '/request-otp/'
 # -----------------------------
 # EMAIL CONFIG
 # -----------------------------
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
