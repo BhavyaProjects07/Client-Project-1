@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ product.name }} - Devki Mart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  {% include 'nav.html' %}
+
+  <section class="py-16">
+    <div class="container mx-auto px-6 md:px-12 lg:px-20">
+      <div class="grid md:grid-cols-2 gap-10 items-start">
+        
+        <!-- Product Image -->
+        <div class="relative bg-white rounded-xl shadow-md overflow-hidden">
+          <img src="{{ product.image_url }}" alt="{{ product.name }}" class="object-contain w-full h-96">
+          <span class="absolute top-4 left-4 bg-amber-600 text-white px-3 py-1 rounded-full text-xs">New Arrival</span>
+        </div>
+
+        <!-- Product Info -->
+        <div>
+          <h1 class="text-3xl font-semibold text-gray-800 mb-3">{{ product.name }}</h1>
+          <p class="text-gray-500 text-sm mb-2 capitalize">{{ product.category }}</p>
+
+          <!-- Price -->
+          <div class="flex items-center space-x-2 mb-4">
+            <span class="text-2xl font-bold text-amber-600">₹{{ product.price }}</span>
+            {% if product.old_price %}
+              <span class="text-gray-400 line-through">₹{{ product.old_price }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Description -->
+          <p class="text-gray-700 leading-relaxed mb-6">{{ product.description }}</p>
+
+          <!-- Variant Selectors -->
+          <form method="POST" action="{% url 'add_to_cart' 'women' product.id %}">
+            {% csrf_token %}
+            <div class="grid sm:grid-cols-2 gap-4 mb-6">
+              
+              {% if product.category|lower == "footwear" %}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Select Size (UK)</label>
+                <select name="size" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-amber-500 focus:border-amber-500">
+                  <option value="UK 4">UK 4</option>
+                  <option value="UK 5">UK 5</option>
+                  <option value="UK 6">UK 6</option>
+                  <option value="UK 7">UK 7</option>
+                  <option value="UK 8">UK 8</option>
+                </select>
+              </div>
+              {% endif %}
+
+              {% if product.category|lower == "top" or product.category|lower == "dress" or product.category|lower == "kurti" or product.category|lower == "blouse" %}
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Select Size</label>
+                <select name="size" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-amber-500 focus:border-amber-500">
+                  <option value="S">S</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                </select>
+              </div>
+              {% endif %}
+
+              {% if product.category|lower == "saree" or product.category|lower == "accessories" %}
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                <select name="color" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-amber-500 focus:border-amber-500">
+                  <option>Red</option>
+                  <option>Blue</option>
+                  <option>Green</option>
+                  <option>Black</option>
+                  <option>Gold</option>
+                </select>
+              </div>
+              {% endif %}
+
+              {% if product.category|lower == "saree" %}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fabric Type</label>
+                <select name="fabric" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-amber-500 focus:border-amber-500">
+                  <option>Silk</option>
+                  <option>Cotton</option>
+                  <option>Georgette</option>
+                  <option>Chiffon</option>
+                  <option>Organza</option>
+                </select>
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Add to Cart / Wishlist / Buy Now -->
+            <div class="flex flex-col sm:flex-row gap-4">
+              {% if user.is_authenticated %}
+                <button type="submit" class="bg-amber-600 text-white px-6 py-3 rounded-md hover:bg-amber-700 transition">
+                  Add to Cart
+                </button>
+
+                <a href="{% url 'add_to_wishlist' 'women' product.id %}" class="border border-amber-600 text-amber-600 px-6 py-3 rounded-md hover:bg-amber-50 transition text-center">
+                  Add to Wishlist
+                </a>
+
+                <button formaction="{% url 'buy_now' 'women' product.id %}" class="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition">
+                  Buy Now
+                </button>
+              {% else %}
+                <p class="text-red-500">Login to purchase or add items to your cart.</p>
+              {% endif %}
+            </div>
+          </form>
+
+          <!-- Dynamic Specifications -->
+          <div class="mt-8">
+            <h3 class="font-semibold text-gray-800 mb-2">Specifications:</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-1">
+              {% for key, value in extra_details.items %}
+                <li><strong>{{ key }}:</strong> {{ value }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Products -->
+  <section class="py-12 bg-white">
+    <div class="container mx-auto px-6 md:px-12">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-800">You may also like</h2>
+      <p class="text-gray-500 mb-8">Explore similar products curated just for you.</p>
+      <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for related in product.related_products.all %}
+        <a href="{% url 'women_product_detail' related.id %}" class="block bg-gray-50 rounded-lg shadow hover:shadow-md transition overflow-hidden">
+          <img src="{{ related.image_url }}" alt="{{ related.name }}" class="object-cover w-full h-52">
+          <div class="p-4">
+            <h3 class="text-gray-800 font-medium">{{ related.name }}</h3>
+            <p class="text-amber-600 font-semibold mt-1">₹{{ related.price }}</p>
+          </div>
+        </a>
+        {% empty %}
+          <p class="text-gray-500 col-span-4">No related products found.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  
+</body>
+</html>

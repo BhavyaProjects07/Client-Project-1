@@ -22,7 +22,7 @@ from django.conf.urls.static import static
 
 from store import views
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin_panel907/', admin.site.urls),
     path('', include('store.urls')),
     path('admin-dashboard/', views.admin_dashboard_view, name='admin_dashboard'),
     

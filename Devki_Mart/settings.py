@@ -1,19 +1,20 @@
 import os
 from pathlib import Path
 from decouple import config
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+import dj_database_url
 
-
-
+# -----------------------------
+# BASE CONFIG
+# -----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = ['.onrender.com', 'localhost', '127.0.0.1']
 
-# Installed apps
+# -----------------------------
+# INSTALLED APPS
+# -----------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -22,24 +23,28 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'store',
-    'cloudinary',
-    'cloudinary_storage',
-    'storages',  # Your app
+    'storages',  # keep for future cloud/static storage support
 ]
 
-# Middleware
+# -----------------------------
+# MIDDLEWARE
+# -----------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ Must stay above session middleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-
 ]
 
+
+
+# -----------------------------
+# URL & TEMPLATE CONFIG
+# -----------------------------
 ROOT_URLCONF = 'Devki_Mart.urls'
 
 TEMPLATES = [
@@ -60,61 +65,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Devki_Mart.wsgi.application'
 
-# Database
-
-
-# Password validation
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
-
-# Internationalization
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
-
-# Static and Media
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Login settings (redirect after login/logout)
-LOGIN_REDIRECT_URL = '/home/'
-LOGOUT_REDIRECT_URL = '/'
-AUTH_USER_MODEL = 'store.CustomUser'
-
-# settings.py
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # ✅ for real email sending
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")  # ✅ App password, not your real Gmail password
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-LOGIN_URL = '/'
-
-
-
-ADMINS = [('DevkiMart Admin', 'laptopuse01824x@gmail.com')]
-
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-
-
-import dj_database_url
-
-from decouple import config
-import dj_database_url
-
+# -----------------------------
+# DATABASE CONFIG (Neon / SQLite)
+# -----------------------------
 DATABASE_URL = config("DATABASE_URL")
 
 if DATABASE_URL.startswith("sqlite"):
@@ -126,18 +79,73 @@ else:
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 
+# -----------------------------
+# PASSWORD VALIDATION
+# -----------------------------
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
 
+# -----------------------------
+# INTERNATIONALIZATION
+# -----------------------------
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUD_NAME'),
-    'API_KEY': config('CLOUDINARY_API_KEY'),
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),
-}
+# -----------------------------
+# STATIC FILES
+# -----------------------------
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-cloudinary.config(
-    cloud_name=config('CLOUD_NAME'),
-    api_key=config('CLOUDINARY_API_KEY'),
-    api_secret=config('CLOUDINARY_API_SECRET')
-)
+# ✅ Use WhiteNoise for static file handling
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# -----------------------------
+# MEDIA FILES (NO LOCAL STORAGE)
+# -----------------------------
+# ✅ Completely disable local media storage — handled by ImageKit SDK
+MEDIA_URL = ''
+MEDIA_ROOT = ''  # ensure no local media directory is created
+
+# -----------------------------
+# AUTH SYSTEM
+# -----------------------------
+AUTH_USER_MODEL = 'store.CustomUser'
+LOGIN_REDIRECT_URL = '/home/'
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/request-otp/'
+
+# -----------------------------
+# EMAIL CONFIG
+# -----------------------------
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")  # app password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+ADMINS = [('DevkiMart Admin', 'laptopuse01824x@gmail.com')]
+
+# -----------------------------
+# IMAGEKIT CONFIGURATION
+# -----------------------------
+IMAGEKIT_PUBLIC_KEY = config('IMAGEKIT_PUBLIC_KEY')
+IMAGEKIT_PRIVATE_KEY = config('IMAGEKIT_PRIVATE_KEY')
+IMAGEKIT_URL_ENDPOINT = config('IMAGEKIT_URL_ENDPOINT')
+
+if not all([IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, IMAGEKIT_URL_ENDPOINT]):
+    print("⚠️ WARNING: One or more ImageKit environment variables are missing!")
+
+# -----------------------------
+# DEBUG
+# -----------------------------
+DEBUG = True

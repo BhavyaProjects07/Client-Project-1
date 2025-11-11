@@ -452,24 +452,25 @@
     </div>
 
 
-{% if messages %}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-  {% for message in messages %}
-    Swal.fire({
-      toast: true,
-      icon: "{{ message.tags }}",
-      title: "{{ message }}",
-      position: 'top', // Use 'center' as the base position
-      customClass: {
-        popup: 'custom-swal-position' // Add a custom class for positioning
-      },
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
-    });
-  {% endfor %}
-</script>
+  {% if messages %}
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    {% for message in messages %}
+      Swal.fire({
+        toast: true,
+        icon: "{{ message.tags }}",
+        title: "{{ message }}",
+        position: 'top',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
+    {% endfor %}
+  </script>
+  {% endif %}
+
+
+
 <style>
   /* Custom position for SweetAlert2 */
   .custom-swal-position {
@@ -477,7 +478,7 @@
     /
   }
 </style>
-{% endif %}
+
 
 </body>
 </html>

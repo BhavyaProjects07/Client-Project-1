@@ -110,7 +110,92 @@
 </head>
 <body class="bg-gray-50 font-sans min-h-screen flex flex-col">
   <!-- Navbar -->
-  {% include 'nav.html' %}
+  <header 
+    class="sticky top-0 z-40 w-full transition-all duration-300 bg-white shadow-sm"
+    :class="isScrolled ? 'shadow-md' : ''"
+    @scroll.window="isScrolled = window.pageYOffset > 10"
+    id="header">
+    <div class="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+      <div class="flex items-center justify-between gap-2 sm:gap-4">
+        <!-- Logo -->
+        <a href="#" class="flex items-center space-x-2 flex-shrink-0">
+          <div class="text-lg sm:text-2xl font-bold text-amber-700">Sona</div>
+        </a>
+
+        <!-- Search Bar - Hidden on mobile -->
+        <div class="hidden md:flex items-center flex-1 max-w-md">
+          <div class="relative w-full">
+            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <form action="{% url 'admin_dashboard' %}" method="get" class="w-full">
+              <input
+                type="search"
+                name="q"
+                value="{{ search_email }}"
+                placeholder="Search Order by Gmail ID..."
+                class="pl-9 w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+              >
+
+            </form>
+
+          </div>
+        </div>
+
+        <!-- Navigation & Icons -->
+        <div class="flex items-center gap-2 sm:gap-4">
+
+          <a href="/" class="text-sm font-medium text-slate-700 hover:text-amber-600 transition-colors">Home</a>
+          <!-- Wishlist -->
+          <a href="{% url 'view_wishlist' %}">
+            <button class="relative p-2 rounded-full hover:bg-gray-100 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              {% if wishlist_count > 0 %}
+              <span class="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center bg-amber-600 text-white text-xs rounded-full">
+                {{ wishlist_count }}
+              </span>
+              {% endif %}
+            </button>
+          </a>
+
+          <!-- Cart -->
+          <a href="{% url 'view_cart' %}" class="relative p-2 rounded-full hover:bg-gray-100 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            {% if user.is_authenticated %}
+              <span class="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center bg-amber-600 text-white text-xs rounded-full">
+                {{ request.user.cartitem_set.count }}
+              </span>
+            {% endif %}
+          </a>
+
+          <!-- Profile/Auth -->
+            <!-- Profile/Auth -->
+
+
+      </div>
+
+      <!-- Mobile Menu -->
+      <div x-show="isMenuOpen" class="md:hidden mt-3 pb-3 border-t pt-3">
+        <div class="relative mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <form action="{% url 'home' %}" method="get" class="w-full">
+            <input
+              type="search"
+              name="q"
+              placeholder="Search..."
+              class="pl-9 w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+            >
+          </form>
+        </div>
+      </div>
+    </div>
+</header>
 
   <!-- Main Content -->
   <main class="flex-grow container mx-auto px-4 py-8 animate-fade-in">
@@ -120,7 +205,7 @@
         <p class="text-gray-500 mt-1">Manage your store and monitor performance</p>
       </div>
       <div class="mt-4 md:mt-0 flex items-center">
-        <a href="/admin/" target="_blank" class="flex items-center text-primary-600 hover:text-primary-700 transition duration-300">
+        <a href="/admin_panel907/" target="_blank" class="flex items-center text-primary-600 hover:text-primary-700 transition duration-300">
           <i class='bx bx-cog mr-1'></i>
           <span>Django Admin</span>
         </a>
@@ -244,7 +329,7 @@
                   </form>
 
                   <!-- payment status update  -->
-                  <form method="POST" action="{% url 'update_payment_status' order.id %}" class="flex flex-wrap items-center gap-2">
+                  <form method="POST" action="{% url 'update_order_status' order.id %}" class="flex flex-wrap items-center gap-2">
                     {% csrf_token %}
                     <select name="paid" class="border border-gray-300 px-2 py-1 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                       <option value="True" {% if order.paid %}selected{% endif %}>Paid</option>
@@ -266,6 +351,14 @@
                 </div>
               </td>
             </tr>
+
+            {% if search_email %}
+            <div class="px-6 py-3 bg-amber-50 text-amber-800 text-sm font-medium border-b border-amber-100">
+              Showing orders for <strong>{{ search_email }}</strong>
+              <a href= "{% url 'admin_dashboard' %}" class="text-blue-600 hover:underline ml-2">Clear Filter</a>
+            </div>
+            {% endif %}
+
             {% endfor %}
           </tbody>
         </table>
@@ -286,66 +379,64 @@
   </main>
 
   <!-- Footer -->
-  <footer class="footer-gradient text-white mt-12">
-    <div class="container mx-auto px-4 py-8">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+  <footer id="contact" class="bg-gray-900 text-gray-300">
+    <div class="container mx-auto px-3 sm:px-4 py-8 sm:py-12">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+        <!-- Brand -->
         <div>
-          <h3 class="text-lg font-semibold mb-4">Devki Mart</h3>
-          <p class="text-sm text-gray-200">Your one-stop shop for all your needs. Quality products at affordable prices.</p>
-          <div class="flex space-x-4 mt-4">
-            <a href="#" class="text-white hover:text-green-200 transition duration-300">
-              <i class='bx bxl-facebook text-xl'></i>
-            </a>
-            <a href="#" class="text-white hover:text-green-200 transition duration-300">
-              <i class='bx bxl-twitter text-xl'></i>
-            </a>
-            <a href="#" class="text-white hover:text-green-200 transition duration-300">
-              <i class='bx bxl-instagram text-xl'></i>
-            </a>
+          <h3 class="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Sona Enterprises</h3>
+          <p class="text-xs sm:text-sm mb-4">Quality fashion, electronics, and toys for every occasion.</p>
+          <div class="flex space-x-3">
+            <a href="#" class="text-gray-400 hover:text-white transition text-sm">Facebook</a>
+            <a href="#" class="text-gray-400 hover:text-white transition text-sm">Instagram</a>
+            <a href="#" class="text-gray-400 hover:text-white transition text-sm">Twitter</a>
           </div>
         </div>
-        
+
+        <!-- Quick Links -->
         <div>
-          <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-          <ul class="space-y-2 text-sm">
-            <li><a href="/" class="hover:text-green-200 transition duration-300">Home</a></li>
-            <li><a href="/products/" class="hover:text-green-200 transition duration-300">Products</a></li>
-            <li><a href="/categories/" class="hover:text-green-200 transition duration-300">Categories</a></li>
-            <li><a href="/about/" class="hover:text-green-200 transition duration-300">About Us</a></li>
+          <h3 class="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Quick Links</h3>
+          <ul class="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+            <li><a href="#" class="hover:text-white transition">Home</a></li>
+            <li><a href="#featured-products" class="hover:text-white transition">Shop</a></li>
+            <li><a href="#" class="hover:text-white transition">About</a></li>
+            <li><a href="#contact" class="hover:text-white transition">Contact</a></li>
           </ul>
         </div>
-        
+
+        <!-- Support -->
         <div>
-          <h3 class="text-lg font-semibold mb-4">Customer Service</h3>
-          <ul class="space-y-2 text-sm">
-            <li><a href="/contact/" class="hover:text-green-200 transition duration-300">Contact Us</a></li>
-            <li><a href="/faq/" class="hover:text-green-200 transition duration-300">FAQs</a></li>
-            <li><a href="/shipping/" class="hover:text-green-200 transition duration-300">Shipping Policy</a></li>
-            <li><a href="/returns/" class="hover:text-green-200 transition duration-300">Returns & Refunds</a></li>
+          <h3 class="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Support</h3>
+          <ul class="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+            <li><a href="#" class="hover:text-white transition">FAQ</a></li>
+            <li><a href="#" class="hover:text-white transition">Shipping Info</a></li>
+            <li><a href="#" class="hover:text-white transition">Returns</a></li>
+            <li><a href="#" class="hover:text-white transition">Privacy</a></li>
           </ul>
         </div>
-        
+
+        <!-- Contact -->
         <div>
-          <h3 class="text-lg font-semibold mb-4">Contact Info</h3>
-          <ul class="space-y-2 text-sm">
-            <li class="flex items-start">
-              <i class='bx bx-map mr-2 mt-1'></i>
-              <span>123 Market St, New Delhi, India</span>
+          <h3 class="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Contact</h3>
+          <ul class="space-y-2 text-xs sm:text-sm">
+            <li class="flex items-start gap-2">
+              <span class="text-amber-400 mt-0.5">📍</span>
+              <span>123 Business Lane, City 12345</span>
             </li>
-            <li class="flex items-center">
-              <i class='bx bx-phone mr-2'></i>
-              <span>+91 98765 43210</span>
+            <li class="flex items-center gap-2">
+              <span class="text-amber-400">📞</span>
+              <span>(123) 456-7890</span>
             </li>
-            <li class="flex items-center">
-              <i class='bx bx-envelope mr-2'></i>
-              <span>info@devkimart.com</span>
+            <li class="flex items-center gap-2">
+              <span class="text-amber-400">📧</span>
+              <span>hello@sonaenterprises.com</span>
             </li>
           </ul>
         </div>
       </div>
-      
-      <div class="border-t border-green-800 mt-8 pt-6 text-sm text-center text-gray-300">
-        <p>&copy; 2023 Devki Mart. All rights reserved.</p>
+
+      <div class="border-t border-gray-800 mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm">
+        <p>&copy; <span id="current-year">2024</span> Sona Enterprises. All rights reserved.</p>
       </div>
     </div>
   </footer>
