@@ -133,21 +133,18 @@ LOGIN_REDIRECT_URL = '/home/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/request-otp/'
 
-ADMIN_EMAIL = "sonaenterprises907@gmail.com"
-DEFAULT_FROM_EMAIL = "no-reply@sonaenterprises.com"
+from sib_api_v3_sdk import Configuration
 
-# -----------------------------
-# EMAIL CONFIG
-# -----------------------------
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")  # app password
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+BREVO_API_KEY = config("BREVO_API_KEY")
+BREVO_FROM = config("BREVO_FROM")
 
-ADMINS = [('DevkiMart Admin', 'laptopuse01824x@gmail.com')]
+# Brevo API CONFIG
+BREVO_CONFIGURATION = Configuration()
+BREVO_CONFIGURATION.api_key["api-key"] = BREVO_API_KEY
+
+
+ADMIN_EMAIL = config("ADMIN_EMAIL")
+
 
 # -----------------------------
 # DEBUG

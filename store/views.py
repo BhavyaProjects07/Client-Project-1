@@ -142,12 +142,34 @@ def request_otp_view(request):
             otp = str(random.randint(100000, 999999))
             otp_storage[email] = {"otp": otp, "username": user.username, "password": password}
 
-            send_mail(
-                subject="Login OTP - Sona Enterprises",
-                message=f"Hi {user.username},\n\nYour login OTP is: {otp}\n\nUse this to access your account securely.",
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[email],
-            )
+            # Send OTP via Brevo API
+            try:
+                from store.email_service import send_brevo_email
+                import logging
+                logger = logging.getLogger(__name__)
+
+                sender_email = getattr(settings, 'BREVO_FROM', getattr(settings, 'DEFAULT_FROM_EMAIL', None)) or 'no-reply@example.com'
+                subject = "Login OTP - Sona Enterprises"
+                text_content = f"Hi {user.username},\n\nYour login OTP is: {otp}\n\nUse this to access your account securely."
+                html_content = f"""
+                    <p>Hi {user.username},</p>
+                    <p>Your login OTP is: <strong>{otp}</strong></p>
+                    <p>Use this to access your account securely.</p>
+                """
+
+                sent = send_brevo_email(
+                    to=email,
+                    subject=subject,
+                    html_content=html_content,
+                    text_content=text_content
+                )
+                if not sent:
+                    logger.warning("Brevo email function returned False for OTP to %s", email)
+            except Exception as e:
+                # Log but allow flow to continue (user still gets OTP in session)
+                import logging
+                logging.getLogger(__name__).exception("Failed to send OTP email via Brevo for existing user %s: %s", email, e)
+
             request.session['pending_email'] = email
             messages.success(request, f"Login OTP sent to {email}")
             return redirect('verify_otp')
@@ -157,17 +179,40 @@ def request_otp_view(request):
             otp = str(random.randint(100000, 999999))
             otp_storage[email] = {"otp": otp, "username": username, "password": password}
 
-            send_mail(
-                subject="Account Verification OTP - Sona Enterprises",
-                message=f"Hi {username},\n\nYour OTP for registration is: {otp}\n\nUse this to verify and activate your account.",
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[email],
-            )
+            # Send registration OTP via Brevo API
+            try:
+                from store.email_service import send_brevo_email
+                import logging
+                logger = logging.getLogger(__name__)
+
+                sender_email = getattr(settings, 'BREVO_FROM', getattr(settings, 'DEFAULT_FROM_EMAIL', None)) or 'no-reply@example.com'
+                subject = "Account Verification OTP - Sona Enterprises"
+                text_content = f"Hi {username},\n\nYour OTP for registration is: {otp}\n\nUse this to verify and activate your account."
+                html_content = f"""
+                    <p>Hi {username},</p>
+                    <p>Your OTP for registration is: <strong>{otp}</strong></p>
+                    <p>Use this to verify and activate your account.</p>
+                """
+
+                sent = send_brevo_email(
+                    to=email,
+                    subject=subject,
+                    html_content=html_content,
+                    text_content=text_content
+                )
+                if not sent:
+                    logger.warning("Brevo email function returned False for registration OTP to %s", email)
+            except Exception as e:
+                # Log but continue flow
+                import logging
+                logging.getLogger(__name__).exception("Failed to send registration OTP via Brevo for %s: %s", email, e)
+
             request.session['pending_email'] = email
             messages.success(request, f"OTP sent to {email} for account verification.")
             return redirect('verify_otp')
 
     return redirect('/')
+
 
 def verify_otp_view(request):
     if request.method == "POST":
@@ -378,18 +423,7 @@ def checkout_view(request):
 
 
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.urls import reverse
-from django.conf import settings
-from django.core.mail import send_mail, EmailMultiAlternatives
-import logging
-
-logger = logging.getLogger(__name__)
-
-# models imports
-from store.models import CartItem, Order, OrderItem, WomenProduct, ElectronicProduct, ToyProduct
+from django.urls import reverse   # <-- ADD THIS AT TOP WITH OTHER IMPORTS
 
 @login_required
 def payment_view(request):
@@ -449,7 +483,6 @@ def payment_view(request):
                     f"</tr>"
                 )
 
-            # Clear buy_now session data
             request.session.pop('buy_now', None)
 
         # Case 2: Normal Cart Checkout
@@ -459,7 +492,6 @@ def payment_view(request):
                 if not product:
                     continue
 
-                # stock check and decrement
                 if product.available_stock >= item.quantity:
                     product.available_stock -= item.quantity
                     product.save()
@@ -488,12 +520,12 @@ def payment_view(request):
                     f"</tr>"
                 )
 
-            # clear user's cart
             cart_items.delete()
 
         # ---------- Prepare emails ----------
-        # Customer (plaintext)
         customer_subject = f"Order Confirmation #{order.id} - Sona Enterprises"
+
+        # DEFINE CUSTOMER_BODY (TEXT VERSION)
         customer_body = (
             f"Hello {order.full_name},\n\n"
             f"Your order #{order.id} has been placed successfully!\n\n"
@@ -510,107 +542,105 @@ def payment_view(request):
             f"- Team Sona Enterprises"
         )
 
-        from_email = getattr(settings, 'EMAIL_HOST_USER', None) or getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'no-reply@example.com'
+        # ⭐ BEAUTIFUL CUSTOMER HTML TEMPLATE
+        customer_html = f"""
+        <div style="font-family:'Segoe UI',sans-serif;background:#f5f5f5;padding:30px;">
+            <div style="max-width:600px;margin:auto;background:white;border-radius:12px;padding:25px;">
+                <h2 style="color:#333;">🎉 Thank you for your order, {order.full_name}!</h2>
 
-        # Admin email address (set ADMIN_EMAIL in settings or fallback)
-        admin_email = getattr(settings, 'ADMIN_EMAIL', None) or getattr(settings, 'DEFAULT_FROM_EMAIL', None) or getattr(settings, 'EMAIL_HOST_USER', None)
-        if not admin_email:
-            logger.warning("No admin email configured in settings.ADMIN_EMAIL/DEFAULT_FROM_EMAIL/EMAIL_HOST_USER")
+                <p style="font-size:15px;color:#555;">
+                    Your order <strong>#{order.id}</strong> has been placed successfully.
+                </p>
 
-        # Admin email (HTML + plaintext)
+                <h3 style="color:#333;margin-top:25px;">📦 Order Summary</h3>
+
+                <table style="width:100%;border-collapse:collapse;">
+                    <tr><td><strong>Name:</strong></td><td>{order.full_name}</td></tr>
+                    <tr><td><strong>Email:</strong></td><td>{request.user.email}</td></tr>
+                    <tr><td><strong>Phone:</strong></td><td>{order.phone_number}</td></tr>
+                    <tr><td><strong>Address:</strong></td><td>{order.address}, {order.city}, {order.postal_code}</td></tr>
+                    <tr><td><strong>Payment Method:</strong></td><td>{order.payment_method}</td></tr>
+                </table>
+
+                <h3 style="color:#333;margin-top:25px;">🛍 Order Items</h3>
+                <pre style="background:#fafafa;padding:12px;border-radius:8px;border:1px solid #eee;font-size:14px;">{item_details}</pre>
+
+                <h2 style="color:#333;margin-top:25px;">Total Amount: ₹{total}</h2>
+
+                <p style="font-size:14px;color:#777;margin-top:25px;">
+                    We'll notify you once your order is shipped.<br><br>
+                    Thank you for choosing <strong>Sona Enterprises</strong> ❤️
+                </p>
+            </div>
+        </div>
+        """
+
+        # ADMIN TEMPLATE
         admin_subject = f"NEW ORDER #{order.id} - Sona Enterprises"
-        # Build admin HTML table
-        admin_table_rows = "".join(admin_items_rows) or "<tr><td colspan='4'>No items</td></tr>"
-
-        admin_order_url = None
-        try:
-            admin_order_url = request.build_absolute_uri(reverse('admin_order_detail', args=[order.id]))
-        except Exception:
-            admin_order_url = "Admin order page not available"
+        admin_order_url = request.build_absolute_uri(reverse('admin_order_detail', args=[order.id]))
 
         admin_html = f"""
-        <html>
-        <body>
-        <h2>New Order Received — #{order.id}</h2>
-        <p><strong>Customer:</strong> {order.full_name} &lt;{request.user.email}&gt;</p>
-        <p><strong>Phone:</strong> {order.phone_number}</p>
-        <p><strong>Shipping Address:</strong> {order.address}, {order.city} — {order.postal_code}</p>
-        <p><strong>Payment Method:</strong> {order.payment_method}</p>
+        <div style="font-family:'Segoe UI',sans-serif;background:#f3f3f3;padding:30px;">
+            <div style="max-width:700px;margin:auto;background:white;border-radius:12px;padding:25px;">
+                <h2 style="color:#333;">New Order Received — #{order.id}</h2>
 
-        <h3>Items</h3>
-        <table border="0" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:800px;">
-          <thead>
-            <tr style="background:#f7f7f7;">
-              <th align="left">Product</th>
-              <th align="left">Type</th>
-              <th align="center">Qty</th>
-              <th align="right">Unit Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {admin_table_rows}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3" align="right" style="padding-top:12px;"><strong>Total</strong></td>
-              <td align="right" style="padding-top:12px;"><strong>₹{total}</strong></td>
-            </tr>
-          </tfoot>
-        </table>
+                <p><strong>Customer:</strong> {order.full_name} &lt;{request.user.email}&gt;</p>
+                <p><strong>Phone:</strong> {order.phone_number}</p>
+                <p><strong>Address:</strong> {order.address}, {order.city} — {order.postal_code}</p>
+                <p><strong>Payment:</strong> {order.payment_method}</p>
 
-        <p style="margin-top:18px;">
-          <a href="{admin_order_url}">View order in admin dashboard</a>
-        </p>
+                <h3 style="margin-top:25px;">🛒 Items Ordered</h3>
 
-        <p style="color:#666;font-size:13px;margin-top:24px;">This is an automated message from Sona Enterprises.</p>
-        </body>
-        </html>
+                <table style="width:100%;border-collapse:collapse;">
+                    <tr style="background:#f7f7f7;">
+                        <th>Product</th><th>Type</th><th>Qty</th><th>Price</th>
+                    </tr>
+                    {''.join(admin_items_rows)}
+                    <tr>
+                        <td colspan="3" align="right"><strong>Total</strong></td>
+                        <td><strong>₹{total}</strong></td>
+                    </tr>
+                </table>
+
+                <p style="margin-top:18px;">
+                    <strong>Admin Panel Link:</strong><br>
+                    {admin_order_url}
+                </p>
+
+                <p style="font-size:13px;color:#666;">Automated system — Sona Enterprises.</p>
+            </div>
+        </div>
         """
 
         admin_text = (
-            f"NEW ORDER #{order.id}\n\n"
-            f"Customer: {order.full_name} <{request.user.email}>\n"
-            f"Phone: {order.phone_number}\n"
-            f"Address: {order.address}, {order.city} - {order.postal_code}\n\n"
-            f"Payment Method: {order.payment_method}\n\n"
-            f"Items:\n"
-            + item_details +
-            f"\nTotal: ₹{total}\n\n"
-            f"Admin link: {admin_order_url}\n"
+            f"New Order #{order.id}\nCustomer: {order.full_name}\nEmail: {request.user.email}\nTotal: ₹{total}\n"
         )
 
-        # ---------- Send emails ----------
-        # Send customer email (plaintext)
-        try:
-            send_mail(
-                customer_subject,
-                customer_body,
-                from_email,
-                [request.user.email],
-                fail_silently=False,
-            )
-        except Exception as e:
-            logger.exception("Failed to send order confirmation email to customer: %s", e)
+        # ---------- SEND EMAILS WITH BREVO ----------
+        from store.email_service import send_brevo_email
 
-        # Send admin email (HTML + text)
+        # Customer email
+        send_brevo_email(
+            to=request.user.email,
+            subject=customer_subject,
+            html_content=customer_html,
+            text_content=customer_body
+        )
+
+        # Admin email
+        admin_email = getattr(settings, 'ADMIN_EMAIL', None)
         if admin_email:
-            try:
-                msg = EmailMultiAlternatives(
-                    subject=admin_subject,
-                    body=admin_text,
-                    from_email=from_email,
-                    to=[admin_email],
-                )
-                msg.attach_alternative(admin_html, "text/html")
-                msg.send(fail_silently=False)
-            except Exception as e:
-                logger.exception("Failed to send order notification to admin: %s", e)
+            send_brevo_email(
+                to=admin_email,
+                subject=admin_subject,
+                html_content=admin_html,
+                text_content=admin_text
+            )
 
         messages.success(request, "Order placed successfully! A confirmation email has been sent.")
         return redirect('order_success')
 
     return render(request, 'payment.html', {'total': total})
-
 
 
 def order_success_view(request):
@@ -753,15 +783,57 @@ def update_order_status(request, order_id):
     }
 
     if new_status in status_messages:
-        send_mail(
+        # TEXT VERSION
+        text_message = (
+            f"Hello {order.full_name},\n\n"
+            f"{status_messages[new_status]}\n\n"
+            f"Thank you for shopping with Sona Enterprises!"
+        )
+
+        # BEAUTIFUL HTML TEMPLATE
+        html_message = f"""
+        <div style="font-family:'Segoe UI', sans-serif; background:#f2f2f2; padding:30px;">
+            <div style="max-width:600px; margin:auto; background:white; border-radius:12px; padding:25px;">
+                <h2 style="color:#333; margin-bottom:10px;">
+                    Order Update — #{order.id}
+                </h2>
+
+                <p style="font-size:16px; color:#555;">
+                    Hello <strong>{order.full_name}</strong>,
+                </p>
+
+                <p style="font-size:15px; color:#444;">
+                    {status_messages[new_status]}
+                </p>
+
+                <div style="margin-top:20px; padding:15px; background:#fafafa; border-radius:8px;">
+                    <p style="margin:0; font-size:14px;">
+                        <strong>Order ID:</strong> #{order.id}<br>
+                        <strong>Status:</strong> {new_status}<br>
+                        <strong>Payment:</strong> {"Paid" if order.paid else "Cash on Delivery"}
+                    </p>
+                </div>
+
+                <p style="font-size:14px; color:#777; margin-top:25px;">
+                    Thank you for shopping with <strong>Sona Enterprises</strong> ❤️<br>
+                    We hope to serve you again soon!
+                </p>
+            </div>
+        </div>
+        """
+
+        # ---- SEND USING BREVO ----
+        from store.email_service import send_brevo_email
+        send_brevo_email(
+            to=order.user.email,
             subject=f"Order #{order.id} - {new_status}",
-            message=f"Hello {order.full_name},\n\n{status_messages[new_status]}\n\nThank you for shopping with us!",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[order.user.email],
+            html_content=html_message,
+            text_content=text_message
         )
 
     messages.success(request, f"Order #{order.id} updated to {new_status}.")
     return redirect('admin_dashboard')
+
 
 
 # Update Payment Status (separate action)
@@ -781,6 +853,57 @@ def update_payment_status(request, order_id):
             order.paid = False
 
         order.save()
+
+        # ------------------------------------------------------
+        # OPTIONAL EMAIL NOTIFICATION WHEN PAYMENT IS MARKED PAID
+        # ------------------------------------------------------
+        if paid_value == 'True':  # Only send when paid
+            text_message = (
+                f"Hello {order.full_name},\n\n"
+                f"We have received your payment for Order #{order.id}.\n"
+                f"Your order will now continue processing.\n\n"
+                f"Thank you for shopping with Sona Enterprises!"
+            )
+
+            html_message = f"""
+            <div style="font-family:'Segoe UI',sans-serif;background:#f4f4f4;padding:30px;">
+                <div style="max-width:600px;margin:auto;background:white;
+                            border-radius:12px;padding:25px;">
+                    
+                    <h2 style="color:#333;">💰 Payment Received</h2>
+
+                    <p style="font-size:15px;color:#555;">
+                        Hello <strong>{order.full_name}</strong>,
+                        <br><br>
+                        We have successfully received your payment for:
+                    </p>
+
+                    <div style="margin-top:15px;padding:12px;background:#fafafa;
+                                border-radius:8px;border:1px solid #eee;">
+                        <p style="margin:0;font-size:14px;">
+                            <strong>Order ID:</strong> #{order.id}<br>
+                            <strong>Payment Status:</strong> Paid<br>
+                            <strong>Delivery Status:</strong> {order.order_status}
+                        </p>
+                    </div>
+
+                    <p style="font-size:14px;color:#777;margin-top:20px;">
+                        Thank you for trusting <strong>Sona Enterprises</strong> ❤️<br>
+                        Your items will be shipped soon!
+                    </p>
+
+                </div>
+            </div>
+            """
+
+            from store.email_service import send_brevo_email
+            send_brevo_email(
+                to=order.user.email,
+                subject=f"Payment Received for Order #{order.id}",
+                html_content=html_message,
+                text_content=text_message
+            )
+
         messages.success(request, f"✅ Payment status for Order #{order.id} updated successfully!")
 
     return redirect('admin_order_detail', order_id=order.id)
