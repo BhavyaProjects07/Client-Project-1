@@ -1,15 +1,24 @@
 from django.contrib import admin
 from django import forms
-from .models import WomenProduct, ElectronicProduct, ToyProduct, CustomUser, CartItem, WishlistItem, Order, OrderItem, Review
 from django.utils.html import format_html
 
+from .models import (
+    WomenProduct,
+    ElectronicProduct,
+    ToyProduct,
+    CustomUser,
+    CartItem,
+    WishlistItem,
+    Order,
+    OrderItem,
+    Review
+)
 
 # ======================================================
-# CUSTOM ADMIN FOR WOMEN PRODUCTS
+# WOMEN PRODUCTS ADMIN
 # ======================================================
+
 class WomenProductForm(forms.ModelForm):
-    image_file = forms.ImageField(required=False, label="Upload Image")
-
     class Meta:
         model = WomenProduct
         fields = "__all__"
@@ -21,38 +30,6 @@ class WomenProductAdmin(admin.ModelAdmin):
     list_display = ["name", "category", "price", "image_preview"]
 
     def image_preview(self, obj):
-        return (
-            f'<img src="{obj.image_url}" width="60" height="60" style="object-fit:cover;border-radius:6px;">'
-            if obj.image_url else "No Image"
-        )
-    image_preview.allow_tags = True
-    image_preview.short_description = "Image"
-
-    # ✅ FIX: Assign uploaded image to model before saving
-    def save_model(self, request, obj, form, change):
-        uploaded_file = form.cleaned_data.get("image_file")
-        if uploaded_file:
-            obj.image_file = uploaded_file  # attach uploaded file to model
-        super().save_model(request, obj, form, change)
-
-
-
-# ======================================================
-# CUSTOM ADMIN FOR ELECTRONICS
-# ======================================================
-class ElectronicProductForm(forms.ModelForm):
-    image_file = forms.ImageField(required=False, label="Upload Image")
-
-    class Meta:
-        model = ElectronicProduct
-        fields = "__all__"
-
-@admin.register(ElectronicProduct)
-class ElectronicProductAdmin(admin.ModelAdmin):
-    list_display = ["name", "category", "price", "image_preview"]
-
-    def image_preview(self, obj):
-        """Display Cloudinary image thumbnail in admin panel."""
         if obj.image and hasattr(obj.image, 'url'):
             return format_html(
                 '<img src="{}" width="60" height="60" style="object-fit:cover;border-radius:6px;">',
@@ -61,19 +38,39 @@ class ElectronicProductAdmin(admin.ModelAdmin):
         return "No Image"
 
     image_preview.short_description = "Image"
-    image_preview.allow_tags = True
-
-    def save_model(self, request, obj, form, change):
-        """Handle Cloudinary image uploads automatically."""
-        super().save_model(request, obj, form, change)
 
 
 # ======================================================
-# CUSTOM ADMIN FOR TOYS
+# ELECTRONIC PRODUCTS ADMIN
 # ======================================================
+
+class ElectronicProductForm(forms.ModelForm):
+    class Meta:
+        model = ElectronicProduct
+        fields = "__all__"
+
+
+@admin.register(ElectronicProduct)
+class ElectronicProductAdmin(admin.ModelAdmin):
+    form = ElectronicProductForm
+    list_display = ["name", "category", "price", "image_preview"]
+
+    def image_preview(self, obj):
+        if obj.image and hasattr(obj.image, 'url'):
+            return format_html(
+                '<img src="{}" width="60" height="60" style="object-fit:cover;border-radius:6px;">',
+                obj.image.url
+            )
+        return "No Image"
+
+    image_preview.short_description = "Image"
+
+
+# ======================================================
+# TOY PRODUCTS ADMIN
+# ======================================================
+
 class ToyProductForm(forms.ModelForm):
-    image_file = forms.ImageField(required=False, label="Upload Image")
-
     class Meta:
         model = ToyProduct
         fields = "__all__"
@@ -85,29 +82,30 @@ class ToyProductAdmin(admin.ModelAdmin):
     list_display = ["name", "category", "price", "image_preview"]
 
     def image_preview(self, obj):
-        return (
-            f'<img src="{obj.image_url}" width="60" height="60" style="object-fit:cover;border-radius:6px;">'
-            if obj.image_url else "No Image"
-        )
-    image_preview.allow_tags = True
+        if obj.image and hasattr(obj.image, 'url'):
+            return format_html(
+                '<img src="{}" width="60" height="60" style="object-fit:cover;border-radius:6px;">',
+                obj.image.url
+            )
+        return "No Image"
+
     image_preview.short_description = "Image"
-
-    def save_model(self, request, obj, form, change):
-        uploaded_file = form.cleaned_data.get("image_file")
-        if uploaded_file:
-            obj.image_file = uploaded_file
-        super().save_model(request, obj, form, change)
-
 
 
 # ======================================================
 # REGISTER OTHER MODELS
 # ======================================================
+
 admin.site.register(CustomUser)
+admin.site.register(CartItem)
+admin.site.register(WishlistItem)
+admin.site.register(OrderItem)
+admin.site.register(Review)
 
 
-
-
+# ======================================================
+# ORDER ADMIN
+# ======================================================
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
