@@ -6,9 +6,7 @@
     <div class="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
       <div class="flex items-center justify-between gap-2 sm:gap-4">
         <!-- Logo -->
-        <a href="#" class="flex items-center space-x-2 flex-shrink-0">
-          <div class="text-lg sm:text-2xl font-bold text-amber-700">Sona</div>
-        </a>
+        <img src="/static/logo.png" alt="Sona Enterprises Logo" class="h-12 sm:h-13 w-auto cursor-pointer" onclick="window.location.href='/'">
 
         <!-- Search Bar - Hidden on mobile -->
         <div class="hidden md:flex items-center flex-1 max-w-md">
@@ -26,6 +24,11 @@
             </form>
           </div>
         </div>
+        <a href="/">
+          <div class="text-lg font-semibold text-amber-700 hover:text-amber-800 transition">
+           Home
+          </div>
+          </a>
 
         <!-- Navigation & Icons -->
         <div class="flex items-center gap-2 sm:gap-4">
@@ -42,6 +45,7 @@
               {% endif %}
             </button>
           </a>
+
 
           <!-- Cart -->
           <a href="{% url 'view_cart' %}" class="relative p-2 rounded-full hover:bg-gray-100 transition">

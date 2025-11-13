@@ -25,12 +25,21 @@ otp_storage = {}  # Temporary OTP storage
 
 from django.db.models import Avg
 from .models import WomenProduct, ElectronicProduct, ToyProduct, Review, WishlistItem
+from django.db.models import Avg
+from django.shortcuts import render
+from .models import WomenProduct, ElectronicProduct, ToyProduct, Review, WishlistItem
 
 def home(request):
     wishlist_count = WishlistItem.objects.filter(user=request.user).count() if request.user.is_authenticated else 0
+
+    # ✅ Existing query for WOMEN section
     query = request.GET.get('q')
     category = request.GET.get('category')
     product_type = request.GET.get('type', 'women')  # default to women
+
+    # ✅ New queries for ELECTRONICS and TOYS sections
+    query_electronic = request.GET.get('q_electronic')
+    query_toy = request.GET.get('q_toy')
 
     # ✅ Map models by type
     model_map = {
@@ -41,25 +50,52 @@ def home(request):
 
     ProductModel = model_map.get(product_type, WomenProduct)
 
-    # ✅ Fetch all 3 product types for homepage display
+    # ✅ Fetch all product types
     women_products = WomenProduct.objects.all()
     electronics_products = ElectronicProduct.objects.all()
     toys_products = ToyProduct.objects.all()
 
-    # ✅ Active product list (the one being filtered)
+    # ✅ Attach product_type to each product
+    for p in women_products:
+        p.product_type = 'women'
+    for p in electronics_products:
+        p.product_type = 'electronic'
+    for p in toys_products:
+        p.product_type = 'toy'
+
+    # ✅ Active product list (for WOMEN section)
     products = ProductModel.objects.all()
 
-    # ✅ Apply search filter
+    # ✅ WOMEN Search filter (existing)
     if query:
         products = products.filter(name__icontains=query)
 
-    # ✅ Apply category filter
+    # ✅ Category filter (existing)
     if category and category != 'all':
         products = products.filter(category__iexact=category)
 
-    # ✅ Compute average rating & review count for active products
+    # ✅ ELECTRONICS search filter (new)
+    if query_electronic:
+        electronics_products = electronics_products.filter(name__icontains=query_electronic)
+
+    # ✅ TOYS search filter (new)
+    if query_toy:
+        toys_products = toys_products.filter(name__icontains=query_toy)
+
+    # ✅ Compute average rating & review count for active type
     for product in products:
         reviews = Review.objects.filter(product_type=product_type, product_id=product.id)
+        product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
+        product.total_reviews = reviews.count()
+
+    # ✅ Ratings for other sections
+    for product in women_products:
+        reviews = Review.objects.filter(product_type='women', product_id=product.id)
+        product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
+        product.total_reviews = reviews.count()
+
+    for product in electronics_products:
+        reviews = Review.objects.filter(product_type='electronic', product_id=product.id)
         product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
         product.total_reviews = reviews.count()
 
@@ -68,19 +104,13 @@ def home(request):
         product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
         product.total_reviews = reviews.count()
 
-    # ✅ Compute ratings and reviews for electronics
-    for product in electronics_products:
-        reviews = Review.objects.filter(product_type='electronic', product_id=product.id)
-        product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-        product.total_reviews = reviews.count()
-
-    # ✅ Categories for filtering
+    # ✅ Categories for filtering (Women)
     categories = [choice[0] for choice in ProductModel.CATEGORY_CHOICES]
     categories.insert(0, 'all')
 
-    # ✅ Return all product sets for frontend sliders
+    # ✅ Render everything
     return render(request, 'home.html', {
-        'products': products,  # active products (women by default)
+        'products': products,
         'women_products': women_products,
         'electronics_products': electronics_products,
         'toys_products': toys_products,
@@ -328,6 +358,11 @@ def checkout_view(request):
             messages.warning(request, "Not deliverable at this pincode.")
             return render(request, 'checkout.html', {'items': context_items, 'total': total})
 
+        phone_number = request.POST.get('phone_number', '')
+        if not phone_number.isdigit() or len(phone_number) != 10:
+            messages.error(request, "Please enter a valid 10-digit phone number.")
+            return redirect('checkout')
+
         # ✅ Save checkout info and redirect to payment
         request.session['checkout_info'] = {
             'full_name': request.POST['full_name'],
@@ -343,6 +378,19 @@ def checkout_view(request):
 
 
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.urls import reverse
+from django.conf import settings
+from django.core.mail import send_mail, EmailMultiAlternatives
+import logging
+
+logger = logging.getLogger(__name__)
+
+# models imports
+from store.models import CartItem, Order, OrderItem, WomenProduct, ElectronicProduct, ToyProduct
+
 @login_required
 def payment_view(request):
     checkout_info = request.session.get('checkout_info')
@@ -355,7 +403,7 @@ def payment_view(request):
     total = checkout_info['total']
 
     if request.method == "POST":
-        # ✅ Create Order
+        # Create Order
         order = Order.objects.create(
             user=request.user,
             full_name=checkout_info['full_name'],
@@ -367,9 +415,10 @@ def payment_view(request):
             paid=False
         )
 
-        item_details = ""
+        item_details = ""               # plaintext item list for customer email
+        admin_items_rows = []           # list of HTML rows for admin table
 
-        # ✅ Case 1: Buy Now
+        # Case 1: Buy Now
         if buy_now_data:
             product = None
             if buy_now_data['product_type'] == 'women':
@@ -391,40 +440,64 @@ def payment_view(request):
                     fabric=buy_now_data.get('fabric')
                 )
                 item_details += f"- {product.name} (x1) - ₹{product.price}\n"
+                admin_items_rows.append(
+                    f"<tr>"
+                    f"<td>{product.name}</td>"
+                    f"<td>{buy_now_data.get('product_type')}</td>"
+                    f"<td>1</td>"
+                    f"<td>₹{product.price:.2f}</td>"
+                    f"</tr>"
+                )
 
-            # Clear session
+            # Clear buy_now session data
             request.session.pop('buy_now', None)
 
-        # ✅ Case 2: Normal Cart Checkout
+        # Case 2: Normal Cart Checkout
         else:
             for item in cart_items:
                 product = item.get_product()
-                if product:
-                    if product.available_stock >= item.quantity:
-                        product.available_stock -= item.quantity
-                        product.save()
-                    else:
-                        messages.warning(request, f"Not enough stock for {product.name}.")
-                        continue
-                    OrderItem.objects.create(
-                        order=order,
-                        product_type=item.product_type,
-                        product_id=item.product_id,
-                        quantity=item.quantity,
-                        price=product.price,
-                        size=item.size,
-                        color=item.color,
-                        fabric=item.fabric
-                    )
-                    item_details += f"- {product.name} (x{item.quantity}) - ₹{product.price}\n"
+                if not product:
+                    continue
+
+                # stock check and decrement
+                if product.available_stock >= item.quantity:
+                    product.available_stock -= item.quantity
+                    product.save()
+                else:
+                    messages.warning(request, f"Not enough stock for {product.name}.")
+                    continue
+
+                OrderItem.objects.create(
+                    order=order,
+                    product_type=item.product_type,
+                    product_id=item.product_id,
+                    quantity=item.quantity,
+                    price=product.price,
+                    size=item.size,
+                    color=item.color,
+                    fabric=item.fabric
+                )
+
+                item_details += f"- {product.name} (x{item.quantity}) - ₹{product.price}\n"
+                admin_items_rows.append(
+                    f"<tr>"
+                    f"<td>{product.name}</td>"
+                    f"<td>{item.product_type}</td>"
+                    f"<td>{item.quantity}</td>"
+                    f"<td>₹{product.price:.2f}</td>"
+                    f"</tr>"
+                )
+
+            # clear user's cart
             cart_items.delete()
 
-        # ✅ Send Confirmation Email
-        email_subject = f"Order Confirmation #{order.id} - Sona Enterprises"
-        email_body = (
+        # ---------- Prepare emails ----------
+        # Customer (plaintext)
+        customer_subject = f"Order Confirmation #{order.id} - Sona Enterprises"
+        customer_body = (
             f"Hello {order.full_name},\n\n"
             f"Your order #{order.id} has been placed successfully!\n\n"
-            f"🧾 ORDER DETAILS:\n"
+            f"ORDER DETAILS:\n"
             f"Customer Name: {order.full_name}\n"
             f"Email: {request.user.email}\n"
             f"Phone: {order.phone_number}\n"
@@ -437,17 +510,107 @@ def payment_view(request):
             f"- Team Sona Enterprises"
         )
 
-        send_mail(
-            email_subject,
-            email_body,
-            settings.EMAIL_HOST_USER,
-            [request.user.email],
+        from_email = getattr(settings, 'EMAIL_HOST_USER', None) or getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'no-reply@example.com'
+
+        # Admin email address (set ADMIN_EMAIL in settings or fallback)
+        admin_email = getattr(settings, 'ADMIN_EMAIL', None) or getattr(settings, 'DEFAULT_FROM_EMAIL', None) or getattr(settings, 'EMAIL_HOST_USER', None)
+        if not admin_email:
+            logger.warning("No admin email configured in settings.ADMIN_EMAIL/DEFAULT_FROM_EMAIL/EMAIL_HOST_USER")
+
+        # Admin email (HTML + plaintext)
+        admin_subject = f"NEW ORDER #{order.id} - Sona Enterprises"
+        # Build admin HTML table
+        admin_table_rows = "".join(admin_items_rows) or "<tr><td colspan='4'>No items</td></tr>"
+
+        admin_order_url = None
+        try:
+            admin_order_url = request.build_absolute_uri(reverse('admin_order_detail', args=[order.id]))
+        except Exception:
+            admin_order_url = "Admin order page not available"
+
+        admin_html = f"""
+        <html>
+        <body>
+        <h2>New Order Received — #{order.id}</h2>
+        <p><strong>Customer:</strong> {order.full_name} &lt;{request.user.email}&gt;</p>
+        <p><strong>Phone:</strong> {order.phone_number}</p>
+        <p><strong>Shipping Address:</strong> {order.address}, {order.city} — {order.postal_code}</p>
+        <p><strong>Payment Method:</strong> {order.payment_method}</p>
+
+        <h3>Items</h3>
+        <table border="0" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:800px;">
+          <thead>
+            <tr style="background:#f7f7f7;">
+              <th align="left">Product</th>
+              <th align="left">Type</th>
+              <th align="center">Qty</th>
+              <th align="right">Unit Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {admin_table_rows}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" align="right" style="padding-top:12px;"><strong>Total</strong></td>
+              <td align="right" style="padding-top:12px;"><strong>₹{total}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <p style="margin-top:18px;">
+          <a href="{admin_order_url}">View order in admin dashboard</a>
+        </p>
+
+        <p style="color:#666;font-size:13px;margin-top:24px;">This is an automated message from Sona Enterprises.</p>
+        </body>
+        </html>
+        """
+
+        admin_text = (
+            f"NEW ORDER #{order.id}\n\n"
+            f"Customer: {order.full_name} <{request.user.email}>\n"
+            f"Phone: {order.phone_number}\n"
+            f"Address: {order.address}, {order.city} - {order.postal_code}\n\n"
+            f"Payment Method: {order.payment_method}\n\n"
+            f"Items:\n"
+            + item_details +
+            f"\nTotal: ₹{total}\n\n"
+            f"Admin link: {admin_order_url}\n"
         )
+
+        # ---------- Send emails ----------
+        # Send customer email (plaintext)
+        try:
+            send_mail(
+                customer_subject,
+                customer_body,
+                from_email,
+                [request.user.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.exception("Failed to send order confirmation email to customer: %s", e)
+
+        # Send admin email (HTML + text)
+        if admin_email:
+            try:
+                msg = EmailMultiAlternatives(
+                    subject=admin_subject,
+                    body=admin_text,
+                    from_email=from_email,
+                    to=[admin_email],
+                )
+                msg.attach_alternative(admin_html, "text/html")
+                msg.send(fail_silently=False)
+            except Exception as e:
+                logger.exception("Failed to send order notification to admin: %s", e)
 
         messages.success(request, "Order placed successfully! A confirmation email has been sent.")
         return redirect('order_success')
 
     return render(request, 'payment.html', {'total': total})
+
 
 
 def order_success_view(request):
@@ -535,7 +698,7 @@ def admin_dashboard_view(request):
     })
 
 
-
+from datetime import timedelta
 # ✅ Admin Order Detail (supports all product types)
 def admin_order_detail(request, order_id):
     from store.models import Order, OrderItem
@@ -549,9 +712,9 @@ def admin_order_detail(request, order_id):
         try:
             if item.product_type == 'women':
                 product = WomenProduct.objects.get(id=item.product_id)
-            elif item.product_type == 'men':
+            elif item.product_type == 'toy':
                 product = ToyProduct.objects.get(id=item.product_id)
-            elif item.product_type == 'kids':
+            elif item.product_type == 'electronic':
                 product = ElectronicProduct.objects.get(id=item.product_id)
             
         except Exception:
@@ -561,8 +724,13 @@ def admin_order_detail(request, order_id):
         item.product_obj = product
         item.total_price = item.quantity * item.price
 
-    return render(request, 'order_detail.html', {'order': order, 'order_items': order_items})
+    expected_delivery = order.created_at + timedelta(days=2)
 
+    return render(request, 'order_detail.html', {
+        'order': order,
+        'order_items': order_items,
+        'expected_delivery': expected_delivery
+    })
 
 # ✅ Update Order Status
 @user_passes_test(is_admin)
@@ -732,13 +900,136 @@ def women_product_detail(request, product_id):
             "Color": getattr(product, 'color', 'Assorted'),
             "Occasion": getattr(product, 'occasion', 'Everyday wear'),
         }
+    related_products = WomenProduct.objects.order_by('-id')[:5]
 
     context = {
         'product': product,
         'extra_details': extra_details,
+        'related_products': related_products,
     }
 
     return render(request, 'women_product_detail.html', context)
+
+
+from django.shortcuts import render, get_object_or_404
+from store.models import ElectronicProduct
+
+def electronic_product_detail(request, product_id):
+    product = get_object_or_404(ElectronicProduct, id=product_id)
+
+    extra_details = {}
+    category = product.category.lower()
+
+    # 📱 Mobile Phones
+    if "mobile" in category or "smartphone" in category:
+        extra_details = {
+            "Brand": getattr(product, 'brand', 'Various Brands'),
+            "Model": getattr(product, 'model', 'Latest Model'),
+            "RAM": getattr(product, 'ram', '4GB / 6GB / 8GB'),
+            "Storage": getattr(product, 'storage', '64GB / 128GB / 256GB'),
+            "Battery": getattr(product, 'battery', '4000mAh / 5000mAh'),
+            "Camera": getattr(product, 'camera', '48MP / 64MP / 108MP'),
+            "Warranty": getattr(product, 'warranty', '1 Year Manufacturer Warranty'),
+        }
+
+    # 💻 Laptops / Desktops
+    elif "laptop" in category or "desktop" in category:
+        extra_details = {
+            "Processor": getattr(product, 'processor', 'Intel i5 / i7 or AMD Ryzen'),
+            "RAM": getattr(product, 'ram', '8GB / 16GB DDR4'),
+            "Storage": getattr(product, 'storage', '512GB SSD / 1TB HDD'),
+            "Graphics": getattr(product, 'graphics', 'Integrated / NVIDIA / AMD'),
+            "Display": getattr(product, 'display', 'Full HD / 4K'),
+            "Warranty": getattr(product, 'warranty', '1 Year Warranty'),
+        }
+
+    # 🎧 Accessories (Earphones, Speakers, etc.)
+    elif "accessory" in category or "speaker" in category or "headphone" in category:
+        extra_details = {
+            "Connectivity": getattr(product, 'connectivity', 'Bluetooth / Wired'),
+            "Battery Life": getattr(product, 'battery_life', 'Up to 20 hours'),
+            "Brand": getattr(product, 'brand', 'Premium Quality'),
+            "Warranty": getattr(product, 'warranty', '6 Months / 1 Year'),
+            "Color": getattr(product, 'color', 'Multiple color options'),
+        }
+
+    # ⚙️ Default Fallback
+    else:
+        extra_details = {
+            "Brand": getattr(product, 'brand', 'Trusted Brand'),
+            "Color": getattr(product, 'color', 'Standard Colors'),
+            "Warranty": getattr(product, 'warranty', '1 Year Warranty'),
+        }
+
+    related_products = ElectronicProduct.objects.order_by('-id')[:5]
+
+    context = {
+        'product': product,
+        'extra_details': extra_details,
+        'related_products': related_products,
+    }
+
+    return render(request, 'electronic_product_detail.html', context)
+
+
+
+
+from django.shortcuts import render, get_object_or_404
+from store.models import ToyProduct
+
+def toy_product_detail(request, product_id):
+    product = get_object_or_404(ToyProduct, id=product_id)
+
+    extra_details = {}
+    category = product.category.lower()
+
+    # 🧩 Educational Toys
+    if "educational" in category or "learning" in category:
+        extra_details = {
+            "Age Group": getattr(product, 'age_group', '3+ years'),
+            "Material": getattr(product, 'material', 'Non-toxic Plastic / Wood'),
+            "Skills Developed": getattr(product, 'skills', 'Motor Skills / Logical Thinking'),
+            "Color": getattr(product, 'color', 'Multi-color'),
+            "Safety": getattr(product, 'safety', 'BIS Certified / Child Safe'),
+        }
+
+    # 🚗 Cars, Robots, Action Toys
+    elif "car" in category or "robot" in category or "action" in category:
+        extra_details = {
+            "Material": getattr(product, 'material', 'High-Quality Plastic'),
+            "Battery Operated": getattr(product, 'battery_operated', 'Yes'),
+            "Remote Control": getattr(product, 'remote_control', 'Included' if hasattr(product, 'remote_control') else 'No'),
+            "Color": getattr(product, 'color', 'Multiple Options'),
+            "Warranty": getattr(product, 'warranty', '6 Months'),
+        }
+
+    # 🧸 Soft Toys / Dolls
+    elif "soft" in category or "doll" in category or "plush" in category:
+        extra_details = {
+            "Material": getattr(product, 'material', 'Soft Cotton / Plush'),
+            "Color": getattr(product, 'color', 'Various colors available'),
+            "Washable": getattr(product, 'washable', 'Yes'),
+            "Age Group": getattr(product, 'age_group', '1+ years'),
+        }
+
+    # ⚙️ Default Fallback
+    else:
+        extra_details = {
+            "Material": getattr(product, 'material', 'High-quality materials'),
+            "Color": getattr(product, 'color', 'Multicolor'),
+            "Recommended Age": getattr(product, 'age_group', '3+ years'),
+        }
+
+    related_products = ToyProduct.objects.order_by('-id')[:5]
+
+    context = {
+        'product': product,
+        'extra_details': extra_details,
+        'related_products': related_products,
+    }
+
+    return render(request, 'toy_product_detail.html', context)
+
 
 
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ product.name }} - Women's Collection | Sona Enterprises</title>
+  <title>{{ product.name }} - Toys | Sona Enterprises</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -20,49 +20,49 @@
     <div class="container mx-auto px-6 md:px-12 lg:px-20">
       <div class="grid md:grid-cols-2 gap-10 items-start">
 
-        <!-- Product Image -->
-        <div class="relative bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl shadow-lg overflow-hidden">
+        <!-- Product Image Section -->
+        <div class="relative bg-white rounded-xl shadow-lg overflow-hidden">
           <img src="{{ product.image.url }}" alt="{{ product.name }}" class="object-contain w-full h-96">
-          <span class="absolute top-4 left-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-md">New Arrival</span>
-          <!-- Added quality badge -->
+          <span class="absolute top-4 left-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-md">New Arrival</span>
+          <!-- Added trust badge -->
           <div class="absolute bottom-4 right-4 bg-white rounded-lg shadow-md px-3 py-2 flex items-center gap-2">
             <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 3.062v6.72a1.066 1.066 0 01-1.275 1.051A5.98 5.98 0 0012 19c-2.126 0-4.092-.585-5.815-1.595a1.067 1.067 0 01-.275-1.751 5.98 5.98 0 003.259-5.519v-6.72a3.066 3.066 0 012.812-3.062zM9.074 9.076c.55 0 1-.449 1-1a1 1 0 00-1-1 1 1 0 00-1 1 1 1 0 001 1z"/></path></svg>
-                <span class="text-xs font-semibold text-gray-700">Verified</span>
-              </div>
+            <span class="text-xs font-semibold text-gray-700">Verified</span>
+          </div>
         </div>
 
-        <!-- Product Info -->
+        <!-- Product Info Section -->
         <div class="space-y-6">
           <div>
             <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ product.name }}</h1>
             <p class="text-gray-500 text-sm uppercase tracking-wide">{{ product.category }}</p>
           </div>
 
-          <!-- Rating -->
+          <!-- Rating and Reviews -->
           
 
-          <!-- Price -->
-          <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-100">
+          <!-- Price Section -->
+          <div class="bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg p-4 border border-pink-100">
             <div class="flex items-baseline gap-3 mb-2">
-              <span class="text-4xl font-bold text-amber-600">₹{{ product.price }}</span>
+              <span class="text-4xl font-bold text-pink-600">₹{{ product.price }}</span>
               {% if product.old_price %}
                 <span class="text-xl text-gray-400 line-through">₹{{ product.old_price }}</span>
-                <span class="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Save 20%</span>
+                <span class="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Save 25%</span>
               {% endif %}
             </div>
-            <p class="text-sm text-gray-600">Free shipping & easy returns</p>
+            <p class="text-sm text-gray-600">Free shipping on orders over ₹500</p>
           </div>
 
-          <!-- Description with Better Formatting -->
+          <!-- Description Section with Better Formatting -->
           <div class="space-y-3">
-            <h3 class="text-lg font-semibold text-gray-900">About this item</h3>
+            <h3 class="text-lg font-semibold text-gray-900">About this product</h3>
             <p class="text-gray-700 leading-relaxed">{{ product.description }}</p>
-            <!-- Added product features -->
+            <!-- Added key features list -->
             {% if extra_details %}
               <div class="grid grid-cols-2 gap-3 mt-4">
                 {% for key, value in extra_details.items %}
                   <div class="flex items-start gap-2 bg-white rounded-lg p-3 border border-gray-200">
-                    <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></path></svg>
+                    <svg class="w-5 h-5 text-pink-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></path></svg>
                     <div class="text-sm">
                       <p class="font-semibold text-gray-900">{{ key }}</p>
                       <p class="text-gray-600">{{ value }}</p>
@@ -73,18 +73,18 @@
             {% endif %}
           </div>
 
-          <!-- Buttons -->
-          <form method="POST" action="{% url 'add_to_cart' 'women' product.id %}">
+          <!-- Action Buttons -->
+          <form method="POST" action="{% url 'add_to_cart' 'toy' product.id %}">
             {% csrf_token %}
             <div class="flex flex-col sm:flex-row gap-3">
               {% if user.is_authenticated %}
-                <button type="submit" class="flex-1 bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition font-semibold shadow-md hover:shadow-lg">
+                <button type="submit" class="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg hover:bg-pink-700 transition font-semibold shadow-md hover:shadow-lg">
                   🛒 Add to Cart
                 </button>
-                <a href="{% url 'add_to_wishlist' 'women' product.id %}" class="flex-1 border-2 border-amber-600 text-amber-600 px-6 py-3 rounded-lg hover:bg-amber-50 transition text-center font-semibold">
+                <a href="{% url 'add_to_wishlist' 'toy' product.id %}" class="flex-1 border-2 border-pink-600 text-pink-600 px-6 py-3 rounded-lg hover:bg-pink-50 transition text-center font-semibold">
                   ❤️ Wishlist
                 </a>
-                <button formaction="{% url 'buy_now' 'women' product.id %}" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition font-semibold">
+                <button formaction="{% url 'buy_now' 'toy' product.id %}" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition font-semibold">
                   ⚡ Buy Now
                 </button>
               {% else %}
@@ -93,19 +93,19 @@
             </div>
           </form>
 
-          <!-- Trust Indicators -->
+          <!-- Trust Section -->
           <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
             <div class="text-center">
-              <div class="text-2xl mb-2">✨</div>
-              <p class="text-xs font-semibold text-gray-900">Premium Quality</p>
+              <div class="text-2xl mb-2">🛡️</div>
+              <p class="text-xs font-semibold text-gray-900">Secure Payment</p>
             </div>
             <div class="text-center">
               <div class="text-2xl mb-2">📦</div>
-              <p class="text-xs font-semibold text-gray-900">Tracked Delivery</p>
+              <p class="text-xs font-semibold text-gray-900">Fast Delivery</p>
             </div>
             <div class="text-center">
-              <div class="text-2xl mb-2">🎁</div>
-              <p class="text-xs font-semibold text-gray-900">Gift Wrapping</p>
+              <div class="text-2xl mb-2">↩️</div>
+              <p class="text-xs font-semibold text-gray-900">Easy Returns</p>
             </div>
           </div>
         </div>
@@ -113,16 +113,16 @@
     </div>
   </section>
 
-  <!-- Related Products -->
+  <!-- Related Products Section -->
   <section class="py-16 bg-white">
     <div class="container mx-auto px-6 md:px-12 lg:px-20">
       <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">Complete the Look</h2>
-        <p class="text-gray-600">Complementary styles you'll love</p>
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">You may also like</h2>
+        <p class="text-gray-600">Similar products that match your interests</p>
       </div>
 
       <div class="relative">
-        <!-- Fixed scrollbar positioning -->
+        <!-- Fixed scrollbar positioning with proper scroll container -->
         <!-- Left Arrow -->
         <button onclick="scrollProducts(-1)" class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:scale-110 transition hover:bg-gray-50">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -130,20 +130,20 @@
           </svg>
         </button>
 
-        <!-- Product Cards -->
+        <!-- Product Cards - Fixed Scrollbar -->
         <div id="related-scroll" class="scroll-container px-12 -mx-6">
           <div class="flex gap-6 pb-4">
             {% for related in related_products %}
-              <a href="{% url 'women_product_detail' related.id %}" class="min-w-[220px] bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden group">
-                <div class="relative h-40 w-full overflow-hidden bg-amber-50">
+              <a href="{% url 'toy_product_detail' related.id %}" class="min-w-[220px] bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden group">
+                <div class="relative h-40 w-full overflow-hidden bg-gray-100">
                   <img src="{{ related.image.url }}" alt="{{ related.name }}" class="object-contain w-full h-full transition-transform duration-300 group-hover:scale-105">
                 </div>
                 <div class="p-4">
-                  <h3 class="font-semibold text-gray-900 group-hover:text-amber-600 transition duration-200 truncate text-sm">{{ related.name }}</h3>
-                  <p class="text-amber-600 font-bold mt-2">₹{{ related.price }}</p>
+                  <h3 class="font-semibold text-gray-900 group-hover:text-pink-600 transition duration-200 truncate text-sm">{{ related.name }}</h3>
+                  <p class="text-pink-600 font-bold mt-2">₹{{ related.price }}</p>
                   <div class="flex items-center gap-1 mt-2">
                     <span class="text-yellow-400">★</span>
-                    <span class="text-xs text-gray-600">4.6 (72)</span>
+                    <span class="text-xs text-gray-600">4.5 (45)</span>
                   </div>
                 </div>
               </a>

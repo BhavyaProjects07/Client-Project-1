@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 from decouple import config
 import dj_database_url
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # -----------------------------
 # BASE CONFIG
@@ -24,6 +27,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'store',
     'storages',  # keep for future cloud/static storage support
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 # -----------------------------
@@ -39,8 +44,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-
 
 # -----------------------------
 # URL & TEMPLATE CONFIG
@@ -108,11 +111,19 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # -----------------------------
-# MEDIA FILES (NO LOCAL STORAGE)
+# MEDIA FILES (CLOUDINARY)
 # -----------------------------
-# ✅ Completely disable local media storage — handled by ImageKit SDK
-MEDIA_URL = ''
-MEDIA_ROOT = ''  # ensure no local media directory is created
+MEDIA_URL = '/media/'
+
+# ✅ Cloudinary Configuration
+cloudinary.config(
+    cloud_name=config("CLOUDINARY_CLOUD_NAME"),
+    api_key=config("CLOUDINARY_API_KEY"),
+    api_secret=config("CLOUDINARY_API_SECRET"),
+    secure=True
+)
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # -----------------------------
 # AUTH SYSTEM
@@ -122,11 +133,13 @@ LOGIN_REDIRECT_URL = '/home/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/request-otp/'
 
+ADMIN_EMAIL = "sonaenterprises907@gmail.com"
+DEFAULT_FROM_EMAIL = "no-reply@sonaenterprises.com"
+
 # -----------------------------
 # EMAIL CONFIG
 # -----------------------------
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -135,16 +148,6 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")  # app password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 ADMINS = [('DevkiMart Admin', 'laptopuse01824x@gmail.com')]
-
-# -----------------------------
-# IMAGEKIT CONFIGURATION
-# -----------------------------
-IMAGEKIT_PUBLIC_KEY = config('IMAGEKIT_PUBLIC_KEY')
-IMAGEKIT_PRIVATE_KEY = config('IMAGEKIT_PRIVATE_KEY')
-IMAGEKIT_URL_ENDPOINT = config('IMAGEKIT_URL_ENDPOINT')
-
-if not all([IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, IMAGEKIT_URL_ENDPOINT]):
-    print("⚠️ WARNING: One or more ImageKit environment variables are missing!")
 
 # -----------------------------
 # DEBUG

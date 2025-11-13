@@ -1,47 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Track Order</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order | Sona Enterprises</title>
   <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Boxicons for icons -->
-  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Poppins', sans-serif; background-color: #fff; }
+    .timeline-step::after {
+      content: "";
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 4px;
+      width: 100%;
+      background-color: #e5e7eb;
+      z-index: 0;
+    }
+  </style>
 </head>
-  {% include 'nav.html' %}
-<body class="bg-gray-100 py-10">
-  <div class="max-w-3xl mx-auto bg-white shadow p-6 rounded-lg">
-    <h2 class="text-2xl font-bold mb-6 text-green-600">Tracking Order #{{ order.id }}</h2>
 
-    <div class="mb-8">
-      <h3 class="text-lg font-semibold mb-2">Status Progress</h3>
-      <ol class="flex justify-between items-center text-sm">
-        {% for step in steps %}
-          <li class="flex-1 text-center">
-            <div class="relative mb-2">
-            <div class="w-6 h-6 mx-auto rounded-full {% if step.completed %}bg-green-500{% else %}bg-gray-300{% endif %}"></div>
-              {% if not forloop.last %}
-                <div class="absolute top-3 left-1/2 transform -translate-x-1/2 w-full h-0.5 bg-gray-300"></div>
-              {% endif %}
+{% include 'nav.html' %}
+
+<body class="bg-gradient-to-b from-orange-50 to-white min-h-screen py-10">
+
+  <div class="max-w-5xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-200">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-orange-500 to-orange-400 p-6">
+      <h1 class="text-3xl font-semibold text-white">Track Your Order</h1>
+      <h2 class="text-white mt-1">
+        {% if expected_delivery %}
+          <h2 class="text-white mt-1">Expected delivery: {{ expected_delivery|date:"F j, Y" }}</h2>
+        {% else %}
+          <h2 class="text-white mt-1">Expected delivery: Within 2 days</h2>
+        {% endif %}
+
+      </h2>
+
+    </div>
+
+    <div class="p-8">
+      <!-- Order Status -->
+      <div class="flex justify-between items-center mb-10 border-b pb-6">
+        <div>
+          <p class="text-gray-600">Order placed successfully! You can track your order progress below.</p>
+        </div>
+        <div class="bg-orange-100 text-orange-700 px-4 py-2 rounded-full font-semibold">
+          {{ order.order_status }}
+        </div>
+      </div>
+
+      <!-- Progress Timeline -->
+      <div class="relative mb-12">
+        <div class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 h-1 bg-gray-200 z-0"></div>
+        <ol class="relative flex justify-between items-center z-10">
+          {% for step in steps %}
+          <li class="flex flex-col items-center text-center w-1/4 relative">
+            <div class="flex items-center justify-center w-12 h-12 rounded-full 
+                {% if step.completed %}bg-orange-500 text-white shadow-lg{% else %}bg-gray-200 text-gray-400{% endif %}
+                transition-all duration-300 relative z-10">
+              <i class="bx {% if forloop.counter == 1 %}bx-shopping-bag{% elif forloop.counter == 2 %}bx-package{% elif forloop.counter == 3 %}bx-truck{% elif forloop.counter == 4 %}bx-home-circle{% endif %} text-2xl"></i>
             </div>
-            <p class="{% if step.completed %}text-green-600{% else %}text-gray-400{% endif %}">{{ step.label }}</p>
+            <p class="text-sm font-medium mt-2 {% if step.completed %}text-orange-600{% else %}text-gray-400{% endif %}">
+              {{ step.label }}
+            </p>
           </li>
-        {% endfor %}
-      </ol>
-    </div>
+          {% endfor %}
+        </ol>
+      </div>
 
-    <div class="border-t pt-4 mt-6">
-      <p><strong>Delivery Address:</strong> {{ order.address }}, {{ order.city }}, {{ order.postal_code }}</p>
-      <p><strong>Phone:</strong> {{ order.phone_number }}</p>
-      <p><strong>Payment:</strong> {{ order.payment_method }} | {% if order.paid %}<span class="text-green-600">Paid</span>{% else %}<span class="text-red-600">Unpaid</span>{% endif %}</p>
-      <p><strong>Status:</strong> <span class="text-blue-600">{{ order.order_status }}</span></p>
+      <!-- Order Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="p-5 rounded-xl shadow-md border border-gray-100 bg-orange-50/40 hover:shadow-lg transition">
+          <h3 class="text-lg font-semibold text-orange-600 mb-3 flex items-center">
+            <i class="bx bx-map text-2xl mr-2"></i> Delivery Address
+          </h3>
+          <p class="text-gray-700">{{ order.address }}</p>
+          <p class="text-gray-700">{{ order.city }} - {{ order.postal_code }}</p>
+          <p class="text-gray-700 mt-2 flex items-center"><i class="bx bx-phone text-orange-500 mr-1"></i> {{ order.phone_number }}</p>
+        </div>
+
+        <div class="p-5 rounded-xl shadow-md border border-gray-100 bg-orange-50/40 hover:shadow-lg transition">
+          <h3 class="text-lg font-semibold text-orange-600 mb-3 flex items-center">
+            <i class="bx bx-credit-card text-2xl mr-2"></i> Payment & Status
+          </h3>
+          <p class="text-gray-700"><strong>Method:</strong> {{ order.payment_method }}</p>
+          <p class="text-gray-700">
+            <strong>Payment:</strong>
+            {% if order.paid %}
+              <span class="text-green-600 font-semibold">Paid</span>
+            {% else %}
+              <span class="text-red-500 font-semibold">Unpaid</span>
+            {% endif %}
+          </p>
+          <p class="text-gray-700">
+            <strong>Status:</strong> <span class="text-orange-600 font-semibold">{{ order.order_status }}</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Map -->
+      
+
+      <!-- CTA -->
+      <div class="mt-12 text-center">
+        <a href="/my-orders/"
+           class="inline-flex items-center bg-orange-500 text-white font-semibold px-8 py-3 rounded-full shadow-md hover:bg-orange-600 hover:shadow-lg transition duration-300">
+          <i class="bx bx-chevron-left text-2xl mr-1"></i> Back to Orders
+        </a>
+      </div>
     </div>
-    
-    <div class="mt-6">
-  <h3 class="text-lg font-semibold mb-2">Estimated Delivery Location</h3>
-  <iframe class="w-full h-64 rounded-lg" src="https://maps.google.com/maps?q={{ order.city }}&output=embed"></iframe>
-</div>
+  </div>
+
+  <footer class="mt-16 text-center text-gray-500 text-sm">
+    © 2025 Sona Enterprises — All rights reserved.
+  </footer>
 
 </body>
 </html>

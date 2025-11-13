@@ -26,12 +26,14 @@ path('admin-dashboard/order/<int:order_id>/update-status/', views.update_order_s
 path('admin-dashboard/order/<int:order_id>/update-payment/', views.update_payment_status, name='update_payment_status'),
 
     path('track-order/<int:order_id>/', views.track_order_view, name='track_order'),
-    path('order/<int:order_id>/product/<int:product_id>/review/', views.submit_review, name='submit_review'),
-    path('product/<int:product_id>/reviews/', views.product_reviews_view, name='product_reviews'),
+    path('order/<int:order_id>/<str:product_type>/<int:product_id>/review/', views.submit_review, name='submit_review'),
+
+    path('product/<str:product_type>/<int:product_id>/reviews/', views.product_reviews_view, name='product_reviews'),
+
     path('women/product/<int:product_id>/', views.women_product_detail, name='women_product_detail'),
     path('buy-now/<str:product_type>/<int:product_id>/', views.buy_now, name='buy_now'),
-
-
+    path('toy/product/<int:product_id>/', views.toy_product_detail, name='toy_product_detail'),
+    path('electronic/product/<int:product_id>/', views.electronic_product_detail, name='electronic_product_detail'),
 
 ]
 

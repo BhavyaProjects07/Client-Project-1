@@ -103,11 +103,18 @@
           </div>
           
           <!-- Write Review Button -->
-          <a href="{% url 'submit_review' order.id product.id %}">
-            <button class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
-              Write a review
-            </button>
-          </a>
+          {% if order %}
+  <a href="{% url 'submit_review' order.id product_type product.id %}">
+    <button class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+      Write a review
+    </button>
+  </a>
+{% else %}
+  <button class="w-full bg-gray-300 text-gray-600 font-medium py-3 px-4 rounded-lg cursor-not-allowed">
+    Order required to review
+  </button>
+{% endif %}
+
 
         </div>
       </div>

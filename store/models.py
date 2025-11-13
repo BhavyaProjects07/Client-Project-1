@@ -2,81 +2,14 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Avg
-from decouple import config
-import base64
-import requests
-from decouple import config
-
-import base64, requests, certifi, time
-from decouple import config
-
-IMAGEKIT_UPLOAD_URL = "https://upload.imagekit.io/api/v1/files/upload"
-IMAGEKIT_PUBLIC_KEY = config("IMAGEKIT_PUBLIC_KEY")
-IMAGEKIT_PRIVATE_KEY = config("IMAGEKIT_PRIVATE_KEY")
-
-def upload_to_imagekit(file, folder="/products"):
-    """
-    Reliable ImageKit uploader using HTTPS + retry.
-    Works perfectly even on Windows with TLS 1.3.
-    """
-    try:
-        # Prepare base64 payload
-        file.seek(0)
-        file_base64 = base64.b64encode(file.read()).decode("utf-8")
-
-        payload = {
-            "file": file_base64,
-            "fileName": file.name,
-            "folder": folder,
-            "useUniqueFileName": "true"
-        }
-
-        # Basic Auth
-        auth = (IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY)
-
-        # Try twice if needed
-        for attempt in range(2):
-            try:
-                resp = requests.post(
-                    IMAGEKIT_UPLOAD_URL,
-                    data=payload,
-                    auth=auth,
-                    timeout=40,
-                    verify=certifi.where(),  # ✅ Force cert verification
-                )
-                if resp.status_code in [200, 201]:
-                    url = resp.json().get("url")
-                    if url:
-                        print(f"✅ Uploaded to ImageKit: {url}")
-                        return url
-                    else:
-                        print(f"⚠️ Upload succeeded but no URL returned: {resp.text}")
-                        return None
-                else:
-                    print(f"⚠️ ImageKit HTTP {resp.status_code}: {resp.text}")
-            except requests.exceptions.SSLError as ssl_err:
-                print(f"🔄 SSL error on attempt {attempt+1}, retrying: {ssl_err}")
-                time.sleep(2)
-            except requests.exceptions.RequestException as re:
-                print(f"⚠️ Request error: {re}")
-                time.sleep(2)
-
-        print("❌ ImageKit upload failed after retries.")
-        return None
-
-    except Exception as e:
-        print(f"❌ Unexpected ImageKit error: {e}")
-        return None
-
+from cloudinary.models import CloudinaryField
 
 # ======================================================
 # WOMEN PRODUCTS MODEL
 # ======================================================
 class WomenProduct(models.Model):
     CATEGORY_CHOICES = [
-        
         ('sarees', 'Sarees'),
-
         ('accessories', 'Accessories'),
         ('footwear', 'Footwear'),
     ]
@@ -84,17 +17,9 @@ class WomenProduct(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image_url = models.URLField(blank=True, null=True)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='tops')
+    image = CloudinaryField('image', folder='women')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='sarees')
     available_stock = models.PositiveIntegerField(default=10)
-    def save(self, *args, **kwargs):
-        # upload to ImageKit only if admin added image manually
-        image_file = getattr(self, "image_file", None)
-        if image_file and not self.image_url:
-            uploaded_url = upload_to_imagekit(image_file, folder="/women")
-            if uploaded_url:
-                self.image_url = uploaded_url
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -125,16 +50,9 @@ class ElectronicProduct(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image_url = models.URLField(blank=True, null=True)
+    image = CloudinaryField('image', folder='electronics')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='mobiles')
     available_stock = models.PositiveIntegerField(default=10)
-    def save(self, *args, **kwargs):
-        image_file = getattr(self, "image_file", None)
-        if image_file and not self.image_url:
-            uploaded_url = upload_to_imagekit(image_file, folder="/electronics")
-            if uploaded_url:
-                self.image_url = uploaded_url
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -159,16 +77,9 @@ class ToyProduct(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image_url = models.URLField(blank=True, null=True)
+    image = CloudinaryField('image', folder='toys')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='action_figures')
     available_stock = models.PositiveIntegerField(default=10)
-    def save(self, *args, **kwargs):
-        image_file = getattr(self, "image_file", None)
-        if image_file and not self.image_url:
-            uploaded_url = upload_to_imagekit(image_file, folder="/toys")
-            if uploaded_url:
-                self.image_url = uploaded_url
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
