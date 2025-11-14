@@ -107,82 +107,9 @@
     }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col" x-data="{ isMenuOpen: false }">
+<body class="bg-slate-50 min-h-screen flex flex-col">
   <!-- Header -->
-  <header class="sticky top-0 z-40 w-full bg-white shadow-sm">
-    <div class="container mx-auto px-4 py-4">
-      <div class="flex items-center justify-between">
-        <a href="/" class="flex items-center space-x-2">
-          <div class="text-xl md:text-2xl font-bold text-amber-600">Sona Enterprises</div>
-        </a>
-
-        <!-- Desktop Search & Nav -->
-        <div class="hidden lg:flex items-center space-x-6 flex-1 max-w-2xl mx-8">
-          <div class="relative w-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-2.5 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input type="search" placeholder="Search fashion, electronics, toys..." class="pl-9 w-full py-2 px-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500">
-          </div>
-          <nav class="flex items-center space-x-6 whitespace-nowrap">
-            <a href="/" class="text-sm font-medium text-slate-700 hover:text-amber-600 transition-colors">Home</a>
-            
-          </nav>
-        </div>
-
-        <!-- Desktop Icons -->
-        <div class="hidden md:flex items-center space-x-3">
-          <button class="relative p-2 rounded-full hover:bg-slate-100">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            <span class="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center bg-amber-600 text-white text-xs rounded-full">{% if items %}{{ items|length }}{% else %}0{% endif %}</span>
-          </button>
-          <button class="relative p-2 rounded-full hover:bg-amber-50 bg-amber-50">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            <span class="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center bg-amber-600 text-white text-xs rounded-full">{% if items %}{{ items|length }}{% else %}0{% endif %}</span>
-          </button>
-          <button class="p-2 rounded-full hover:bg-slate-100">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </button>
-        </div>
-
-        <!-- Mobile Cart & Menu -->
-        <div class="md:hidden flex items-center space-x-2">
-          <button class="relative p-2 rounded-full hover:bg-amber-50 bg-amber-50">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            <span class="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center bg-amber-600 text-white text-xs rounded-full">{% if items %}{{ items|length }}{% else %}0{% endif %}</span>
-          </button>
-          <button class="p-2 rounded-full hover:bg-slate-100" @click="isMenuOpen = !isMenuOpen">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" :d="isMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Mobile Menu -->
-      <div x-show="isMenuOpen" x-transition class="md:hidden mt-4 pb-4 border-t border-slate-100 pt-4">
-        <div class="relative w-full mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-2.5 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input type="search" placeholder="Search..." class="pl-9 w-full py-2 px-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
-        </div>
-        <nav class="flex flex-col space-y-2">
-          <a href="/" class="text-sm font-medium p-2 hover:bg-slate-100 rounded-md" @click="isMenuOpen = false">Home</a>
-          <a href="#" class="text-sm font-medium p-2 hover:bg-slate-100 rounded-md" @click="isMenuOpen = false">Categories</a>
-          <a href="#" class="text-sm font-medium p-2 hover:bg-slate-100 rounded-md" @click="isMenuOpen = false">Offers</a>
-        </nav>
-      </div>
-    </div>
-  </header>
+  {% include 'nav.html' %}
 
   <!-- Main Content -->
   <main class="flex-grow py-6 md:py-12 px-4">

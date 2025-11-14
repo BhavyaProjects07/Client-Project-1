@@ -32,16 +32,19 @@ from .models import WomenProduct, ElectronicProduct, ToyProduct, Review, Wishlis
 def home(request):
     wishlist_count = WishlistItem.objects.filter(user=request.user).count() if request.user.is_authenticated else 0
 
-    # ✅ Existing query for WOMEN section
+    # -----------------------------
+    # EXISTING QUERIES
+    # -----------------------------
     query = request.GET.get('q')
     category = request.GET.get('category')
-    product_type = request.GET.get('type', 'women')  # default to women
+    product_type = request.GET.get('type', 'women')
 
-    # ✅ New queries for ELECTRONICS and TOYS sections
     query_electronic = request.GET.get('q_electronic')
     query_toy = request.GET.get('q_toy')
 
-    # ✅ Map models by type
+    # -----------------------------
+    # MODEL MAP
+    # -----------------------------
     model_map = {
         'women': WomenProduct,
         'electronic': ElectronicProduct,
@@ -50,12 +53,14 @@ def home(request):
 
     ProductModel = model_map.get(product_type, WomenProduct)
 
-    # ✅ Fetch all product types
+    # -----------------------------
+    # PRODUCT FETCH
+    # -----------------------------
     women_products = WomenProduct.objects.all()
     electronics_products = ElectronicProduct.objects.all()
     toys_products = ToyProduct.objects.all()
 
-    # ✅ Attach product_type to each product
+    # Attach product_type to each product
     for p in women_products:
         p.product_type = 'women'
     for p in electronics_products:
@@ -63,32 +68,65 @@ def home(request):
     for p in toys_products:
         p.product_type = 'toy'
 
-    # ✅ Active product list (for WOMEN section)
+    # ACTIVE SECTION PRODUCTS (women by default)
     products = ProductModel.objects.all()
 
-    # ✅ WOMEN Search filter (existing)
-    if query:
-        products = products.filter(name__icontains=query)
+# -----------------------------------
+# WOMEN SEARCH (Advanced Word Search)
+# -----------------------------------
+    no_results_women = False
 
-    # ✅ Category filter (existing)
+    if query:
+        search_words = query.split()
+        for word in search_words:
+            products = products.filter(name__icontains=word)
+
+        if not products.exists():
+            no_results_women = True
+
+    # CATEGORY FILTER
     if category and category != 'all':
         products = products.filter(category__iexact=category)
+        if not products.exists():
+            no_results_women = True
 
-    # ✅ ELECTRONICS search filter (new)
+
+    # -----------------------------------
+    # ELECTRONICS SEARCH (Advanced Word Search)
+    # -----------------------------------
+    no_results_electronics = False
+
     if query_electronic:
-        electronics_products = electronics_products.filter(name__icontains=query_electronic)
+        search_words = query_electronic.split()
+        for word in search_words:
+            electronics_products = electronics_products.filter(name__icontains=word)
 
-    # ✅ TOYS search filter (new)
+        if not electronics_products.exists():
+            no_results_electronics = True
+
+
+    # -----------------------------------
+    # TOYS SEARCH (Advanced Word Search)
+    # -----------------------------------
+    no_results_toys = False
+
     if query_toy:
-        toys_products = toys_products.filter(name__icontains=query_toy)
+        search_words = query_toy.split()
+        for word in search_words:
+            toys_products = toys_products.filter(name__icontains=word)
 
-    # ✅ Compute average rating & review count for active type
+        if not toys_products.exists():
+            no_results_toys = True
+
+
+    # -----------------------------
+    # RATING CALCULATIONS
+    # -----------------------------
     for product in products:
         reviews = Review.objects.filter(product_type=product_type, product_id=product.id)
         product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
         product.total_reviews = reviews.count()
 
-    # ✅ Ratings for other sections
     for product in women_products:
         reviews = Review.objects.filter(product_type='women', product_id=product.id)
         product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
@@ -104,21 +142,31 @@ def home(request):
         product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
         product.total_reviews = reviews.count()
 
-    # ✅ Categories for filtering (Women)
+    # -----------------------------
+    # CATEGORY LIST (Women)
+    # -----------------------------
     categories = [choice[0] for choice in ProductModel.CATEGORY_CHOICES]
     categories.insert(0, 'all')
 
-    # ✅ Render everything
+    # -----------------------------
+    # RETURN
+    # -----------------------------
     return render(request, 'home.html', {
         'products': products,
         'women_products': women_products,
         'electronics_products': electronics_products,
         'toys_products': toys_products,
+
+        'no_results_women': no_results_women,
+        'no_results_electronics': no_results_electronics,
+        'no_results_toys': no_results_toys,
+
         'active_category': category if category else 'all',
         'categories': categories,
         'wishlist_count': wishlist_count,
         'product_type': product_type,
     })
+
 
 
 # ======================================================
@@ -215,33 +263,75 @@ def request_otp_view(request):
 
 
 def verify_otp_view(request):
+    # Read mode (default = login/signup)
+    otp_mode = request.session.get("otp_mode", "login")
+
     if request.method == "POST":
-        email = request.session.get('pending_email')
-        entered_otp = request.POST.get('otp')
+        entered_otp = request.POST.get("otp")
+
+        # -----------------------------------------------------
+        # 🔹 FORGOT PASSWORD — RESET MODE OTP VERIFICATION
+        # -----------------------------------------------------
+        if otp_mode == "reset":
+            email = request.session.get("reset_email")
+            correct_otp = request.session.get("reset_otp")
+
+            if not email or not correct_otp:
+                messages.error(request, "OTP expired or invalid. Please try again.")
+                return redirect("forgot_password")
+
+            if str(entered_otp) == str(correct_otp):
+                # Clear OTP from session
+                request.session.pop("reset_otp", None)
+                request.session["otp_mode"] = None
+
+                # Redirect to new password page
+                messages.success(request, "OTP verified! Please set your new password.")
+                return redirect("new_password")
+
+            else:
+                messages.error(request, "Incorrect OTP. Please try again.")
+                return redirect("verify_otp")
+
+        # -----------------------------------------------------
+        # 🔹 NORMAL LOGIN / SIGNUP OTP LOGIC
+        # -----------------------------------------------------
+        email = request.session.get("pending_email")
         data = otp_storage.get(email)
 
         if not data:
             messages.error(request, "OTP expired or invalid. Please request again.")
-            return redirect('request_otp')
+            return redirect("request_otp")
 
-        if data['otp'] == entered_otp:
-            username = data['username']
-            password = data['password']
+        if data["otp"] == entered_otp:
+            username = data["username"]
+            password = data["password"]
 
-            user, created = CustomUser.objects.get_or_create(email=email, defaults={'username': username})
+            user, created = CustomUser.objects.get_or_create(
+                email=email,
+                defaults={"username": username}
+            )
+
             user.set_password(password)
             user.is_verified = True
             user.save()
 
             login(request, user)
-            messages.success(request, f"Welcome back, {user.username}!" if not created else f"Account created successfully for {user.username}!")
+
+            messages.success(
+                request,
+                f"Welcome back, {user.username}!"
+                if not created else f"Account created successfully for {user.username}!"
+            )
+
             otp_storage.pop(email, None)
-            return redirect('/')
+            return redirect("/")
         else:
             messages.error(request, "Invalid OTP. Please try again.")
-            return redirect('verify_otp')
+            return redirect("verify_otp")
 
-    return render(request, 'verify_otp.html')
+    return render(request, "verify_otp.html")
+
 
 def logout_view(request):
     logout(request)
@@ -1189,3 +1279,75 @@ def buy_now(request, product_type, product_id):
     return redirect('checkout')
 
 
+
+def forgot_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+
+        # Check if email exists
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            messages.error(request, "No account found with this email.")
+            return redirect("forgot_password")
+
+        # Generate OTP
+        otp = random.randint(100000, 999999)
+
+        request.session["reset_email"] = email
+        request.session["reset_otp"] = str(otp)
+        request.session["otp_mode"] = "reset"
+
+        # Send OTP using Brevo
+        from store.email_service import send_brevo_email
+
+        subject = "Reset Password OTP - Sona Enterprises"
+        html = f"""
+            <div style="font-family:Arial;padding:20px;">
+                <h2>Reset Password Request</h2>
+                <p>Your OTP for resetting your password is:</p>
+                <h1>{otp}</h1>
+                <p>This OTP is valid for 10 minutes.</p>
+            </div>
+        """
+        text = f"Your reset OTP is {otp}"
+
+        send_brevo_email(to=email, subject=subject, html_content=html, text_content=text)
+
+        messages.success(request, "OTP sent to your email.")
+        return redirect("verify_otp")
+
+    return render(request, "forgot_password.html")
+
+
+
+def new_password(request):
+    reset_email = request.session.get("reset_email")
+
+    if not reset_email:
+        messages.error(request, "Unauthorized access.")
+        return redirect("forgot_password")
+
+    user = CustomUser.objects.get(email=reset_email)
+
+    if request.method == "POST":
+        p1 = request.POST.get("new_password")
+        p2 = request.POST.get("confirm_password")
+
+        if p1 != p2:
+            messages.error(request, "Passwords do not match.")
+            return redirect("new_password")
+
+        user.set_password(p1)
+        user.save()
+
+        # Clear session
+        for key in ["reset_email", "reset_otp", "otp_mode"]:
+            request.session.pop(key, None)
+
+        login(request, user)  # now login AFTER reset success
+
+        messages.success(request, "Password updated successfully!")
+        return redirect("home")
+
+    return render(request, "new_password.html")
