@@ -10,135 +10,290 @@
     body { font-family: 'Poppins', sans-serif; }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* AMAZON-LIKE LAYOUT */
+    .product-page {
+      background: #f8fafc;
+    }
+
+    /* Left image box */
+    .image-box {
+      background: #fff;
+      border: 1px solid #e6e9ee;
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-box img {
+      max-width: 100%;
+      max-height: 560px;
+      object-fit: contain;
+    }
+
+    /* Thumbnail column */
+    .thumb {
+      width: 64px;
+      height: 64px;
+      border: 1px solid #e6e9ee;
+      border-radius: 6px;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #fff;
+    }
+    .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    /* Buy box */
+    .buy-box {
+      position: relative;
+    }
+
+    /* Description / About this item */
+    .description-section {
+      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+      border-left: 4px solid #2563eb;
+      border-radius: 12px;
+    }
+    .description-content > * + * { margin-top: 16px; }
+    .desc-heading { font-size: 18px; font-weight: 700; color: #0f172a; display:block; margin-top:10px; }
+    .desc-paragraph { color: #475569; line-height: 1.8; font-size: 14px; }
+    .desc-list { margin: 8px 0 8px 1rem; padding-left: 0; }
+    .desc-list li { margin-bottom: 8px; color: #374151; line-height: 1.6; }
+
+    /* Show more fade */
+    .desc-wrapper { transition: max-height 0.45s ease; overflow: hidden; position: relative; }
+    .fade-bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 56px;
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 90%);
+      pointer-events: none;
+    }
+
+    /* Responsive tweaks */
+    @media (min-width: 768px) {
+      .image-box img { max-height: 620px; }
+    }
+
+    /* small utilities for amazon-like feel */
+    .small-pill { background: #eef2ff; color: #3730a3; padding: 6px 10px; border-radius: 999px; font-weight:600; font-size:12px; display:inline-block }
+    .muted { color: #6b7280; }
+
+    /* recommended carousel item */
+    .related-card img { object-fit: contain; padding: 12px; background: #fbfdff; }
+
   </style>
 </head>
-<body class="bg-gray-50">
+<body class="product-page">
   {% include 'nav.html' %}
 
-  <section class="py-16">
-    <div class="container mx-auto px-6 md:px-12 lg:px-20">
-      <div class="grid md:grid-cols-2 gap-10 items-start">
+  <section class="py-8 md:py-12">
+    <div class="container mx-auto px-4 md:px-6 lg:px-20">
+      <!-- TOP: product gallery + buy box -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <!-- Left: thumbnails + main image (cols 1-7) -->
+        <div class="md:col-span-7 lg:col-span-7">
+          <div class="flex gap-6">
+            <!-- Thumbnails column (vertical) -->
+            <div class="hidden md:flex flex-col gap-3">
+              <!-- Only show single thumbnail (keeps structure for future images) -->
+              <div class="thumb" onclick="swapImage('{{ product.image.url }}')">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+              </div>
+            </div>
 
-        <!-- Product Image -->
-        <div class="relative bg-white rounded-xl shadow-md overflow-hidden">
-          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="object-contain w-full h-96">
-          <span class="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs">Top Rated</span>
-        </div>
-
-        <!-- Product Info -->
-        <div>
-          <h1 class="text-3xl font-semibold text-gray-800 mb-3">{{ product.name }}</h1>
-          <p class="text-gray-500 text-sm mb-2 capitalize">{{ product.category }}</p>
-
-          <div class="flex items-center space-x-2 mb-4">
-            <span class="text-2xl font-bold text-blue-600">₹{{ product.price }}</span>
-            {% if product.old_price %}
-              <span class="text-gray-400 line-through">₹{{ product.old_price }}</span>
-            {% endif %}
-          </div>
-
-          <!-- Enhanced Description -->
-          <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100 mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">Product Highlights</h3>
-            {% if product.description %}
-              <ul class="space-y-3 text-gray-700 leading-relaxed">
-                {% for line in product.description.splitlines %}
-                  {% if line %}
-                    <li class="flex items-start">
-                      <span class="text-green-500 mr-2">✅</span>
-                      <span>{{ line }}</span>
-                    </li>
-                  {% endif %}
-                {% endfor %}
-              </ul>
-            {% else %}
-              <p class="text-gray-500">No description available.</p>
-            {% endif %}
-          </div>
-
-          <!-- Specifications Table -->
-          <div class="bg-blue-50 border border-blue-100 p-5 rounded-lg">
-            <h3 class="text-lg font-semibold text-blue-700 mb-3">Technical Specifications</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {% for key, value in extra_details.items %}
-                <div class="flex justify-between border-b border-gray-200 pb-2">
-                  <span class="text-gray-600 font-medium">{{ key }}</span>
-                  <span class="text-gray-800">{{ value }}</span>
-                </div>
-              {% endfor %}
+            <!-- Main image -->
+            <div class="flex-1 image-box">
+              <img id="mainProductImage" src="{{ product.image.url }}" alt="{{ product.name }}">
             </div>
           </div>
 
-          <!-- Buttons -->
-          <form method="POST" action="{% url 'add_to_cart' 'electronic' product.id %}" class="mt-8">
-            {% csrf_token %}
-            <div class="flex flex-col sm:flex-row gap-4">
+          <!-- small top-rated pill -->
+          <div class="mt-4">
+            <span class="small-pill">Top Rated</span>
+          </div>
+        </div>
+
+        <!-- Right: buy box (cols 8-12) -->
+        <div class="md:col-span-5 lg:col-span-5">
+          <div class="buy-box bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <!-- Product title & short meta -->
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{{ product.name }}</h1>
+            <p class="text-sm text-gray-500 mb-3 capitalize">{{ product.category }}</p>
+
+            <!-- Price, availability -->
+            <div class="flex items-center space-x-4 mb-5">
+              <div>
+                <div class="text-3xl font-extrabold text-slate-900">₹{{ product.price }}</div>
+                {% if product.old_price %}
+                <div class="text-sm text-gray-400 line-through">₹{{ product.old_price }}</div>
+                {% endif %}
+              </div>
+              <div class="ml-auto text-sm">
+                {% if product.available_stock > 0 %}
+                  <span class="text-green-600 font-semibold">In stock</span>
+                {% else %}
+                  <span class="text-red-600 font-semibold">Out of stock</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- small highlights -->
+            <ul class="muted text-sm mb-5 list-disc pl-5">
+              <li>Free delivery on orders above ₹999</li>
+              <li>7-day return policy</li>
+              <li>Secure payments</li>
+            </ul>
+
+            <!-- CTA buttons -->
+            <form method="POST" action="{% url 'add_to_cart' 'electronic' product.id %}">
+              {% csrf_token %}
               {% if user.is_authenticated %}
-                <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition">
+                <button type="submit" class="w-full bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition font-semibold shadow-sm mb-3">
                   Add to Cart
                 </button>
-                <a href="{% url 'add_to_wishlist' 'electronic' product.id %}" class="border border-blue-600 text-blue-600 px-6 py-3 rounded-md hover:bg-blue-50 transition text-center">
-                  Add to Wishlist
-                </a>
-                <button formaction="{% url 'buy_now' 'electronic' product.id %}" class="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition">
+                <button formaction="{% url 'buy_now' 'electronic' product.id %}" class="w-full bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition font-semibold shadow-sm">
                   Buy Now
                 </button>
               {% else %}
-                <p class="text-red-500">Login to purchase or add items to your cart.</p>
+                <a href="{% url 'login' %}?next={{ request.path }}" class="block text-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                  Login to Buy
+                </a>
               {% endif %}
+            </form>
+
+            <!-- small actions -->
+            <div class="flex items-center gap-3 mt-4">
+              <a href="{% url 'add_to_wishlist' 'electronic' product.id %}" class="text-sm text-blue-600 hover:underline">Add to wishlist</a>
+              <span class="text-sm text-gray-400">·</span>
+              <a href="#product-details" class="text-sm text-gray-600 hover:underline">About this item</a>
             </div>
-          </form>
+          </div>
         </div>
       </div>
+
+      <!-- Divider -->
+      <div class="mt-10 border-t border-gray-200"></div>
+
+      <!-- Product Details (About this item) -->
+      {% if product.description_html %}
+      <div id="product-details" class="mt-10">
+        <div class="description-section p-8 rounded-xl shadow-sm">
+          <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">About this item</h2>
+
+          <!-- collapsible wrapper - show more / less -->
+          <div class="relative">
+            <div id="descWrapper" class="desc-wrapper max-h-72">
+              <div class="description-content prose prose-slate prose-sm md:prose-base max-w-none text-gray-700">
+                {% autoescape off %}
+                  {{ product.description_html }}
+                {% endautoescape %}
+              </div>
+            </div>
+
+            <!-- fade at bottom while collapsed -->
+            <div id="fadeShadow" class="fade-bottom"></div>
+          </div>
+
+          <div class="mt-4">
+            <button id="toggleBtn" class="text-blue-600 font-semibold hover:text-blue-800 transition">Show More ▾</button>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Recommended / Frequently bought together -->
+      <section class="mt-12">
+        <h3 class="text-xl font-semibold text-gray-900 mb-6">Customers also bought</h3>
+        <div class="relative">
+          <div id="related-scroll" class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+            {% for related in related_products %}
+              <a href="{% url 'electronic_product_detail' related.id %}" class="min-w-[200px] md:min-w-[220px] snap-start bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition duration-300 overflow-hidden related-card">
+                <div class="relative h-40 w-full overflow-hidden rounded-t-lg flex items-center justify-center">
+                  <img src="{{ related.image.url }}" alt="{{ related.name }}" class="w-full h-full">
+                </div>
+                <div class="p-3">
+                  <h4 class="font-semibold text-gray-900 text-sm leading-tight truncate">{{ related.name }}</h4>
+                  <div class="text-sm text-blue-600 font-bold mt-2">₹{{ related.price }}</div>
+                </div>
+              </a>
+            {% empty %}
+              <p class="text-gray-500">No related products found.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
     </div>
   </section>
 
-  <!-- Recommended Products Slider (Moved to Bottom) -->
-  <section class="py-12 bg-white">
-    <div class="container mx-auto px-6 md:px-12">
-      <h2 class="text-2xl font-semibold mb-4 text-gray-800">Recommended Products</h2>
-      <div class="relative">
-        <!-- Left Arrow -->
-        <button onclick="scrollProducts(-1)" class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:scale-110 transition">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-
-        <!-- Scrollable Products -->
-        <div id="related-scroll" class="flex overflow-x-auto gap-6 scroll-smooth snap-x snap-mandatory px-2 pb-4 scrollbar-hide">
-          {% for related in related_products %}
-            <a href="{% url 'electronic_product_detail' related.id %}" class="min-w-[220px] snap-start bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition duration-300 overflow-hidden">
-              <div class="relative h-40 w-full overflow-hidden rounded-lg">
-                <img src="{{ related.image.url }}" alt="{{ related.name }}" class="object-contain w-full h-full transition-transform duration-300 hover:scale-105">
-              </div>
-              <div class="p-4">
-                <h3 class="font-medium text-gray-900 hover:text-blue-600 transition duration-200 truncate">{{ related.name }}</h3>
-                <p class="text-blue-600 font-semibold mt-1">₹{{ related.price }}</p>
-              </div>
-            </a>
-          {% empty %}
-            <p class="text-gray-500 col-span-4">No related products found.</p>
-          {% endfor %}
-        </div>
-
-        <!-- Right Arrow -->
-        <button onclick="scrollProducts(1)" class="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:scale-110 transition">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </section>
+  {% include 'footer.html' %}
 
   <script>
+    // Swap image (keeps single main image support)
+    function swapImage(url) {
+      const main = document.getElementById('mainProductImage');
+      if (main) main.src = url;
+    }
+
+    // Show more / Show less logic
+    (function(){
+      const wrapper = document.getElementById("descWrapper");
+      const btn = document.getElementById("toggleBtn");
+      const fade = document.getElementById("fadeShadow");
+
+      if (!wrapper || !btn) return;
+
+      const COLLAPSED_MAX = 288; // px (~72 * line-height)
+      // initialize
+      function updateState() {
+        if (wrapper.scrollHeight <= COLLAPSED_MAX) {
+          btn.style.display = 'none';
+          fade.style.display = 'none';
+          wrapper.style.maxHeight = wrapper.scrollHeight + 'px';
+        } else {
+          btn.style.display = 'inline-block';
+          fade.style.display = '';
+          wrapper.classList.add('max-h-72');
+          wrapper.style.maxHeight = COLLAPSED_MAX + 'px';
+          btn.textContent = 'Show More ▾';
+        }
+      }
+
+      updateState();
+      btn.addEventListener('click', function(){
+        if (wrapper.style.maxHeight && wrapper.style.maxHeight !== (wrapper.scrollHeight + 'px')) {
+          // expand
+          wrapper.style.maxHeight = wrapper.scrollHeight + 'px';
+          fade.style.display = 'none';
+          btn.textContent = 'Show Less ▲';
+        } else {
+          // collapse
+          wrapper.style.maxHeight = COLLAPSED_MAX + 'px';
+          fade.style.display = '';
+          btn.textContent = 'Show More ▾';
+          // smooth scroll to description top on collapse
+          wrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+
+      // Recalculate on window resize
+      window.addEventListener('resize', updateState);
+    })();
+
+    // Related products scroll helpers (optional arrows can be added)
     function scrollProducts(direction) {
       const container = document.getElementById('related-scroll');
+      if (!container) return;
       const scrollAmount = 300;
       container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
     }
   </script>
-  {% include 'footer.html' %}
 </body>
 </html>

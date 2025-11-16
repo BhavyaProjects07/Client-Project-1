@@ -5,172 +5,390 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ product.name }} - Women's Collection | Sona Enterprises</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Poppins', sans-serif; }
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
-    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-    .scroll-container { overflow-x: auto; overflow-y: hidden; }
+    * { font-family: 'Poppins', sans-serif; }
+    body { background: #f8fafc; }
+
+    /* AMAZON-LIKE LAYOUT STYLES */
+    .image-box {
+      background: #fff;
+      border: 1px solid #e6e9ee;
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .image-box img {
+      max-width: 100%;
+      max-height: 620px;
+      object-fit: contain;
+    }
+    .thumb {
+      width: 64px;
+      height: 64px;
+      border: 1px solid #e6e9ee;
+      border-radius: 6px;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #fff;
+    }
+    .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    .buy-box {
+      position: relative;
+    }
+
+    .description-section {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border-left: 4px solid #f59e0b;
+      border-radius: 12px;
+    }
+    .description-content > * + * { margin-top: 16px; }
+    .desc-heading { font-size: 18px; font-weight: 700; color: #0f172a; display:block; margin-top:10px; }
+    .desc-paragraph { color: #475569; line-height: 1.8; font-size: 14px; }
+    .desc-list { margin: 8px 0 8px 1rem; padding-left: 0; }
+    .desc-list li { margin-bottom: 8px; color: #374151; line-height: 1.6; }
+
+    .desc-wrapper { transition: max-height 0.45s ease; overflow: hidden; position: relative; }
+    .fade-bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 56px;
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 90%);
+      pointer-events: none;
+    }
+
+    .carousel-container {
+      display: flex;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      gap: 12px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .carousel-container::-webkit-scrollbar { display: none; }
+    .carousel-image { flex-shrink: 0; width: 100%; }
+    .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background-color: #e5e7eb; cursor: pointer; transition: all 0.3s ease; }
+    .dot.active { background-color: #f59e0b; width: 24px; border-radius: 4px; }
+
+    .spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 24px; }
+    .spec-item { display: grid; grid-template-columns: 120px 1fr; gap: 16px; padding: 16px; background: #fff; border-radius: 8px; border: 1px solid #e6e9ee; }
+    .spec-label { font-weight: 600; color: #111827; }
+    .spec-value { color: #6b7280; }
+
+    @media (max-width: 768px) {
+      .desktop-gallery { display: none; }
+      .mobile-carousel { display: block; }
+      .image-box img { max-height: 420px; }
+    }
+    @media (min-width: 769px) {
+      .mobile-carousel { display: none; }
+      .desktop-gallery { display: block; }
+    }
+
+    .small-pill { background: #fff7ed; color: #b45309; padding: 6px 10px; border-radius: 999px; font-weight:600; font-size:12px; display:inline-block }
+    .muted { color: #6b7280; }
+
+    .related-card img { object-fit: contain; padding: 12px; background: #fff; }
   </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-white">
   {% include 'nav.html' %}
 
-  <section class="py-16">
-    <div class="container mx-auto px-6 md:px-12 lg:px-20">
-      <div class="grid md:grid-cols-2 gap-10 items-start">
+  <!-- Main Product Section -->
+  <section class="py-8 md:py-12 px-4 md:px-6 lg:px-20">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
 
-        <!-- Product Image -->
-        <div class="relative bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl shadow-lg overflow-hidden">
-          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="object-contain w-full h-96">
-          <span class="absolute top-4 left-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-md">New Arrival</span>
-          <!-- Added quality badge -->
-          <div class="absolute bottom-4 right-4 bg-white rounded-lg shadow-md px-3 py-2 flex items-center gap-2">
-            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 3.062v6.72a1.066 1.066 0 01-1.275 1.051A5.98 5.98 0 0012 19c-2.126 0-4.092-.585-5.815-1.595a1.067 1.067 0 01-.275-1.751 5.98 5.98 0 003.259-5.519v-6.72a3.066 3.066 0 012.812-3.062zM9.074 9.076c.55 0 1-.449 1-1a1 1 0 00-1-1 1 1 0 00-1 1 1 1 0 001 1z"/></path></svg>
-                <span class="text-xs font-semibold text-gray-700">Verified</span>
+        <!-- LEFT: Images (cols 1-7) -->
+        <div class="md:col-span-7 lg:col-span-7">
+          <div class="flex gap-6">
+            <!-- Thumbnails column (vertical) -->
+            <div class="hidden md:flex flex-col gap-3">
+              <div class="thumb" onclick="swapImage('{{ product.image.url }}')">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
               </div>
+              <!-- if there were other images you could list them here -->
+            </div>
+
+            <!-- Main image -->
+            <div class="flex-1 image-box">
+              <img id="mainProductImage" src="{{ product.image.url }}" alt="{{ product.name }}">
+            </div>
+          </div>
+
+          <!-- small top pill -->
+          <div class="mt-4">
+            <span class="small-pill">New Arrival</span>
+          </div>
+
+          <!-- Mobile carousel (single image repeated for structure) -->
+          <div class="mobile-carousel mt-6">
+            <div class="carousel-container rounded-lg overflow-hidden bg-gray-50">
+              <div class="carousel-image">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-80 object-contain bg-gray-50">
+              </div>
+              {% for i in "234" %}
+              <div class="carousel-image">
+                <img src="{{ product.image.url }}" alt="{{ product.name }} - {{ forloop.counter }}" class="w-full h-80 object-contain bg-gray-50">
+              </div>
+              {% endfor %}
+            </div>
+            <div class="carousel-dots" id="carousel-dots"></div>
+          </div>
         </div>
 
-        <!-- Product Info -->
-        <div class="space-y-6">
-          <div>
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ product.name }}</h1>
-            <p class="text-gray-500 text-sm uppercase tracking-wide">{{ product.category }}</p>
-          </div>
+        <!-- RIGHT: Buy box (cols 8-12) -->
+        <div class="md:col-span-5 lg:col-span-5">
+          <div class="buy-box bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{{ product.name }}</h1>
+            <p class="text-sm text-gray-500 mb-3 uppercase tracking-widest">{{ product.category }}</p>
 
-          <!-- Rating -->
-          
-
-          <!-- Price -->
-          <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-100">
-            <div class="flex items-baseline gap-3 mb-2">
-              <span class="text-4xl font-bold text-amber-600">₹{{ product.price }}</span>
-              {% if product.old_price %}
-                <span class="text-xl text-gray-400 line-through">₹{{ product.old_price }}</span>
-                <span class="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Save 20%</span>
-              {% endif %}
-            </div>
-            <p class="text-sm text-gray-600">Free shipping & easy returns</p>
-          </div>
-
-          <!-- Description with Better Formatting -->
-          <div class="space-y-3">
-            <h3 class="text-lg font-semibold text-gray-900">About this item</h3>
-            <p class="text-gray-700 leading-relaxed">{{ product.description }}</p>
-            <!-- Added product features -->
-            {% if extra_details %}
-              <div class="grid grid-cols-2 gap-3 mt-4">
-                {% for key, value in extra_details.items %}
-                  <div class="flex items-start gap-2 bg-white rounded-lg p-3 border border-gray-200">
-                    <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></path></svg>
-                    <div class="text-sm">
-                      <p class="font-semibold text-gray-900">{{ key }}</p>
-                      <p class="text-gray-600">{{ value }}</p>
-                    </div>
-                  </div>
-                {% endfor %}
+            <div class="flex items-center space-x-4 mb-5">
+              <div>
+                <div class="text-3xl font-extrabold text-slate-900">₹{{ product.price }}</div>
+                {% if product.old_price %}
+                  <div class="text-sm text-gray-400 line-through">₹{{ product.old_price }}</div>
+                {% endif %}
               </div>
-            {% endif %}
-          </div>
+              <div class="ml-auto text-sm">
+                {% if product.available_stock > 0 %}
+                  <span class="text-green-600 font-semibold">In stock</span>
+                {% else %}
+                  <span class="text-red-600 font-semibold">Out of stock</span>
+                {% endif %}
+              </div>
+            </div>
 
-          <!-- Buttons -->
-          <form method="POST" action="{% url 'add_to_cart' 'women' product.id %}">
-            {% csrf_token %}
-            <div class="flex flex-col sm:flex-row gap-3">
+            <ul class="muted text-sm mb-5 list-disc pl-5">
+              <li>Free delivery on orders above ₹999</li>
+              <li>7-day return policy</li>
+              <li>Secure payments</li>
+            </ul>
+
+            <form method="POST" action="{% url 'add_to_cart' 'women' product.id %}">
+              {% csrf_token %}
               {% if user.is_authenticated %}
-                <button type="submit" class="flex-1 bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition font-semibold shadow-md hover:shadow-lg">
-                  🛒 Add to Cart
+                <button type="submit" class="w-full bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition font-semibold shadow-sm mb-3">
+                  Add to Cart
                 </button>
-                <a href="{% url 'add_to_wishlist' 'women' product.id %}" class="flex-1 border-2 border-amber-600 text-amber-600 px-6 py-3 rounded-lg hover:bg-amber-50 transition text-center font-semibold">
-                  ❤️ Wishlist
+                <a href="{% url 'add_to_wishlist' 'women' product.id %}" class="block w-full border-2 border-amber-600 text-amber-600 px-6 py-3 rounded-lg hover:bg-amber-50 transition text-center font-semibold mb-3">
+                  Add to Wishlist
                 </a>
-                <button formaction="{% url 'buy_now' 'women' product.id %}" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition font-semibold">
-                  ⚡ Buy Now
+                <button formaction="{% url 'buy_now' 'women' product.id %}" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-semibold shadow-sm">
+                  Buy Now
                 </button>
               {% else %}
-                <p class="text-red-600 font-semibold">Login to purchase or add items to your cart.</p>
+                <a href="{% url 'login' %}?next={{ request.path }}" class="block text-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                  Login to Buy
+                </a>
               {% endif %}
-            </div>
-          </form>
+            </form>
 
-          <!-- Trust Indicators -->
-          <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-            <div class="text-center">
-              <div class="text-2xl mb-2">✨</div>
-              <p class="text-xs font-semibold text-gray-900">Premium Quality</p>
-            </div>
-            <div class="text-center">
-              <div class="text-2xl mb-2">📦</div>
-              <p class="text-xs font-semibold text-gray-900">Tracked Delivery</p>
-            </div>
-            <div class="text-center">
-              <div class="text-2xl mb-2">🎁</div>
-              <p class="text-xs font-semibold text-gray-900">Gift Wrapping</p>
+            <div class="flex items-center gap-3 mt-4">
+              <a href="#product-details" class="text-sm text-gray-600 hover:underline">About this item</a>
+              <span class="text-sm text-gray-400">·</span>
+              <a href="#" class="text-sm text-blue-600 hover:underline">Share</a>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Related Products -->
-  <section class="py-16 bg-white">
-    <div class="container mx-auto px-6 md:px-12 lg:px-20">
-      <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">Complete the Look</h2>
-        <p class="text-gray-600">Complementary styles you'll love</p>
-      </div>
+      <!-- Divider -->
+      <div class="mt-10 border-t border-gray-200"></div>
 
-      <div class="relative">
-        <!-- Fixed scrollbar positioning -->
-        <!-- Left Arrow -->
-        <button onclick="scrollProducts(-1)" class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:scale-110 transition hover:bg-gray-50">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-
-        <!-- Product Cards -->
-        <div id="related-scroll" class="scroll-container px-12 -mx-6">
-          <div class="flex gap-6 pb-4">
-            {% for related in related_products %}
-              <a href="{% url 'women_product_detail' related.id %}" class="min-w-[220px] bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden group">
-                <div class="relative h-40 w-full overflow-hidden bg-amber-50">
-                  <img src="{{ related.image.url }}" alt="{{ related.name }}" class="object-contain w-full h-full transition-transform duration-300 group-hover:scale-105">
+      <!-- Product Details / About this item -->
+      <div id="product-details" class="mt-10">
+        <div class="grid md:grid-cols-3 gap-12">
+          <!-- Specifications column -->
+          <div class="md:col-span-1">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Specifications</h3>
+              <div class="spec-grid">
+                {% if product.brand %}
+                <div class="spec-item">
+                  <span class="spec-label">Brand</span>
+                  <span class="spec-value">{{ product.brand }}</span>
                 </div>
-                <div class="p-4">
-                  <h3 class="font-semibold text-gray-900 group-hover:text-amber-600 transition duration-200 truncate text-sm">{{ related.name }}</h3>
-                  <p class="text-amber-600 font-bold mt-2">₹{{ related.price }}</p>
-                  <div class="flex items-center gap-1 mt-2">
-                    <span class="text-yellow-400">★</span>
-                    <span class="text-xs text-gray-600">4.6 (72)</span>
+                {% endif %}
+                {% if product.color %}
+                <div class="spec-item">
+                  <span class="spec-label">Color</span>
+                  <span class="spec-value">{{ product.color }}</span>
+                </div>
+                {% endif %}
+                {% if product.material %}
+                <div class="spec-item">
+                  <span class="spec-label">Material</span>
+                  <span class="spec-value">{{ product.material }}</span>
+                </div>
+                {% endif %}
+                {% if product.size %}
+                <div class="spec-item">
+                  <span class="spec-label">Size</span>
+                  <span class="spec-value">{{ product.size }}</span>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Description column -->
+          <div class="md:col-span-2">
+            <div class="description-section p-8 rounded-xl shadow-sm">
+              <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">About this item</h2>
+
+              <div class="relative">
+                <div id="descWrapper" class="desc-wrapper max-h-72">
+                  <div class="description-content prose prose-slate prose-sm md:prose-base max-w-none">
+                    {% if product.description_html %}
+                      {% autoescape off %}
+                        {{ product.description_html }}
+                      {% endautoescape %}
+                    {% else %}
+                      <p class="desc-paragraph">{{ product.description }}</p>
+                    {% endif %}
                   </div>
                 </div>
-              </a>
-            {% empty %}
-              <p class="text-gray-500">No related products found.</p>
-            {% endfor %}
+
+                <div id="fadeShadow" class="fade-bottom"></div>
+              </div>
+
+              <div class="mt-4">
+                <button id="toggleBtn" class="text-amber-600 font-semibold hover:text-amber-800 transition">Show More ▾</button>
+              </div>
+            </div>
+
+            <!-- Warranty & Care -->
+            <div class="mt-6 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Warranty & Care</h3>
+              <p class="text-sm text-gray-600">Check product label for care instructions. Manufacturer warranty applies where stated.</p>
+            </div>
           </div>
         </div>
-
-        <!-- Right Arrow -->
-        <button onclick="scrollProducts(1)" class="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:scale-110 transition hover:bg-gray-50">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
       </div>
+
+      <!-- Related / You Might Also Like -->
+      <section class="mt-12">
+        <h3 class="text-xl font-semibold text-gray-900 mb-6">You Might Also Like</h3>
+        <div class="relative">
+          <button onclick="scrollProducts(-1)" class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <div id="related-scroll" class="overflow-x-auto scrollbar-hide px-12 -mx-4">
+            <div class="flex gap-6 pb-4">
+              {% for related in related_products %}
+                <a href="{% url 'women_product_detail' related.id %}" class="min-w-[220px] bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden group">
+                  <div class="h-40 w-full bg-gray-50 overflow-hidden flex items-center justify-center">
+                    <img src="{{ related.image.url }}" alt="{{ related.name }}" class="w-full h-full object-contain group-hover:scale-105 transition">
+                  </div>
+                  <div class="p-4">
+                    <h3 class="font-semibold text-gray-900 group-hover:text-amber-600 truncate text-sm">{{ related.name }}</h3>
+                    <p class="text-amber-600 font-bold mt-2">₹{{ related.price }}</p>
+                  </div>
+                </a>
+              {% empty %}
+                <p class="text-gray-500">No related products found.</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <button onclick="scrollProducts(1)" class="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </section>
     </div>
   </section>
 
+  {% include 'footer.html' %}
+
   <script>
+    // Swap image (single-image support)
+    function swapImage(url) {
+      const main = document.getElementById('mainProductImage');
+      if (main) main.src = url;
+    }
+
+    // Mobile carousel dots & auto-scroll
+    (function(){
+      const carousel = document.querySelector('.carousel-container');
+      const dotsContainer = document.getElementById('carousel-dots');
+      if (!carousel || !dotsContainer) return;
+      const images = carousel.querySelectorAll('.carousel-image');
+      images.forEach((_, idx) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (idx === 0 ? ' active' : '');
+        dot.onclick = () => carousel.scrollTo({ left: idx * carousel.clientWidth, behavior: 'smooth' });
+        dotsContainer.appendChild(dot);
+      });
+      carousel.addEventListener('scroll', () => {
+        const activeIndex = Math.round(carousel.scrollLeft / carousel.clientWidth);
+        document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i === activeIndex));
+      });
+      let cur = 0;
+      setInterval(() => {
+        if (images.length <= 1) return;
+        cur = (cur + 1) % images.length;
+        carousel.scrollTo({ left: cur * carousel.clientWidth, behavior: 'smooth' });
+      }, 4500);
+    })();
+
+    // Show more / Show less for description
+    (function(){
+      const wrapper = document.getElementById("descWrapper");
+      const btn = document.getElementById("toggleBtn");
+      const fade = document.getElementById("fadeShadow");
+      if (!wrapper || !btn) return;
+
+      const COLLAPSED_MAX = 288; // px
+      function updateState() {
+        if (wrapper.scrollHeight <= COLLAPSED_MAX) {
+          btn.style.display = 'none';
+          fade.style.display = 'none';
+          wrapper.style.maxHeight = wrapper.scrollHeight + 'px';
+        } else {
+          btn.style.display = 'inline-block';
+          fade.style.display = '';
+          wrapper.style.maxHeight = COLLAPSED_MAX + 'px';
+          btn.textContent = 'Show More ▾';
+        }
+      }
+      updateState();
+      btn.addEventListener('click', function(){
+        if (wrapper.style.maxHeight && wrapper.style.maxHeight !== (wrapper.scrollHeight + 'px')) {
+          wrapper.style.maxHeight = wrapper.scrollHeight + 'px';
+          fade.style.display = 'none';
+          btn.textContent = 'Show Less ▲';
+        } else {
+          wrapper.style.maxHeight = COLLAPSED_MAX + 'px';
+          fade.style.display = '';
+          btn.textContent = 'Show More ▾';
+          wrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+      window.addEventListener('resize', updateState);
+    })();
+
+    // Related products scroll
     function scrollProducts(direction) {
       const container = document.getElementById('related-scroll');
-      const scrollAmount = 300;
-      container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+      if (!container) return;
+      container.scrollBy({ left: direction * 300, behavior: 'smooth' });
     }
   </script>
-
-  {% include 'footer.html' %}
 </body>
 </html>

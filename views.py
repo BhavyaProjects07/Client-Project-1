@@ -168,6 +168,7 @@ def home(request):
     })
 
 
+from django.contrib.auth import authenticate
 
 # ======================================================
 # OTP LOGIN SYSTEM
@@ -180,7 +181,7 @@ def request_otp_view(request):
         password = request.POST.get('password')
 
         # Check if user already exists
-        user = User.objects.filter(email=email).first()
+        user = authenticate(request, username=username, password=password)
 
         if user:
             # Existing user: require password check before OTP
@@ -493,10 +494,20 @@ def checkout_view(request):
             messages.warning(request, "Not deliverable at this pincode.")
             return render(request, 'checkout.html', {'items': context_items, 'total': total})
 
+        # 📞 Phone Number Validation (Indian numbers must start with 6,7,8,9)
         phone_number = request.POST.get('phone_number', '')
-        if not phone_number.isdigit() or len(phone_number) != 10:
-            messages.error(request, "Please enter a valid 10-digit phone number.")
+
+        # Remove spaces just in case
+        phone_number = phone_number.strip()
+
+        if (
+            not phone_number.isdigit() or 
+            len(phone_number) != 10 or 
+            phone_number[0] not in ['6', '7', '8', '9']
+        ):
+            messages.error(request, "Enter a valid number.")
             return redirect('checkout')
+
 
         # ✅ Save checkout info and redirect to payment
         request.session['checkout_info'] = {
@@ -784,12 +795,37 @@ from .models import (
 
 
 # ✅ Admin Check
+
+
+
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.conf import settings
+
+def secure_admin(view_func):
+    def wrapper(request, *args, **kwargs):
+
+        if not request.user.is_authenticated:
+            return redirect(f"/request-otp/?next={request.path}")
+
+        if not request.user.is_staff:
+            messages.error(request, "You are not allowed to access admin panel.")
+            return redirect("/")
+
+        if not request.session.get("admin_verified"):
+            return redirect(f"/admin-verify/?next={request.path}")
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
 def is_admin(user):
     return user.is_authenticated and user.is_staff
 
 
 # ✅ Admin Dashboard Overview
-@user_passes_test(is_admin)
+@secure_admin
 def admin_dashboard_view(request):
     search_email = request.GET.get('q', '').strip()
 
@@ -818,10 +854,13 @@ def admin_dashboard_view(request):
     })
 
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, get_object_or_404
 from datetime import timedelta
-# ✅ Admin Order Detail (supports all product types)
+
+@secure_admin
 def admin_order_detail(request, order_id):
-    from store.models import Order, OrderItem
+    from store.models import Order, OrderItem, WomenProduct, ToyProduct, ElectronicProduct
 
     order = get_object_or_404(Order, id=order_id)
     order_items = order.items.all()
@@ -836,11 +875,9 @@ def admin_order_detail(request, order_id):
                 product = ToyProduct.objects.get(id=item.product_id)
             elif item.product_type == 'electronic':
                 product = ElectronicProduct.objects.get(id=item.product_id)
-            
-        except Exception:
+        except:
             product = None
 
-        # Attach for template use
         item.product_obj = product
         item.total_price = item.quantity * item.price
 
@@ -853,8 +890,7 @@ def admin_order_detail(request, order_id):
     })
 
 # ✅ Update Order Status
-@user_passes_test(is_admin)
-@require_POST
+@secure_admin
 def update_order_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     new_status = request.POST.get('status')
@@ -927,7 +963,7 @@ def update_order_status(request, order_id):
 
 
 # Update Payment Status (separate action)
-@user_passes_test(is_admin)
+@secure_admin
 def update_payment_status(request, order_id):
     """
     Update payment status (Paid / Not Paid) from the dashboard.
@@ -997,6 +1033,99 @@ def update_payment_status(request, order_id):
         messages.success(request, f"✅ Payment status for Order #{order.id} updated successfully!")
 
     return redirect('admin_order_detail', order_id=order.id)
+
+
+from django.conf import settings
+
+def admin_verify(request):
+    next_url = request.GET.get("next", "/")
+
+    if request.method == "POST":
+        code = request.POST.get("code")
+
+        if code == settings.ADMIN_VERIFY_CODE:
+            request.session["admin_verified"] = True
+            return redirect(next_url)
+        else:
+            messages.error(request, "Invalid admin security code.")
+            return redirect(f"/admin-verify/?next={next_url}")
+
+    return render(request, "admin_verify.html")
+
+from django.conf import settings
+
+
+
+#✅ Delivery Personnel Secure Access Decorator
+
+def secure_delivery(view_func):
+    def wrapper(request, *args, **kwargs):
+        
+        if not request.user.is_authenticated:
+            return redirect(f"/request-otp/?next={request.path}")
+
+        if not request.user.is_staff:
+            # Delivery boy is NOT admin, so allow them
+            pass
+
+        # If admin tries to access delivery system, allow as well
+        if not request.session.get("delivery_verified"):
+            return redirect(f"/delivery-verify/?next={request.path}")
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+
+def delivery_verify(request):
+    next_url = request.GET.get("next", "/delivery-dashboard/")
+
+    if request.method == "POST":
+        code = request.POST.get("code")
+
+        if code == settings.DELIVERY_VERIFY_CODE:
+            request.session["delivery_verified"] = True
+            return redirect(next_url)
+
+        messages.error(request, "Invalid delivery verification code.")
+        return redirect(f"/delivery-verify/?next={next_url}")
+
+    return render(request, "delivery_verify.html")
+
+
+@secure_delivery
+def delivery_dashboard(request):
+    from store.models import Order
+    orders = Order.objects.filter(assigned_to=request.user).order_by('-created_at')
+
+    name_q = request.GET.get("name")
+    date_q = request.GET.get("date")
+
+    if name_q:
+        orders = orders.filter(full_name__icontains=name_q)
+
+    if date_q:
+        orders = orders.filter(created_at__date=date_q)
+
+    return render(request, "delivery_dashboard.html", {
+        "orders": orders,
+        "name_q": name_q,
+        "date_q": date_q,
+    })
+
+@secure_delivery
+def delivery_order_detail(request, order_id):
+    from store.models import Order
+
+    order = get_object_or_404(Order, id=order_id, assigned_to=request.user)
+    order_items = order.items.all()
+
+    return render(request, "delivery_order_detail.html", {
+        "order": order,
+        "order_items": order_items,
+    })
+
 
 
 # ======================================================
@@ -1351,3 +1480,35 @@ def new_password(request):
         return redirect("home")
 
     return render(request, "new_password.html")
+
+
+
+def contact(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        subject = request.POST.get("subject")
+        message = request.POST.get("message")
+
+        # Send contact message to admin email
+        from store.email_service import send_brevo_email
+
+        admin_email = getattr(settings, 'ADMIN_EMAIL', None)
+        if admin_email:
+            subject = f"New Contact Message from {name}"
+            html_content = f"""
+                <div style="font-family:Arial;padding:20px;">
+                    <h2>Contact Message</h2>
+                    <p><strong>Name:</strong> {name}</p>
+                    <p><strong>Email:</strong> {email}</p>
+                    <p><strong>Message:</strong><br>{message}</p>
+                </div>
+            """
+            text_content = f"Name: {name}\nEmail: {email}\nMessage:\n{message}\nSubject: {subject}"
+
+            send_brevo_email(to=admin_email, subject=subject, html_content=html_content, text_content=text_content)
+
+        messages.success(request, "Your message has been sent. We'll get back to you soon!")
+        return redirect("contact")
+
+    return render(request, "contact.html")

@@ -82,22 +82,8 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-white" x-data="{ 
-  isMenuOpen: false, 
-  isScrolled: false,
-  activeTab: 'all',
-  email: '',
-  submitted: false,
-  submitForm() {
-    if (this.email) {
-      this.submitted = true;
-      this.email = '';
-      setTimeout(() => {
-        this.submitted = false;
-      }, 3000);
-    }
-  }
-}">
+<body class="min-h-screen bg-white">
+
 
   <!-- Header -->
   {% include 'nav.html' %}
@@ -115,11 +101,11 @@
             Your trusted partner in quality products
           </p>
           <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center fade-in fade-in-delay-2">
-            <a href="#featured-products" class="bg-amber-600 hover:bg-amber-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition text-sm sm:text-base">
+            <a href="#women-products" class="bg-amber-600 hover:bg-amber-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition text-sm sm:text-base">
               Shop Now
             </a>
-            <a href="#featured-products" class="border border-white text-white hover:bg-white/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition text-sm sm:text-base">
-              Explore Collections
+            <a href="/contact" class="border border-white text-white hover:bg-white/10 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition text-sm sm:text-base">
+              Contact Us
             </a>
           </div>
         </div>
@@ -248,7 +234,7 @@
       </button>
     </div>
   </div>
-</section>
+  </section>
 
 
 
@@ -289,6 +275,11 @@
           </button>
 
           <!-- Product Cards Scroll Container -->
+
+          {% if no_results_electronics %}
+          <p class="text-center text-red-500 font-semibold py-4">No products found.</p>
+          {% endif %}
+          
           <div id="electronics-scroll" class="flex overflow-x-auto gap-6 scroll-smooth scroll-px-6 snap-x snap-mandatory px-2 pb-4">
             {% for product in electronics_products %}
             <div class="min-w-[250px] snap-start bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition duration-300 overflow-hidden">
@@ -385,6 +376,9 @@
               Search
             </button>
           </form>
+          {% if no_results_toys %}
+          <p class="text-center text-red-500 font-semibold py-4">No products found.</p>
+          {% endif %}
 
 
           <!-- Product Cards Scroll Container -->

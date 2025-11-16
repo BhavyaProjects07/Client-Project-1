@@ -1,290 +1,994 @@
-<script src="https://unpkg.com/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sona Enterprises - Nav</title>
 
+  <style>
+    /* ------------------------------- */
+    /* FRESH DESIGN - Modern Mobile Nav */
+    /* ------------------------------- */
+    :root {
+      --primary: #ff9f1c;
+      --primary-dark: #e68a0c;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666;
+      --bg-primary: #fff;
+      --bg-secondary: #f5f5f5;
+      --border-color: #e0e0e0;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.16);
+    }
 
-<header 
-    x-data="navbar"
-    class="sticky top-0 z-40 w-full transition-all duration-300 bg-white shadow-sm"
-    :class="isScrolled ? 'shadow-md' : ''"
-    @scroll.window="isScrolled = window.pageYOffset > 10"
-    id="header">
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    <div class="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-      <div class="flex items-center justify-between gap-2 sm:gap-4">
-        <!-- Logo -->
-        <img src="https://res.cloudinary.com/dkfaom3zg/image/upload/v1763048642/logo_ujogun.png" alt="Sona Enterprises Logo" class="h-12 sm:h-13 w-auto cursor-pointer" onclick="window.location.href='/'">
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
 
+    /* ==================== HEADER NAVBAR ==================== */
+    header.navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 200px;
+    }
+
+    /* Logo */
+    .site-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .site-logo img {
+      height: 42px;
+      width: auto;
+    }
+
+    .site-brand {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+
+    .site-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* Desktop nav (hidden on mobile) */
+    nav.primary {
+      display: none;
+      gap: 50px;
+      align-items: center;
+    }
+
+    @media (min-width: 768px) {
+      nav.primary {
+        display: flex;
+      }
+    }
+
+    nav.primary a {
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 14px;
+      transition: color 200ms;
+    }
+
+    nav.primary a:hover {
+      color: var(--primary);
+    }
+
+    /* Icon group (top right) */
+    .icon-group {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-left: auto;
+    }
+
+    .icon-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 200ms, transform 150ms;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-secondary);
+    }
+
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text-primary);
+    }
+
+    .badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Profile dropdown (desktop) */
+    .profile-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .profile-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 200ms;
+    }
+
+    .profile-btn:hover {
+      background: var(--bg-secondary);
+    }
+
+    .profile-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .dropdown {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      min-width: 240px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 8px;
+      display: none;
+      z-index: 1100;
+      box-shadow: var(--shadow-lg);
+      margin-top: 8px;
+    }
+
+    .dropdown.active {
+      display: block;
+    }
+
+    .dropdown .item {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 150ms;
+      cursor: pointer;
+    }
+
+    .dropdown .item:hover {
+      background: var(--bg-secondary);
+    }
+
+    /* Hamburger menu */
+    .hamburger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    @media (min-width: 768px) {
+      .hamburger {
+        display: none;
+      }
+    }
+
+    .hamburger span {
+      width: 20px;
+      height: 14px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .hamburger span::before,
+    .hamburger span::after,
+    .hamburger .middle {
+      content: '';
+      position: absolute;
+      left: 0;
+      height: 2px;
+      background: var(--text-primary);
+      width: 100%;
+      border-radius: 1px;
+      transition: all 300ms cubic-bezier(0.2, 0.9, 0.25, 1);
+    }
+
+    .hamburger span::before {
+      top: 0;
+    }
+
+    .hamburger .middle {
+      top: 6px;
+    }
+
+    .hamburger span::after {
+      bottom: 0;
+    }
+
+    .hamburger.open span::before {
+      transform: translateY(6px) rotate(45deg);
+    }
+
+    .hamburger.open .middle {
+      opacity: 0;
+    }
+
+    .hamburger.open span::after {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+
+    /* ==================== MOBILE PANEL (FRESH DESIGN) ==================== */
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 300ms;
+    }
+
+    .mobile-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .mobile-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 320px;
+      max-width: 85vw;
+      height: 100vh;
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      z-index: 1001;
+      transform: translateX(100%);
+      transition: transform 400ms cubic-bezier(0.2, 0.9, 0.25, 1);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .mobile-panel.open {
+      transform: translateX(0);
+    }
+
+    /* Mobile header with logo */
+    .mobile-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #fff9f5 0%, #fff 100%);
+    }
+
+    .mobile-logo-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .mobile-logo-group img {
+      height: 38px;
+      width: auto;
+    }
+
+    .mobile-logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mobile-logo-brand {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .mobile-logo-sub {
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .mobile-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 200ms;
+      flex-shrink: 0;
+    }
+
+    .mobile-close:hover {
+      background: var(--bg-secondary);
+    }
+
+    .mobile-close svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text-primary);
+    }
+
+    /* Mobile content - scrollable */
+    .mobile-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .mobile-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .mobile-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .mobile-content::-webkit-scrollbar-thumb {
+      background: #d0d0d0;
+      border-radius: 3px;
+    }
+
+    /* Section titles */
+    .mobile-section-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 0 4px;
+      margin-bottom: 8px;
+    }
+
+    /* Navigation links */
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mobile-nav-links a {
+      padding: 12px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 15px;
+      background: var(--bg-secondary);
+      transition: all 200ms;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mobile-nav-links a:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateX(-2px);
+    }
+
+    /* Action buttons (cart, wishlist) */
+    .mobile-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mobile-action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+      border: 2px solid transparent;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 200ms;
+      position: relative;
+    }
+
+    .mobile-action-btn:hover {
+      border-color: var(--primary);
+      background: #fff5ed;
+      transform: translateX(-2px);
+    }
+
+    .mobile-action-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mobile-action-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .mobile-action-icon svg {
+      width: 100%;
+      height: 100%;
+      color: var(--primary);
+    }
+
+    .mobile-action-badge {
+      min-width: 22px;
+      height: 22px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Mobile footer - auth section */
+    .mobile-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+      flex-shrink: 0;
+      background: var(--bg-secondary);
+    }
+
+    /* Welcome box (authenticated) */
+    .mobile-auth-box {
+      padding: 16px;
+      background: linear-gradient(135deg, #fff9f5 0%, #fff 100%);
+      border: 2px solid #ffe5cc;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .mobile-welcome {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .mobile-welcome strong {
+      color: var(--primary);
+    }
+
+    .mobile-welcome-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .mobile-auth-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mobile-auth-btn {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      border: 1.5px solid var(--border-color);
+      background: white;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 200ms;
+    }
+
+    .mobile-auth-btn:hover {
+      border-color: var(--primary);
+      background: #fff5ed;
+    }
+
+    .mobile-auth-btn.logout {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .mobile-auth-btn.logout:hover {
+      background: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+
+    .mobile-admin-link {
+      display: block;
+      text-align: center;
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 12px;
+      background: #fff5ed;
+      transition: all 200ms;
+    }
+
+    .mobile-admin-link:hover {
+      background: #ffe5cc;
+    }
+
+    /* Login form (unauthenticated) */
+    .mobile-login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .mobile-form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mobile-form-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .mobile-form-input {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border-color);
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+      transition: all 200ms;
+    }
+
+    .mobile-form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fffbf8;
+      box-shadow: 0 0 0 3px rgba(255, 159, 28, 0.1);
+    }
+
+    .mobile-password-wrap {
+      position: relative;
+    }
+
+    .mobile-eye-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      transition: color 200ms;
+    }
+
+    .mobile-eye-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .mobile-eye-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .mobile-submit-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 200ms;
+      margin-top: 8px;
+    }
+
+    .mobile-submit-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .mobile-forgot-link {
+      display: block;
+      text-align: center;
+      font-size: 12px;
+      color: #e53935;
+      text-decoration: none;
+      font-weight: 600;
+      margin-top: 8px;
+      transition: color 200ms;
+    }
+
+    .mobile-forgot-link:hover {
+      color: #c62828;
+      text-decoration: underline;
+    }
+
+    /* Hide wishlist + cart icons ONLY on small devices */
+@media (max-width: 767px) {
+  .icon-group > a {  
+    display: none !important;   /* hides wishlist + cart */
+  }
+  
+  /* KEEP profile icon visible */
+  .icon-group .profile-wrap {
+    display: inline-flex !important;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+<header class="navbar" role="banner">
+  <div class="nav-inner">
+    <!-- LOGO -->
+    <a class="site-logo" href="/" aria-label="Sona Enterprises Home">
+      <img src="https://res.cloudinary.com/dkfaom3zg/image/upload/v1763048642/logo_ujogun.png" alt="Sona Enterprises">
+      <div>
         
-        
-
-        <!-- Navigation & Icons -->
-        <div class="flex items-center gap-2 sm:gap-4 ml-auto">
-
-
-          <!-- Hide navigation links on mobile, show only on md and above -->
-          <nav class="hidden md:flex items-center gap-4 lg:gap-6">
-            <a href="/">
-              <div class="text-lg font-semibold text-black-700 hover:text-amber-800 transition">
-               Home
-              </div>
-            </a>
-            <a href="#women-products">
-              <div class="text-lg font-semibold text-black-700 hover:text-amber-800 transition">
-               Womens
-              </div>
-            </a>
-            <a href="#electronics-products">
-              <div class="text-lg font-semibold text-black-700 hover:text-amber-800 transition">
-               Electronics
-              </div>
-            </a>
-            <a href="#toys-products">
-              <div class="text-lg font-semibold text-black-700 hover:text-amber-800 transition">
-               Toys
-              </div>
-            </a>
-          </nav>
-
-          <!-- Wishlist -->
-          <a href="{% url 'view_wishlist' %}">
-            <button class="relative p-2 rounded-full hover:bg-gray-100 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              {% if wishlist_count > 0 %}
-              <span class="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center bg-amber-600 text-white text-xs rounded-full">
-                {{ wishlist_count }}
-              </span>
-              {% endif %}
-            </button>
-          </a>
-
-
-          <!-- Cart -->
-          <a href="{% url 'view_cart' %}" class="relative p-2 rounded-full hover:bg-gray-100 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            {% if user.is_authenticated %}
-              <span class="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center bg-amber-600 text-white text-xs rounded-full">
-                {{ request.user.cartitem_set.count }}
-              </span>
-            {% endif %}
-          </a>
-
-          <!-- Profile/Auth -->
-<div class="relative inline-block text-left">
-  {% if user.is_authenticated %}
-    <!-- Dropdown for Authenticated User -->
-    <button id="profile-button" class="p-2 rounded-full hover:bg-gray-100">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    </button>
-
-    <div id="profile-menu" class="hidden absolute right-0 mt-2 w-72 max-w-[90vw] bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 overflow-hidden">
-
-      <div class="max-h-64 overflow-y-auto px-4 py-3">
-
-        <p class="text-sm font-medium text-gray-700">Welcome, {{ user.username }}</p>
-        <hr class="my-2">
-        <a href="{% url 'logout' %}" class="block text-sm text-blue-600 hover:underline">Logout</a>
-        <a href="{% url 'my_orders' %}" class="block text-sm text-blue-700 hover:underline">Track My Orders</a>
-        {% if user.is_staff %}
-          <a href="{% url 'admin_dashboard' %}" class="text-sm text-amber-600 hover:underline">Admin Dashboard</a>
-        {% endif %}
+        <div class="site-sub">Quality • Trust • Value</div>
       </div>
-    </div>
+    </a>
 
-    {% else %}
-  <!-- Dropdown for Unauthenticated User -->
-  <div class="relative z-50 md:static flex justify-end w-full">
+    <!-- DESKTOP NAV LINKS -->
+    <nav class="primary" role="navigation" aria-label="Primary">
+      <a href="/">Home</a>
+      <a href="#women-products">Women</a>
+      <a href="#electronics-products">Electronics</a>
+      <a href="#toys-products">Toys</a>
+    </nav>
 
-    <button id="signup-button" class="p-2 rounded-full hover:bg-gray-100">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    </button>
+    <!-- TOP RIGHT ICONS -->
+    <div class="icon-group" role="group" aria-label="Top actions">
+      <!-- Wishlist icon -->
+      <a href="{% url 'view_wishlist' %}" class="icon-btn" title="Wishlist" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="currentColor"/>
+        </svg>
+        {% if wishlist_count > 0 %}<span class="badge">{{ wishlist_count }}</span>{% endif %}
+      </a>
 
-    <!-- Note: right-2 on mobile, right-0 on md+ -->
-    <div id="signup-menu" class="hidden absolute right-2 md:right-0 mt-2 w-80 max-w-[90vw] bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+      <!-- Cart icon -->
+      <a href="{% url 'view_cart' %}" class="icon-btn" title="Cart" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 12.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 1.98-1.72L23 6H6"></path>
+        </svg>
+        {% if user.is_authenticated %}<span class="badge">{{ request.user.cartitem_set.count }}</span>{% endif %}
+      </a>
 
-      <div class="px-4 py-3">
-        <form method="post" action="{% url 'request_otp' %}" class="space-y-3">
-          {% csrf_token %}
-          <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-          <input type="text" name="username" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring focus:ring-blue-300">
-
-          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring focus:ring-blue-300">
-
-          <label for="signup-password" class="block text-sm font-medium text-gray-700">Password</label>
-
-          <div class="relative">
-              <input 
-                  type="password" 
-                  id="signup-password" 
-                  name="password" 
-                  required 
-                  class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm focus:ring focus:ring-blue-300"
-              >
-
-              <!-- Eye Button (unique ids for signup to avoid collisions) -->
-              <button 
-                  type="button" 
-                  onclick="toggleSignupPassword(this)" 
-                  class="absolute inset-y-0 right-2 flex items-center text-gray-500"
-                  aria-label="Toggle password visibility"
-              >
-                  <!-- eye icon -->
-                  <svg id="signup-eye-open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                      d="M1.5 12s4.5-7.5 10.5-7.5S22.5 12 22.5 12s-4.5 7.5-10.5 7.5S1.5 12 1.5 12z" />
-                      <circle cx="12" cy="12" r="3" stroke-width="1.5" />
-                  </svg>
-
-                  <!-- closed eye icon -->
-                  <svg id="signup-eye-closed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                      d="M3 3l18 18M9.88 9.88C9.33 10.41 9 11.16 9 12c0 1.66 1.34 3 3 3 .84 0 1.59-.33 2.12-.88M14.12 14.12l4.2 4.2M1.5 12S6 4.5 12 4.5c1.64 0 3.18.41 4.58 1.15M22.5 12c-.48.8-1.05 1.62-1.71 2.37" />
-                  </svg>
-              </button>
+      <!-- Desktop profile -->
+      <div class="profile-wrap" id="profileWrap">
+        <button class="profile-btn" id="profileBtn" aria-haspopup="true" aria-expanded="false" title="Account">
+          <div class="profile-avatar">
+            {% if user.is_authenticated %}{{ user.username|slice:":1"|upper }}{% else %}<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}
           </div>
-
-          <button type="submit" class="w-full bg-amber-600 text-white text-sm font-semibold px-3 py-2 rounded-md hover:bg-blue-700 transition">
-            Send OTP
-          </button>
-
-          <a href="{% url 'forgot_password' %}" 
-            class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-            Forgot Password?
-          </a>
-
-        </form>
-      </div>
-    </div>
-  </div>
-{% endif %}
-
-</div>
-
-        <!-- Add hamburger menu button for mobile only -->
-        <button id="hamburger-btn" class="md:hidden p-2 rounded-full hover:bg-gray-100 transition" @click="isMobileMenuOpen = !isMobileMenuOpen">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
         </button>
-      </div>
 
-      <!-- Mobile Menu - slides in from right -->
-      <div 
-        x-show="isMobileMenuOpen" 
-        @click.outside="isMobileMenuOpen = false"
-        class="fixed inset-0 z-30 md:hidden"
-        style="pointer-events: none;">
-        <!-- Backdrop -->
-        <div 
-          x-show="isMobileMenuOpen"
-          x-transition:enter="transition ease-out duration-300"
-          x-transition:enter-start="opacity-0"
-          x-transition:enter-end="opacity-100"
-          x-transition:leave="transition ease-in duration-300"
-          x-transition:leave-start="opacity-100"
-          x-transition:leave-end="opacity-0"
-          class="absolute inset-0 bg-black bg-opacity-30"
-          @click="isMobileMenuOpen = false"
-          style="pointer-events: all;"></div>
+        <!-- Desktop dropdown -->
+        <div class="dropdown" id="profileDropdown" role="menu" aria-label="Profile menu">
+          {% if user.is_authenticated %}
+            <div style="padding:8px 8px 4px 8px;font-size:13px;color:var(--text-secondary);">Welcome, <strong style="color:var(--primary);">{{ user.username }}</strong></div>
+            <a class="item" href="{% url 'my_orders' %}">📦 Track Orders</a>
+            <a class="item" href="{% url 'logout' %}">🚪 Logout</a>
+            {% if user.is_staff %}<a class="item" href="{% url 'admin_dashboard' %}">⚙️ Admin</a>{% endif %}
+            {% if request.user.is_authenticated and request.user.is_delivery_boy %}
+                <a class="item" href="{% url 'delivery_dashboard' %}" class="nav-link">Delivery Dashboard</a>
+            {% endif %}
 
-        <!-- Mobile Menu Panel - slides from right -->
-        <div 
-          x-show="isMobileMenuOpen"
-          x-transition:enter="transition ease-out duration-300"
-          x-transition:enter-start="translate-x-full"
-          x-transition:enter-end="translate-x-0"
-          x-transition:leave="transition ease-in duration-300"
-          x-transition:leave-start="translate-x-0"
-          x-transition:leave-end="translate-x-full"
-          class="absolute top-0 right-0 bottom-0 w-64 bg-white shadow-lg overflow-y-auto z-index-1000"
-          style="pointer-events: all;">
-          
-          <div class="p-4">
-            <!-- Close Button -->
-            <button @click="isMobileMenuOpen = false" class="float-right p-2 hover:bg-gray-100 rounded-full transition mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <!-- Mobile Navigation Links - with right to left animation -->
-            <nav class="flex flex-col gap-3 mt-6">
-              <a href="/" @click="isMobileMenuOpen = false" class="px-3 py-2 text-base font-semibold text-black-700 hover:text-amber-800 hover:bg-amber-50 rounded transition transform hover:translate-x-1 duration-200">
-                Home
-              </a>
-              <a href="#women-products" @click="isMobileMenuOpen = false" class="px-3 py-2 text-base font-semibold text-black-700 hover:text-amber-800 hover:bg-amber-50 rounded transition transform hover:translate-x-1 duration-200">
-                Womens
-              </a>
-              <a href="#electronics-products" @click="isMobileMenuOpen = false" class="px-3 py-2 text-base font-semibold text-black-700 hover:text-amber-800 hover:bg-amber-50 rounded transition transform hover:translate-x-1 duration-200">
-                Electronics
-              </a>
-              <a href="#toys-products" @click="isMobileMenuOpen = false" class="px-3 py-2 text-base font-semibold text-black-700 hover:text-amber-800 hover:bg-amber-50 rounded transition transform hover:translate-x-1 duration-200">
-                Toys
-              </a>
-            </nav>
-
-            <!-- Divider -->
-            <hr class="my-4">
-
-            <!-- Mobile Search -->
-            
-          </div>
+          {% else %}
+            <form method="post" action="{% url 'request_otp' %}" style="padding:8px;">
+              {% csrf_token %}
+              <input type="text" name="username" placeholder="Username" class="mobile-form-input" style="margin-bottom:8px;">
+              <input type="email" name="email" placeholder="Email" class="mobile-form-input" style="margin-bottom:8px;">
+              <div style="position:relative;margin-bottom:8px;">
+                <input type="password" name="password" id="dp-pass" placeholder="Password" class="mobile-form-input">
+                <button type="button" id="dp-eye" class="mobile-eye-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+              </div>
+              <button type="submit" class="mobile-submit-btn">Login</button>
+              <a href="{% url 'forgot_password' %}" class="mobile-forgot-link">Forgot?</a>
+            </form>
+          {% endif %}
         </div>
       </div>
 
-      <!-- Mobile Menu -->
-      <div x-show="isMenuOpen" class="md:hidden mt-3 pb-3 border-t pt-3">
-      </div>
+      <!-- Mobile hamburger -->
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span><span class="middle"></span></span>
+      </button>
     </div>
+  </div>
 </header>
 
-<!-- Initialize Alpine.js data for mobile menu state -->
+<!-- MOBILE PANEL - FRESH DESIGN -->
+<div class="mobile-overlay" id="mobileOverlay" aria-hidden="true">
+  <aside class="mobile-panel" id="mobilePanel" role="dialog" aria-modal="true" aria-label="Mobile menu">
+    
+    <!-- TOP HEADER WITH LOGO -->
+    <div class="mobile-header">
+      <div class="mobile-logo-group" onclick="location.href='/';">
+        <img src="https://res.cloudinary.com/dkfaom3zg/image/upload/v1763048642/logo_ujogun.png" alt="Sona">
+        <div class="mobile-logo-text">
+          <div class="mobile-logo-brand">Sona</div>
+          <div class="mobile-logo-sub">Enterprises</div>
+        </div>
+      </div>
+      <button id="mobileClose" class="mobile-close" aria-label="Close menu">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- SCROLLABLE CONTENT -->
+    <div class="mobile-content">
+      {% if user.is_authenticated %}
+        <!-- LOGGED IN -->
+        <div class="mobile-auth-box">
+          <div class="mobile-welcome">Welcome, <strong>{{ user.username }}</strong></div>
+          <div class="mobile-welcome-sub">Manage your account</div>
+          <div class="mobile-auth-buttons">
+            <a href="{% url 'my_orders' %}" class="mobile-auth-btn">📦 Orders</a>
+            <form method="post" action="{% url 'logout' %}" style="flex:1;">
+              {% csrf_token %}
+              <button type="submit" class="mobile-auth-btn logout" style="width:100%;border:none;">Logout</button>
+            </form>
+          </div>
+          {% if user.is_staff %}<a href="{% url 'admin_dashboard' %}" class="mobile-admin-link">⚙️ Admin Dashboard</a>{% endif %}
+        </div>
+      {% else %}
+        <!-- NOT LOGGED IN -->
+        
+      {% endif %}
+
+      <!-- NAVIGATION SECTION -->
+      <div>
+        <div class="mobile-section-title">Shopping</div>
+        <nav class="mobile-nav-links">
+          <a href="/">🏠 Home</a>
+          <a href="#women-products">👗 Women</a>
+          <a href="#electronics-products">📱 Electronics</a>
+          <a href="#toys-products">🎮 Toys</a>
+        </nav>
+      </div>
+
+      <!-- ACTIONS SECTION (CART & WISHLIST) -->
+      <div>
+        <div class="mobile-section-title">My Items</div>
+        <div class="mobile-actions">
+          <!-- Wishlist -->
+          <a href="{% url 'view_wishlist' %}" class="mobile-action-btn">
+            <div class="mobile-action-left">
+              <div class="mobile-action-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              </div>
+              <span>Wishlist</span>
+            </div>
+            {% if wishlist_count > 0 %}<div class="mobile-action-badge">{{ wishlist_count }}</div>{% endif %}
+          </a>
+
+          <!-- Cart -->
+          <a href="{% url 'view_cart' %}" class="mobile-action-btn">
+            <div class="mobile-action-left">
+              <div class="mobile-action-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 2L7 6H2v2h2.5l1.5 9.5c.1.6.6 1 1.2 1h10.7c.6 0 1.1-.4 1.2-1L22 8h2.5V6h-5L15 2H9zm3 5v8m2 0v-8m2 0v8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <span>Cart</span>
+            </div>
+            {% if user.is_authenticated %}<div class="mobile-action-badge">{{ request.user.cartitem_set.count }}</div>{% endif %}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER - NOW EMPTY -->
+    <div class="mobile-footer" style="border-top: 1px solid var(--border-color);"></div>
+  </aside>
+</div>
+
+<!-- FRESH JAVASCRIPT -->
 <script>
-  document.addEventListener('alpine:init', () => {
-    Alpine.data('navbar', () => ({
-      isMobileMenuOpen: false,
-      isMenuOpen: false,
-      isScrolled: false,
-      init() {
-            this.isMobileMenuOpen = false; // force close on load
-        }
-    }));
+(function() {
+  const hamburger = document.getElementById('hamburger');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  const mobilePanel = document.getElementById('mobilePanel');
+  const mobileClose = document.getElementById('mobileClose');
+  const profileBtn = document.getElementById('profileBtn');
+  const profileDropdown = document.getElementById('profileDropdown');
+  const profileWrap = document.getElementById('profileWrap');
+
+  // Open/Close mobile panel
+  function openMobile() {
+    document.body.style.overflow = 'hidden';
+    mobileOverlay.classList.add('active');
+    mobilePanel.classList.add('open');
+    hamburger.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeMobile() {
+    mobilePanel.classList.remove('open');
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    setTimeout(() => {
+      mobileOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }, 400);
+  }
+
+  // Hamburger click
+  hamburger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (mobileOverlay.classList.contains('active')) {
+      closeMobile();
+    } else {
+      openMobile();
+    }
   });
 
-  // Initialize header with Alpine.js if not already done
-  const header = document.getElementById('header');
-  if (header && !header.__x) {
-    Alpine.initTree(header);
-  }
+  // Close button click
+  mobileClose.addEventListener('click', closeMobile);
 
+  // Close on overlay click
+  mobileOverlay.addEventListener('click', (e) => {
+    if (e.target === mobileOverlay) closeMobile();
+  });
 
-  function toggleSignupPassword(btn) {
-    // find the closest form block and the password input within it
-    const container = btn.closest('.px-4') || btn.closest('.relative') || document;
-    const field = container.querySelector('#signup-password');
-    const eyeOpen = container.querySelector('#signup-eye-open');
-    const eyeClosed = container.querySelector('#signup-eye-closed');
-
-    if (!field) return;
-
-    if (field.type === "password") {
-      field.type = "text";
-      if (eyeOpen) eyeOpen.classList.add("hidden");
-      if (eyeClosed) eyeClosed.classList.remove("hidden");
-    } else {
-      field.type = "password";
-      if (eyeOpen) eyeOpen.classList.remove("hidden");
-      if (eyeClosed) eyeClosed.classList.add("hidden");
+  // Close when clicking a link in the panel
+  document.addEventListener('click', (e) => {
+    if (!mobileOverlay.classList.contains('active')) return;
+    const a = e.target.closest('a[href]');
+    if (a && a.getAttribute('href') && !a.href.includes('#')) {
+      closeMobile();
     }
+  });
+
+  // Close on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mobileOverlay.classList.contains('active')) {
+      closeMobile();
+    }
+  });
+
+  // Desktop profile dropdown
+  profileBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    profileDropdown.classList.toggle('active');
+    profileBtn.setAttribute('aria-expanded', profileDropdown.classList.contains('active'));
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!profileWrap.contains(e.target)) {
+      profileDropdown.classList.remove('active');
+      profileBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Desktop password toggle
+  const dpEye = document.getElementById('dp-eye');
+  const dpPass = document.getElementById('dp-pass');
+  if (dpEye && dpPass) {
+    dpEye.addEventListener('click', () => {
+      dpPass.type = dpPass.type === 'password' ? 'text' : 'password';
+    });
   }
+
+  // Mobile password toggle
+  const mEye = document.getElementById('m-eye');
+  const mPass = document.getElementById('m-password');
+  if (mEye && mPass) {
+    mEye.addEventListener('click', () => {
+      mPass.type = mPass.type === 'password' ? 'text' : 'password';
+    });
+  }
+})();
 </script>
 
-
-
+</body>
+</html>

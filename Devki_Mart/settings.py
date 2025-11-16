@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'storages',  # keep for future cloud/static storage support
     'cloudinary',
     'cloudinary_storage',
+    'ckeditor',
 ]
 
 # -----------------------------
@@ -133,6 +134,9 @@ LOGIN_REDIRECT_URL = '/home/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/request-otp/'
 
+ADMIN_VERIFY_CODE = config("ADMIN_VERIFY_CODE")
+
+
 from sib_api_v3_sdk import Configuration
 
 BREVO_API_KEY = config("BREVO_API_KEY")
@@ -144,6 +148,7 @@ BREVO_CONFIGURATION.api_key["api-key"] = BREVO_API_KEY
 
 
 ADMIN_EMAIL = config("ADMIN_EMAIL")
+DELIVERY_VERIFY_CODE = config("DELIVERY_VERIFY_CODE")
 
 
 # -----------------------------

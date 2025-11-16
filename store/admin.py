@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django import forms
 from django.utils.html import format_html
-
+from ckeditor.widgets import CKEditorWidget
 from .models import (
     WomenProduct,
     ElectronicProduct,
@@ -18,7 +18,13 @@ from .models import (
 # WOMEN PRODUCTS ADMIN
 # ======================================================
 
+# ======================================================
+# WOMEN PRODUCTS ADMIN
+# ======================================================
+
 class WomenProductForm(forms.ModelForm):
+    description = forms.CharField(widget=CKEditorWidget(), required=False)
+
     class Meta:
         model = WomenProduct
         fields = "__all__"
@@ -44,7 +50,13 @@ class WomenProductAdmin(admin.ModelAdmin):
 # ELECTRONIC PRODUCTS ADMIN
 # ======================================================
 
+# ======================================================
+# ELECTRONIC PRODUCTS ADMIN
+# ======================================================
+
 class ElectronicProductForm(forms.ModelForm):
+    description = forms.CharField(widget=CKEditorWidget(), required=False)
+
     class Meta:
         model = ElectronicProduct
         fields = "__all__"
@@ -71,6 +83,8 @@ class ElectronicProductAdmin(admin.ModelAdmin):
 # ======================================================
 
 class ToyProductForm(forms.ModelForm):
+    description = forms.CharField(widget=CKEditorWidget(), required=False)
+
     class Meta:
         model = ToyProduct
         fields = "__all__"
@@ -109,6 +123,13 @@ admin.site.register(Review)
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'full_name', 'order_status', 'paid', 'created_at')
+    list_display = ('id', 'user', 'full_name', 'order_status', 'paid', 'created_at', 'assigned_to')
     list_filter = ('order_status', 'paid', 'created_at')
     list_editable = ('order_status', 'paid')
+
+    # Show only delivery boys in assigned_to dropdown
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "assigned_to":
+            from store.models import CustomUser
+            kwargs["queryset"] = CustomUser.objects.filter(is_delivery_boy=True)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

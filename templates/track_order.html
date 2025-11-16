@@ -24,10 +24,10 @@
   </style>
 </head>
 
-{% include 'nav.html' %}
 
-<body class="bg-gradient-to-b from-orange-50 to-white min-h-screen py-10">
-
+<body class="bg-gradient-to-b from-orange-50 to-white min-h-screen">
+  
+  {% include 'nav.html' %}
   <div class="max-w-5xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-200">
     <!-- Header -->
     <div class="bg-gradient-to-r from-orange-500 to-orange-400 p-6">
@@ -53,6 +53,9 @@
           {{ order.order_status }}
         </div>
       </div>
+
+      
+      
 
       <!-- Progress Timeline -->
       <div class="relative mb-12">
@@ -108,6 +111,27 @@
 
       <!-- CTA -->
       <div class="mt-12 text-center">
+        {% if "pending" in order.order_status|lower %}
+        <div class="mt-8 text-center">
+          <form method="POST" action="{% url 'cancel_order' order.id %}">
+            {% csrf_token %}
+            <button 
+              class="inline-flex items-center bg-red-500 text-white font-semibold px-8 py-3 rounded-full shadow-md hover:bg-red-600 hover:shadow-lg transition duration-300">
+              <i class="bx bx-x-circle text-2xl mr-2"></i> Cancel Order
+            </button>
+          </form>
+        </div>
+        {% endif %}
+
+        <br>
+        
+        
+
+
+        <!-- DEBUG -->
+        
+
+
         <a href="/my-orders/"
            class="inline-flex items-center bg-orange-500 text-white font-semibold px-8 py-3 rounded-full shadow-md hover:bg-orange-600 hover:shadow-lg transition duration-300">
           <i class="bx bx-chevron-left text-2xl mr-1"></i> Back to Orders

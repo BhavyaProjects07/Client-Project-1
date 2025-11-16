@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Verification</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-sm">
+        
+        <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">
+            Delivery Verification
+        </h2>
+
+        <p class="text-center text-gray-600 text-sm mb-6">
+            Enter the delivery security code to continue.
+        </p>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <input 
+                type="password" 
+                name="code" 
+                placeholder="Enter Delivery Code"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                required
+            >
+
+            <button 
+                type="submit"
+                class="w-full py-2.5 bg-amber-600 text-white rounded-md font-medium hover:bg-amber-700 transition">
+                Verify
+            </button>
+        </form>
+
+        {% if messages %}
+        <div class="mt-4">
+            {% for m in messages %}
+            <p class="text-red-600 text-center text-sm font-medium">{{ m }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

@@ -4,10 +4,35 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models import Avg
 from cloudinary.models import CloudinaryField
 
+from .utils import format_description   # we will use this for auto-formatting
+
+
+# ======================================================
+# BASE PRODUCT MODEL (Shared by all products)
+# ======================================================
+class BaseProduct(models.Model):
+    description = models.TextField(blank=True, null=True)       # raw text from client
+    description_html = models.TextField(blank=True, null=True)  # auto-generated formatted HTML
+
+    class Meta:
+        abstract = True   # no DB table created for this model
+
+    def save(self, *args, **kwargs):
+        if self.description:
+            # Prevent double-formatting: only format if raw has NO HTML tags
+            if '<' not in self.description:
+                self.description_html = format_description(self.description)
+            else:
+                self.description_html = self.description
+        else:
+            self.description_html = ""
+        super().save(*args, **kwargs)
+
+
 # ======================================================
 # WOMEN PRODUCTS MODEL
 # ======================================================
-class WomenProduct(models.Model):
+class WomenProduct(BaseProduct):
     CATEGORY_CHOICES = [
         ('sarees', 'Sarees'),
         ('accessories', 'Accessories'),
@@ -15,7 +40,6 @@ class WomenProduct(models.Model):
     ]
 
     name = models.CharField(max_length=255)
-    description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = CloudinaryField('image', folder='women')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='sarees')
@@ -34,7 +58,7 @@ class WomenProduct(models.Model):
 # ======================================================
 # ELECTRONIC PRODUCTS MODEL
 # ======================================================
-class ElectronicProduct(models.Model):
+class ElectronicProduct(BaseProduct):
     CATEGORY_CHOICES = [
         ('mobiles', 'Mobiles & Smartphones'),
         ('laptops', 'Laptops'),
@@ -48,7 +72,6 @@ class ElectronicProduct(models.Model):
     ]
 
     name = models.CharField(max_length=255)
-    description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = CloudinaryField('image', folder='electronics')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='mobiles')
@@ -61,7 +84,7 @@ class ElectronicProduct(models.Model):
 # ======================================================
 # TOY PRODUCTS MODEL
 # ======================================================
-class ToyProduct(models.Model):
+class ToyProduct(BaseProduct):
     CATEGORY_CHOICES = [
         ('action_figures', 'Action Figures'),
         ('educational', 'Educational Toys'),
@@ -75,7 +98,6 @@ class ToyProduct(models.Model):
     ]
 
     name = models.CharField(max_length=255)
-    description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = CloudinaryField('image', folder='toys')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='action_figures')
@@ -91,9 +113,13 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     is_verified = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.username
+    is_delivery_boy = models.BooleanField(default=False)
 
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]   # username still required but not for login
+
+    def __str__(self):
+        return self.email
 
 # ======================================================
 # CART SYSTEM
@@ -203,11 +229,12 @@ class WishlistItem(models.Model):
 # ORDER SYSTEM
 # ======================================================
 ORDER_STATUS_CHOICES = [
-    ('Pending', 'Pending'),
-    ('Shipped', 'Shipped'),
-    ('Out for Delivery', 'Out for Delivery'),
+    ('Pending pickup', 'Pending pickup'),
+    ('Out for delivery', 'Out for delivery'),
     ('Delivered', 'Delivered'),
+    ('Cancelled', 'Cancelled'),
 ]
+
 
 
 PAYMENT_STATUS_CHOICES = [
@@ -228,8 +255,15 @@ class Order(models.Model):
     # ✅ Corrected field — no string choices, Boolean only
     paid = models.BooleanField(default=False)
 
-    order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Pending')
+    order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Pending pickup')
     created_at = models.DateTimeField(auto_now_add=True)
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="delivery_orders"
+    )
 
     def __str__(self):
         return f"Order #{self.pk} by {self.user.username}"
@@ -368,3 +402,15 @@ class Review(models.Model):
     def __str__(self):
         product = self.get_product()
         return f"Review by {self.user.username} on {product.name if product else 'Unknown'}"
+
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name} - {self.subject}"

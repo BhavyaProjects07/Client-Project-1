@@ -1,4 +1,3 @@
-{% include 'nav.html' %}
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -71,7 +70,7 @@
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
   }
-
+  
   .card-image-container {
     width: 100%;
     height: 140px;
@@ -91,7 +90,7 @@
     transition: transform 0.3s ease;
     padding: 0.5rem;
   }
-
+  
   .product-image:hover {
     transform: scale(1.05);
   }
@@ -212,6 +211,7 @@
   }
 </style>
 
+{% include 'nav.html' %}
 <!-- Changed container to full-width with no max-width constraint on mobile -->
 <div class="bg-gray-50 min-h-screen">
   <div class="w-full px-2 sm:px-4 py-3 sm:py-8 lg:max-w-7xl lg:mx-auto">
@@ -263,18 +263,25 @@
               {% endif %}
 
               {% if order.order_status == 'Delivered' %}
-              <a href="{% url 'submit_review' order.id item.product_type product.id %}" class="mt-auto">
-                <button class="card-button">
-                  <i class='bx bx-star' style="font-size: 0.8rem;"></i> Rate
-                </button>
-              </a>
+                <a href="{% url 'submit_review' order.id item.product_type product.id %}" class="mt-auto">
+                  <button class="card-button">
+                    <i class='bx bx-star' style="font-size: 0.8rem;"></i> Rate
+                  </button>
+                </a>
+
+              {% elif order.order_status == 'Cancelled' %}
+                <div class="text-red">
+                  <small>Your Order has been Cancelled</small>
+                </div>
+
               {% else %}
-              <a href="{% url 'track_order' order.id %}" class="mt-auto">
-                <button class="card-button">
-                  <i class='bx bx-map-pin' style="font-size: 0.8rem;"></i> Track
-                </button>
-              </a>
+                <a href="{% url 'track_order' order.id %}" class="mt-auto">
+                  <button class="card-button">
+                    <i class='bx bx-map-pin' style="font-size: 0.8rem;"></i> Track
+                  </button>
+                </a>
               {% endif %}
+
             </div>
           </div>
           {% endwith %}
