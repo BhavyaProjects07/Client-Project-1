@@ -39,22 +39,30 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.conf import settings
 
+from django.shortcuts import redirect
+from django.contrib import messages
+
 def secure_admin(view_func):
     def wrapper(request, *args, **kwargs):
 
+        # 1️⃣ Check login first
         if not request.user.is_authenticated:
             return redirect(f"/request-otp/?next={request.path}")
 
+        # 2️⃣ Check staff/admin
         if not request.user.is_staff:
             messages.error(request, "You are not allowed to access admin panel.")
             return redirect("/")
 
+        # 3️⃣ Tab verification using JS flag
+        # If NOT verified in Django session → redirect to verification page
         if not request.session.get("admin_verified"):
             return redirect(f"/admin-verify/?next={request.path}")
 
         return view_func(request, *args, **kwargs)
 
     return wrapper
+
 
 def is_admin(user):
     return user.is_authenticated and user.is_staff
@@ -290,10 +298,23 @@ def admin_verify(request):
         code = request.POST.get("code")
 
         if code == settings.ADMIN_VERIFY_CODE:
+
+            # Django session flag
             request.session["admin_verified"] = True
-            return redirect(next_url)
+
+            # Add a JS flag for this tab
+            response = redirect(next_url)
+            response.set_cookie("admin_tab_verified", "yes")
+
+            return response
+
         else:
             messages.error(request, "Invalid admin security code.")
             return redirect(f"/admin-verify/?next={next_url}")
 
     return render(request, "admin_verify.html")
+
+
+def clear_admin_verify(request):
+    request.session["admin_verified"] = False
+    return JsonResponse({"status": "cleared"})

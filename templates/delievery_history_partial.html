@@ -1,0 +1,45 @@
+<div class="p-6 bg-white rounded-xl shadow-md">
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">📜 Delivery History</h2>
+
+    <div class="mb-4 p-4 bg-amber-50 border-l-4 border-amber-600 rounded">
+        <p class="text-lg font-semibold text-amber-700">
+            Total Revenue Collected: ₹{{ total_revenue }}
+        </p>
+    </div>
+
+    <table class="w-full border-collapse mt-4">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="p-3 border">Order ID</th>
+                <th class="p-3 border">Customer</th>
+                <th class="p-3 border">Payment</th>
+                <th class="p-3 border">Amount</th>
+                <th class="p-3 border">Date</th>
+                <th class="p-3 border">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for order in orders %}
+            <tr class="hover:bg-gray-50">
+                <td class="p-3 border">#{{ order.id }}</td>
+                <td class="p-3 border">{{ order.full_name }}</td>
+                <td class="p-3 border">{{ order.payment_method }}</td>
+                <td class="p-3 border">₹{{ order.total_price }}</td>
+                <td class="p-3 border">{{ order.created_at|date:"d M Y" }}</td>
+                <td class="p-3 border text-center">
+                    <a href="{% url 'delivery_order_detail' order.id %}" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                        View
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="p-3 border text-center" colspan="6">No delivered orders yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>

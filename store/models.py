@@ -119,7 +119,9 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ["username"]   # username still required but not for login
 
     def __str__(self):
-        return self.email
+        return f"{self.username} - {self.email}"
+
+
 
 # ======================================================
 # CART SYSTEM
@@ -414,3 +416,28 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} - {self.subject}"
+    
+
+
+class DeliveryProfile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="delivery_profile")
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    first_name = models.CharField(max_length=50, blank=True, null=True)
+    last_name = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} Profile"
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=CustomUser)
+def create_delivery_profile(sender, instance, created, **kwargs):
+    if created and instance.is_delivery_boy:
+        DeliveryProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=CustomUser)
+def save_delivery_profile(sender, instance, **kwargs):
+    if instance.is_delivery_boy:
+        instance.delivery_profile.save()

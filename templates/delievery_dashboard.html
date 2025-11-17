@@ -31,12 +31,20 @@
     <div class="bg-white shadow-sm sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-amber-600">🚚 Delivery Dashboard</h1>
 
-        <div class="text-sm text-gray-600">
-            Logged in as: <span class="font-semibold text-gray-800">{{ request.user.username }}</span>
+        <div class="flex items-center space-x-6 text-sm font-medium">
+
+            <a href="{% url 'delivery_dashboard' %}" class="hover:text-amber-700">Dashboard</a>
+
+            <button onclick="loadHistory()" class="hover:text-amber-700">Order History</button>
+
+            <a href="{% url 'delivery_profile' %}" class="hover:text-amber-700">Profile</a>
+
+            <a href="{% url 'logout' %}" class="text-red-600 hover:text-red-800">Logout</a>
         </div>
     </div>
 
-    <div class="max-w-5xl mx-auto mt-8 fade-in">
+
+    <div id="mainContent" class="max-w-5xl mx-auto mt-8 fade-in">
 
         <!-- Search Filters -->
         <div class="bg-white p-6 rounded-xl shadow-md fade-in">
@@ -193,6 +201,18 @@
         </div>
 
     </div>
+
+
+    <script>
+    function loadHistory() {
+        fetch("{% url 'delivery_order_history' %}")
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById("mainContent").innerHTML = html;
+        });
+    }
+    </script>
+
 
 </body>
 </html>

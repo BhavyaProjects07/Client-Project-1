@@ -47,6 +47,7 @@ def request_otp_view(request):
 
             if auth_user:
                 login(request, auth_user)
+                request.session.set_expiry(60 * 60 * 24 * 15)   # 15 days
                 messages.success(request, f"Welcome back, {auth_user.username}!")
                 return redirect("/")
             else:
@@ -147,6 +148,7 @@ def verify_otp_view(request):
             user.save()
 
             login(request, user)
+            request.session.set_expiry(60 * 60 * 24 * 15)   # 15 days
 
             messages.success(
                 request,
@@ -233,7 +235,8 @@ def new_password(request):
         for key in ["reset_email", "reset_otp", "otp_mode"]:
             request.session.pop(key, None)
 
-        login(request, user)  # now login AFTER reset success
+        login(request, user)
+        request.session.set_expiry(60 * 60 * 24 * 15)   # 15 days  # now login AFTER reset success
 
         messages.success(request, "Password updated successfully!")
         return redirect("home")

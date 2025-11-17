@@ -990,5 +990,14 @@
 })();
 </script>
 
+
+<script>
+    // If session flag removed (Tab closed → sessionStorage cleared), remove Django session flag
+    if (!sessionStorage.getItem("admin_verified_tab")) {
+        fetch("/clear-admin-verify/");
+    }
+</script>
+
+
 </body>
 </html>

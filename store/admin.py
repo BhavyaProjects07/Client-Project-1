@@ -11,7 +11,8 @@ from .models import (
     WishlistItem,
     Order,
     OrderItem,
-    Review
+    Review,
+    DeliveryProfile
 )
 
 # ======================================================
@@ -110,7 +111,17 @@ class ToyProductAdmin(admin.ModelAdmin):
 # REGISTER OTHER MODELS
 # ======================================================
 
-admin.site.register(CustomUser)
+from django.contrib import admin
+from .models import CustomUser
+
+@admin.register(CustomUser)
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ("username", "email", "is_staff", "is_delivery_boy", "is_active")
+    list_filter = ("is_staff", "is_delivery_boy", "is_active")
+    list_editable = ("is_staff", "is_delivery_boy", "is_active")
+    ordering = ("-date_joined",)
+    search_fields = ("username", "email")
+
 admin.site.register(CartItem)
 admin.site.register(WishlistItem)
 admin.site.register(OrderItem)
@@ -133,3 +144,6 @@ class OrderAdmin(admin.ModelAdmin):
             from store.models import CustomUser
             kwargs["queryset"] = CustomUser.objects.filter(is_delivery_boy=True)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+admin.site.register(DeliveryProfile)

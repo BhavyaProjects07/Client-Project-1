@@ -247,3 +247,44 @@ def update_payment_status(request, order_id):
 
     messages.success(request, "Payment status updated")
     return redirect("delivery_dashboard")
+
+
+@secure_delivery
+def delivery_order_history(request):
+    orders = Order.objects.filter(
+        assigned_to=request.user,
+        order_status="Delivered"
+    ).order_by("-created_at")
+
+    total_revenue = sum(order.total_price for order in orders if order.paid)
+
+    return render(request, "delievery_history_partial.html", {
+        "orders": orders,
+        "total_revenue": total_revenue
+    })
+
+from store.models import DeliveryProfile
+@secure_delivery
+def delivery_profile(request):
+    # Auto-create profile if missing
+    profile, created = DeliveryProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        first = request.POST.get("first_name")
+        last = request.POST.get("last_name")
+        phone = request.POST.get("phone")
+
+        # Update CustomUser fields
+        request.user.first_name = first
+        request.user.last_name = last
+        request.user.save()
+
+        # Update DeliveryProfile fields
+        profile.phone_number = phone
+        profile.save()
+
+        messages.success(request, "Profile updated successfully!")
+    
+    return render(request, "delievery_profile.html", {
+        "profile": profile
+    })

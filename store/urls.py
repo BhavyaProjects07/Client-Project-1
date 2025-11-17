@@ -77,6 +77,8 @@ urlpatterns = [
     path('admin-dashboard/order/<int:order_id>/update-status/', views.update_order_status, name='update_order_status'),
     path('admin-dashboard/order/<int:order_id>/update-payment/', views.update_payment_status, name='update_payment_status'),
     path('admin-verify/', views.admin_verify, name='admin_verify'),
+    path("clear-admin-verify/", views.clear_admin_verify, name="clear_admin_verify"),
+
 
     # ================================
     # DELIVERY PERSON PANEL (if exists)
@@ -86,6 +88,8 @@ urlpatterns = [
     path("delivery-verify/", views.delivery_verify, name="delivery_verify"),
     path("delivery/order/<int:order_id>/update-status/", views.update_order_status, name="update_order_status"),
     path("delivery/order/<int:order_id>/update-payment/", views.update_payment_status, name="update_payment_status"),
+    path("delivery-profile/", views.delivery_profile, name="delivery_profile"),
+    path("delivery-history/", views.delivery_order_history, name="delivery_order_history"),
 
 
     # ================================

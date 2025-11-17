@@ -155,3 +155,12 @@ DELIVERY_VERIFY_CODE = config("DELIVERY_VERIFY_CODE")
 # DEBUG
 # -----------------------------
 DEBUG = True
+
+
+# Keep users logged in for 15 days
+SESSION_COOKIE_AGE = 15 * 24 * 60 * 60     # 15 days in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False    # Do NOT expire when the browser closes
+SESSION_COOKIE_SECURE = False              # True if using HTTPS
+SESSION_SAVE_EVERY_REQUEST = True          # Refresh expiry every new request
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
