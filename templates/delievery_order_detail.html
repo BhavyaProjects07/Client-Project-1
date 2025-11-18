@@ -151,33 +151,7 @@
         </div>
 
         <!-- Update Order Status Buttons -->
-        <div class="mt-8 text-center space-y-3 mb-12">
-
-            <form method="post" action="{% url 'update_order_status' order.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="order_status" value="Out for delivery">
-                <button class="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition">
-                    Mark as Out for Delivery
-                </button>
-            </form>
-
-            <form method="post" action="{% url 'update_order_status' order.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="order_status" value="Delivered">
-                <button class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 transition">
-                    Mark as Delivered
-                </button>
-            </form>
-
-            <form method="post" action="{% url 'update_order_status' order.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="order_status" value="Return initiated">
-                <button class="w-full bg-red-600 text-white py-2 rounded-lg font-medium hover:bg-red-700 transition">
-                    Mark as Return Initiated
-                </button>
-            </form>
-
-        </div>
+        
 
     </div>
 

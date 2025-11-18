@@ -26,25 +26,14 @@
 </head>
 
 <body class="bg-gray-100 min-h-screen">
-
+<!-- <button onclick="loadHistory()" class="hover:text-amber-700">Order History</button> -->
     <!-- Header -->
-    <div class="bg-white shadow-sm sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-amber-600">🚚 Delivery Dashboard</h1>
-
-        <div class="flex items-center space-x-6 text-sm font-medium">
-
-            <a href="{% url 'delivery_dashboard' %}" class="hover:text-amber-700">Dashboard</a>
-
-            <button onclick="loadHistory()" class="hover:text-amber-700">Order History</button>
-
-            <a href="{% url 'delivery_profile' %}" class="hover:text-amber-700">Profile</a>
-
-            <a href="{% url 'logout' %}" class="text-red-600 hover:text-red-800">Logout</a>
-        </div>
-    </div>
+     
+    {% include 'nav.html' %}
 
 
     <div id="mainContent" class="max-w-5xl mx-auto mt-8 fade-in">
+        
 
         <!-- Search Filters -->
         <div class="bg-white p-6 rounded-xl shadow-md fade-in">
@@ -75,6 +64,29 @@
 
         <!-- Orders List -->
         <div class="mt-8 space-y-6 fade-in">
+
+            <div class="mt-8 flex justify-center gap-3 pb-6 mb-10">
+
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-white border rounded-lg shadow">
+                        ← Prev
+                    </a>
+                {% endif %}
+
+                
+
+                <span class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-white border rounded-lg shadow">
+                        Next →
+                    </a>
+                {% endif %}
+
+            </div>
+            <button onclick="loadHistory()" class="hover:text-amber-700">Order History</button>
 
             {% for order in orders %}
             <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 float-card transition transform">
@@ -197,7 +209,11 @@
                 No assigned orders found.
             </p>
 
+            
+
             {% endfor %}
+
+            
         </div>
 
     </div>

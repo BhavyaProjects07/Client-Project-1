@@ -785,7 +785,7 @@
           {% else %}
             <form method="post" action="{% url 'request_otp' %}" style="padding:8px;">
               {% csrf_token %}
-              <input type="text" name="username" placeholder="Username" class="mobile-form-input" style="margin-bottom:8px;">
+              <input type="text" name="username" placeholder="Full Name" class="mobile-form-input" style="margin-bottom:8px;">
               <input type="email" name="email" placeholder="Email" class="mobile-form-input" style="margin-bottom:8px;">
               <div style="position:relative;margin-bottom:8px;">
                 <input type="password" name="password" id="dp-pass" placeholder="Password" class="mobile-form-input">

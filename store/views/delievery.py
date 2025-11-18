@@ -57,10 +57,11 @@ def delivery_verify(request):
     return render(request, "delievery_verify.html")
 
 
-
+from django.utils import timezone
 @secure_delivery
 def delivery_dashboard(request):
     from store.models import Order, CustomUser
+    from django.core.paginator import Paginator
 
     # Count delivery boys
     delivery_count = CustomUser.objects.filter(is_delivery_boy=True).count()
@@ -73,19 +74,48 @@ def delivery_dashboard(request):
         orders = Order.objects.filter(assigned_to=request.user).order_by('-created_at')
 
     # Search filters
+    # Search filters
     name_q = request.GET.get("name")
     date_q = request.GET.get("date")
 
+    # Fix "None" bug
+    if name_q == "None" or name_q is None:
+        name_q = ""
+
+    if date_q == "None" or date_q is None or date_q == "":
+        date_q = None
+
+    # Apply filters
     if name_q:
         orders = orders.filter(full_name__icontains=name_q)
 
     if date_q:
         orders = orders.filter(created_at__date=date_q)
 
+
+    # ===========================
+    # PAGINATION (10 per page)
+    # ===========================
+    paginator = Paginator(orders, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    # Stats for top cards
+    today = timezone.now().date()
+    today_deliveries = orders.filter(created_at__date=today).count()
+    delivered_today = orders.filter(created_at__date=today, order_status="Delivered").count()
+    pending_deliveries = orders.filter(order_status="Pending pickup").count()
+
     return render(request, "delievery_dashboard.html", {
-        "orders": orders,
+        "page_obj": page_obj,        # <- IMPORTANT
+        "orders": page_obj,          # backward compatibility with your loops
         "name_q": name_q,
         "date_q": date_q,
+
+        # stats
+        "today_deliveries": today_deliveries,
+        "delivered_today": delivered_today,
+        "pending_deliveries": pending_deliveries,
     })
 
 
