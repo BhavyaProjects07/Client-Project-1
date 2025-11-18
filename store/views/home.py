@@ -27,7 +27,7 @@ from django.db.models import Avg
 from store.models import WomenProduct, ElectronicProduct, ToyProduct, Review, WishlistItem
 from django.db.models import Avg
 from django.shortcuts import render
-from store.models import WomenProduct, ElectronicProduct, ToyProduct, Review, WishlistItem
+from store.models import WomenProduct, ElectronicProduct, ToyProduct, Review, WishlistItem,BusinessNameAndLogo
 
 def home(request):
     wishlist_count = WishlistItem.objects.filter(user=request.user).count() if request.user.is_authenticated else 0
@@ -59,6 +59,8 @@ def home(request):
     women_products = WomenProduct.objects.all()
     electronics_products = ElectronicProduct.objects.all()
     toys_products = ToyProduct.objects.all()
+    business_info = BusinessNameAndLogo.objects.first()
+
 
     # Attach product_type to each product
     for p in women_products:
@@ -165,4 +167,5 @@ def home(request):
         'categories': categories,
         'wishlist_count': wishlist_count,
         'product_type': product_type,
+        'business_info': business_info,
     })

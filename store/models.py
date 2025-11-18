@@ -441,3 +441,13 @@ def create_delivery_profile(sender, instance, created, **kwargs):
 def save_delivery_profile(sender, instance, **kwargs):
     if instance.is_delivery_boy:
         instance.delivery_profile.save()
+
+
+
+
+class BusinessNameAndLogo(models.Model):
+    business_name = models.CharField(max_length=255)
+    logo = CloudinaryField('logo', folder='business')
+
+    def __str__(self):
+        return self.business_name

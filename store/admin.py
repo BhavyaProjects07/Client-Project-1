@@ -12,7 +12,8 @@ from .models import (
     Order,
     OrderItem,
     Review,
-    DeliveryProfile
+    DeliveryProfile,
+    BusinessNameAndLogo
 )
 
 # ======================================================
@@ -147,3 +148,4 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 admin.site.register(DeliveryProfile)
+admin.site.register(BusinessNameAndLogo)
