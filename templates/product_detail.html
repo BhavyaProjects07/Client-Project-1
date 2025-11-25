@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ product.name }} - Collection | Sona Enterprises</title>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- TailwindCSS with Custom Config -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+      tailwind.config = {
+          theme: {
+              extend: {
+                  fontFamily: {
+                      sans: ['Inter', 'sans-serif'],
+                  },
+                  colors: {
+                      brand: {
+                          50: '#f0f9ff',
+                          100: '#e0f2fe',
+                          500: '#0ea5e9',
+                          600: '#0284c7',
+                          700: '#0369a1',
+                          900: '#0c4a6e',
+                      }
+                  },
+                  animation: {
+                      'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                  },
+                  keyframes: {
+                      fadeInUp: {
+                          '0%': { opacity: '0', transform: 'translateY(20px)' },
+                          '100%': { opacity: '1', transform: 'translateY(0)' },
+                      }
+                  }
+              }
+          }
+      }
+  </script>
+
+  <style>
+    body { 
+        font-family: 'Inter', sans-serif; 
+        background-color: #f8fafc; /* Slate-50 */
+    }
+
+    /* Custom Scrollbar for Carousel */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Description Fade Gradient */
+    .fade-bottom {
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    }
+
+    /* Smooth transitions */
+    .transition-all-300 {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-brand-100 selection:text-brand-900">
+  
+  <!-- Navbar Wrapper -->
+  <div class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+      {% include 'nav.html' %}
+  </div>
+
+  <!-- Main Product Section -->
+  <section class="py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
+    <div class="max-w-7xl mx-auto">
+      
+      <!-- Breadcrumb (Optional Visual) -->
+      <div class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+        <a href="/" class="hover:text-brand-600 transition-colors">Home</a>
+        <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+        <span class="text-slate-900 font-medium truncate">{{ product.name }}</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+
+        <!-- LEFT: Images (cols 1-7) -->
+        <div class="lg:col-span-7">
+          <div class="flex flex-col-reverse md:flex-row gap-4">
+            
+            <!-- Thumbnails column (Desktop) -->
+            <div class="hidden md:flex flex-col gap-3 w-20 flex-shrink-0">
+              <div onclick="swapImage('{{ product.image.url }}')" 
+                   class="w-20 h-20 rounded-xl border border-slate-200 bg-white p-2 cursor-pointer hover:border-brand-500 hover:ring-2 hover:ring-brand-100 transition-all duration-200 flex items-center justify-center">
+                <img src="{{ primary_image }}" alt="Thumbnail" class="w-full h-full object-contain">
+              </div>
+              <!-- Placeholder logic for more images if they existed -->
+              {% comment %}
+              {% for img in product.images.all %}
+              <div onclick="swapImage('{{ img.url }}')" ...>...</div>
+              {% endfor %}
+              {% endcomment %}
+            </div>
+
+            <!-- Main Image Display -->
+            <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative group overflow-hidden flex items-center justify-center min-h-[400px] max-h-[600px]">
+                <!-- Badge -->
+                <div class="absolute top-4 left-4 z-10">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white shadow-lg">
+                        New Arrival
+                    </span>
+                </div>
+                
+                <img id="mainProductImage" src="{{ primary_image }}" alt="{{ product.name }}" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105">
+            </div>
+          </div>
+
+          <!-- Mobile Carousel (Visible only on small screens) -->
+          <div class="md:hidden mt-4 relative group">
+            <div class="carousel-container flex overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-2xl bg-white border border-slate-200 shadow-sm">
+              <div class="carousel-image flex-shrink-0 w-full snap-center p-4 flex items-center justify-center h-80">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-full object-contain">
+              </div>
+              <!-- Simulating more images for carousel structure -->
+              {% for i in "234" %}
+              <div class="carousel-image flex-shrink-0 w-full snap-center p-4 flex items-center justify-center h-80">
+                <img src="{{ product.image.url }}" alt="{{ product.name }} view" class="h-full object-contain opacity-90">
+              </div>
+              {% endfor %}
+            </div>
+            
+            <!-- Dots -->
+            <div class="carousel-dots flex justify-center gap-2 mt-4" id="carousel-dots">
+                <!-- Dots injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Product Info & Actions (cols 8-12) -->
+        <div class="lg:col-span-5">
+          <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-slate-200 sticky top-24">
+            
+            <!-- Header -->
+            <div class="mb-6 border-b border-slate-100 pb-6">
+                <p class="text-sm font-semibold text-brand-600 uppercase tracking-wide mb-2">{{ product.category }}</p>
+                <h1 class="text-3xl font-bold text-slate-900 leading-tight mb-4">{{ product.name }}</h1>
+                
+                <div class="flex items-baseline gap-4">
+                  <span class="text-4xl font-bold text-slate-900">₹{{ product.price }}</span>
+                  {% if product.old_price %}
+                    <span class="text-lg text-slate-400 line-through font-medium">₹{{ product.old_price }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="mt-3">
+                  {% if product.available_stock > 0 %}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> In Stock
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-medium bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20">
+                        Out of Stock
+                    </span>
+                  {% endif %}
+                </div>
+            </div>
+
+            <!-- Trust Badges / Info -->
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center gap-3 text-sm text-slate-600">
+                <div class="p-1.5 bg-slate-100 rounded-full text-slate-500">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                Free delivery on orders above <span class="font-semibold text-slate-900">₹999</span>
+              </li>
+              
+              <li class="flex items-center gap-3 text-sm text-slate-600">
+                <div class="p-1.5 bg-slate-100 rounded-full text-slate-500">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                </div>
+                Secure payments & SSL protection
+              </li>
+            </ul>
+
+            <!-- Actions Form -->
+            <form method="POST" action="{% url 'add_to_cart' product.id %}" class="space-y-3">
+              {% csrf_token %}
+
+              {% if user.is_authenticated %}
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Add to Cart -->
+                    <button type="submit" 
+                            class="w-full bg-slate-900 text-white px-4 py-3.5 rounded-xl hover:bg-slate-800 transition-all duration-200 font-semibold shadow-lg shadow-slate-900/20 flex items-center justify-center gap-2 group">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                        Add to Cart
+                    </button>
+
+                    <!-- Wishlist -->
+                    <a href="{% url 'add_to_wishlist' product.id %}"
+                       class="w-full bg-white text-slate-700 border border-slate-300 px-4 py-3.5 rounded-xl hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 font-semibold flex items-center justify-center gap-2">
+                       <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                       Wishlist
+                    </a>
+                </div>
+
+                <!-- Buy Now -->
+                <button formaction="{% url 'buy_now' product.id %}" 
+                        type="submit"
+                        class="w-full bg-brand-600 text-white px-6 py-4 rounded-xl hover:bg-brand-700 hover:scale-[1.01] transition-all duration-200 font-bold text-lg shadow-lg shadow-brand-500/30 flex items-center justify-center gap-2 mt-2">
+                    Buy Now
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </button>
+
+              {% else %}
+                <a href="/" class="block w-full bg-brand-600 text-white text-center px-6 py-4 rounded-xl hover:bg-brand-700 transition-all duration-200 font-bold text-lg shadow-lg shadow-brand-500/30">
+                  Login to Buy
+                </a>
+              {% endif %}
+            </form>
+
+            <!-- Share Links -->
+            <div class="flex items-center justify-center gap-6 mt-6 pt-6 border-t border-slate-100">
+              <a href="#product-details" class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Details</a>
+              <span class="text-slate-300">|</span>
+              <a href="#" class="text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                Share Product
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="my-16 border-t border-slate-200"></div>
+
+      <!-- Product Details / Specs -->
+      <div id="product-details" class="grid md:grid-cols-12 gap-12">
+        
+        <!-- Specifications Column -->
+        <div class="md:col-span-4">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100">
+                <h3 class="text-lg font-bold text-slate-900">Technical Specs</h3>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% if product.brand %}
+                <div class="grid grid-cols-2 px-6 py-4">
+                  <span class="text-sm font-medium text-slate-500">Brand</span>
+                  <span class="text-sm font-semibold text-slate-900 text-right">{{ product.brand }}</span>
+                </div>
+                {% endif %}
+                {% if product.color %}
+                <div class="grid grid-cols-2 px-6 py-4">
+                  <span class="text-sm font-medium text-slate-500">Color</span>
+                  <span class="text-sm font-semibold text-slate-900 text-right">{{ product.color }}</span>
+                </div>
+                {% endif %}
+                {% if product.material %}
+                <div class="grid grid-cols-2 px-6 py-4">
+                  <span class="text-sm font-medium text-slate-500">Material</span>
+                  <span class="text-sm font-semibold text-slate-900 text-right">{{ product.material }}</span>
+                </div>
+                {% endif %}
+                {% if product.size %}
+                <div class="grid grid-cols-2 px-6 py-4">
+                  <span class="text-sm font-medium text-slate-500">Size</span>
+                  <span class="text-sm font-semibold text-slate-900 text-right">{{ product.size }}</span>
+                </div>
+                {% endif %}
+            </div>
+          </div>
+
+          <!-- Warranty Box -->
+          <div class="mt-6 bg-brand-50 rounded-2xl p-6 border border-brand-100">
+            <h3 class="text-brand-900 font-bold mb-2 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Warranty & Care
+            </h3>
+            <p class="text-sm text-brand-700 leading-relaxed">
+                Check product label for specific care instructions. Manufacturer warranty applies where stated on the packaging.
+            </p>
+          </div>
+        </div>
+
+        <!-- Description Column -->
+        <div class="md:col-span-8">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">About this item</h2>
+            
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative group hover:border-slate-300 transition-colors">
+                <!-- Wrapper for content -->
+                <div id="descWrapper" class="relative overflow-hidden transition-all duration-500" style="max-height: 200px;">
+                    <div class="prose prose-slate max-w-none text-slate-600 prose-headings:text-slate-900 prose-strong:text-slate-900 prose-li:marker:text-brand-500">
+                        {% if product.description_html %}
+                            {% autoescape off %}
+                                {{ product.description_html }}
+                            {% endautoescape %}
+                        {% else %}
+                            <p class="whitespace-pre-line leading-relaxed">{{ product.description }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Fade Effect -->
+                    <div id="fadeShadow" class="fade-bottom absolute bottom-0 left-0 w-full h-24 pointer-events-none"></div>
+                </div>
+
+                <!-- Toggle Button -->
+                <div class="mt-6 text-center border-t border-slate-100 pt-4">
+                    <button id="toggleBtn" class="inline-flex items-center gap-2 text-sm font-bold text-brand-600 hover:text-brand-700 transition-colors px-4 py-2 rounded-lg hover:bg-brand-50">
+                        Show More Details
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+      </div>
+
+      <!-- Related Products -->
+      <section class="mt-20 mb-12">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-2xl font-bold text-slate-900">You Might Also Like</h3>
+            <div class="flex gap-2">
+                <button onclick="scrollProducts(-1)" class="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button onclick="scrollProducts(1)" class="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="related-scroll" class="flex gap-6 overflow-x-auto scrollbar-hide pb-8 -mx-4 px-4 scroll-smooth">
+            {% for related in related_products %}
+            <a href="{% url 'women_product_detail' related.id %}" class="group min-w-[240px] w-[240px] bg-white rounded-2xl border border-slate-200 hover:border-brand-300 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex-shrink-0 flex flex-col">
+                
+                <div class="h-48 w-full bg-slate-50 p-4 flex items-center justify-center relative overflow-hidden">
+                    <img src="{{ related.image.url }}" alt="{{ related.name }}" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110">
+                </div>
+                
+                <div class="p-4 flex-1 flex flex-col">
+                    <h3 class="font-semibold text-slate-900 text-sm mb-1 line-clamp-2 group-hover:text-brand-600 transition-colors">{{ related.name }}</h3>
+                    <div class="mt-auto pt-3 flex items-center justify-between">
+                        <span class="font-bold text-slate-900">₹{{ related.price }}</span>
+                        <span class="text-xs font-medium text-brand-600 bg-brand-50 px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">View</span>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="w-full py-10 text-center text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                <p>No related products found at this time.</p>
+            </div>
+            {% endfor %}
+        </div>
+      </section>
+
+    </div>
+  </section>
+
+  {% include 'footer.html' %}
+
+  <!-- Logic Scripts -->
+  <script>
+    // 1. Swap Main Image
+    function swapImage(url) {
+      const main = document.getElementById('mainProductImage');
+      if (main) {
+          main.style.opacity = '0.5';
+          setTimeout(() => {
+              main.src = url;
+              main.style.opacity = '1';
+          }, 150);
+      }
+    }
+
+    // 2. Mobile Carousel Logic
+    (function(){
+      const carousel = document.querySelector('.carousel-container');
+      const dotsContainer = document.getElementById('carousel-dots');
+      
+      if (!carousel || !dotsContainer) return;
+      
+      const images = carousel.querySelectorAll('.carousel-image');
+      
+      // Create dots
+      images.forEach((_, idx) => {
+        const dot = document.createElement('button');
+        dot.className = 'w-2 h-2 rounded-full transition-all duration-300 ' + (idx === 0 ? 'bg-brand-600 w-6' : 'bg-slate-300 hover:bg-slate-400');
+        dot.ariaLabel = 'Go to slide ' + (idx + 1);
+        dot.onclick = () => {
+            carousel.scrollTo({ left: idx * carousel.clientWidth, behavior: 'smooth' });
+        };
+        dotsContainer.appendChild(dot);
+      });
+
+      // Update dots on scroll
+      carousel.addEventListener('scroll', () => {
+        const activeIndex = Math.round(carousel.scrollLeft / carousel.clientWidth);
+        const dots = dotsContainer.children;
+        for (let i = 0; i < dots.length; i++) {
+            if (i === activeIndex) {
+                dots[i].className = 'w-6 h-2 rounded-full bg-brand-600 transition-all duration-300';
+            } else {
+                dots[i].className = 'w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300';
+            }
+        }
+      });
+
+      // Auto play
+      let cur = 0;
+      const autoPlay = setInterval(() => {
+        if (images.length <= 1) return;
+        cur = (cur + 1) % images.length;
+        carousel.scrollTo({ left: cur * carousel.clientWidth, behavior: 'smooth' });
+      }, 5000); // Slower 5s interval
+    })();
+
+    // 3. Description Show More/Less
+    (function(){
+      const wrapper = document.getElementById("descWrapper");
+      const btn = document.getElementById("toggleBtn");
+      const fade = document.getElementById("fadeShadow");
+      
+      if (!wrapper || !btn) return;
+
+      const COLLAPSED_MAX = 200; // px (match style attribute)
+
+      function updateState() {
+        if (wrapper.scrollHeight <= COLLAPSED_MAX + 50) { // Tolerance
+          btn.style.display = 'none';
+          fade.style.display = 'none';
+          wrapper.style.maxHeight = 'none';
+        } else {
+          btn.style.display = 'inline-flex';
+          // Reset to initial state if it was not expanded by user, logic simplified here
+        }
+      }
+      
+      // Initial check
+      updateState();
+
+      btn.addEventListener('click', function(){
+        const isCollapsed = wrapper.style.maxHeight !== 'none';
+        
+        if (isCollapsed) {
+            // Expand
+            wrapper.style.maxHeight = wrapper.scrollHeight + 'px';
+            fade.style.opacity = '0';
+            setTimeout(() => { fade.style.display = 'none'; wrapper.style.maxHeight = 'none'; }, 500);
+            
+            btn.innerHTML = `Show Less <svg class="w-4 h-4 transform rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>`;
+        } else {
+            // Collapse
+            wrapper.style.maxHeight = wrapper.scrollHeight + 'px'; // Set explicit height first for transition
+            fade.style.display = 'block';
+            
+            // Force reflow
+            void wrapper.offsetWidth; 
+            
+            wrapper.style.maxHeight = COLLAPSED_MAX + 'px';
+            fade.style.opacity = '1';
+            
+            btn.innerHTML = `Show More Details <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>`;
+            
+            wrapper.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
+      
+      window.addEventListener('resize', updateState);
+    })();
+
+    // 4. Related Products Horizontal Scroll
+    function scrollProducts(direction) {
+      const container = document.getElementById('related-scroll');
+      if (!container) return;
+      const scrollAmount = 264; // Card width + gap roughly
+      container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

@@ -8,7 +8,57 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Alpine.js for interactivity -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            amber: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .scrollbar-hide {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
   <!-- Custom styles -->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap');
@@ -20,6 +70,10 @@
     h1, h2, h3 {
       font-family: 'Playfair Display', serif;
     }
+    .product-card {
+    border: 1px solid rgba(0,0,0,0.12); /* thin soft black border */
+    border-radius: 12px;               /* optional: keep rounded */
+}
 
     .product-card:hover {
       transform: translateY(-5px);
@@ -82,15 +136,13 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-white">
+<body class="min-h-screen bg-grey-30 overflow-x-hidden ">
+{% load custom_filters %}
 
 
   <!-- Header -->
   {% include 'nav.html' %}
-
-  <main>
-    <!-- Hero Section with Banner -->
-    <section class="hero-banner relative h-96 sm:h-[500px] md:h-[600px] flex items-center justify-center overflow-hidden" id="hero">
+  <!-- Main Content --><section class="hero-banner relative h-96 sm:h-[500px] md:h-[600px] flex items-center justify-center overflow-hidden" id="hero">
       <!-- Updated hero banner with proper centering and responsive design -->
       <div class="absolute inset-0 flex items-center justify-center">
         <div class="text-center px-4 sm:px-6 max-w-2xl animate-fade-in">
@@ -114,532 +166,286 @@
       </div>
     </section>
 
-    <!-- Featured Products -->
-    
+  <main id="catalog" class="container mx-auto px-4 py-16 md:py-24">
 
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="text-amber-600 font-semibold tracking-wider text-sm uppercase mb-2 block">Our Collections</span>
+        <h2 class="text-3xl md:text-5xl font-serif font-bold text-gray-900">Featured Products</h2>
+    </div>
 
-    <!-- Feature section for womens -->
-
-  <section class="py-16 bg-white" id="women-products">
-  <div class="container mx-auto px-4">
-    <div class="flex flex-col items-center mb-12">
-      <h2 class="text-4xl md:text-5xl font-bold mb-4 text-center heading-serif text-slate-900">Our Women's Collections</h2>
-      <p class="text-gray-600 text-center max-w-2xl mb-8">
-        Explore our handpicked selection of premium fashion, electronics, and toys
-      </p>
-
-      <!-- Category Buttons -->
-      <div class="flex flex-wrap justify-center gap-2 mb-8">
+    <!-- GLOBAL CATEGORY BUTTON BAR -->
+    <div class="flex flex-wrap justify-center gap-3 mb-16 sticky top-4 z-40 bg-gray-50/95 backdrop-blur-sm py-4 -mx-4 px-4 md:static md:bg-transparent">
+        <a href="#all" 
+           class="px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border bg-amber-600 text-white border-amber-600 shadow-md">
+            All
+        </a>
         {% for cat in categories %}
-          <a href="{% if cat == 'all' %}?{% else %}?category={{ cat }}{% endif %}#women-products"
-             class="capitalize px-4 py-2 rounded-lg font-medium transition-colors 
-                    {% if active_category == cat %}bg-amber-600 text-white shadow-md{% else %}border border-gray-300 hover:border-amber-400 text-gray-700{% endif %}">
-             {{ cat }}
-          </a>
+        <a href="#category-{{ cat.slug }}"
+           class="px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border bg-white text-gray-600 border-gray-200 hover:border-amber-500 hover:text-amber-600">
+            {{ cat.name }}
+        </a>
         {% endfor %}
-      </div>
-
-      <form action="{% url 'home' %}#women-products" method="get" class="mb-8 flex justify-center gap-2">
-          <input
-            type="text"
-            name="q"
-            placeholder="Search for Women's Products..."
-            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 w-64"
-            value="{{ request.GET.q }}"
-          >
-          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-md hover:bg-amber-700">
-            Search
-          </button>
-        </form>
     </div>
 
-    <div class="hidden md:flex items-center flex-1 max-w-md">
-          <div class="relative w-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+    {% for category in categories %}
+    <section id="category-{{ category.slug }}" class="mb-20 scroll-mt-28">
+
+        <!-- Category Header -->
+        <!-- Category Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 px-2">
+
+    <!-- LEFT: Category Title -->
+    <div class="flex-1">
+        <h2 class="text-2xl md:text-3xl font-serif font-bold text-gray-900 capitalize">
+            {{ category.name }}
+        </h2>
+        <div class="h-1 w-16 bg-amber-500 mt-2 rounded-full"></div>
+    </div>
+
+    <!-- CENTER: Subcategories (Centered Block) -->
+        <div class="flex-1 flex justify-center mt-4 md:mt-0">
+
+    {% if category.children.exists %}
+    <div class="flex flex-wrap justify-center gap-3">
+
+        {% for sub in category.children.all %}
+        <a href="{% url 'category_products' sub.slug %}"
+
+           class="
+               px-5 py-2 text-sm font-semibold rounded-lg border-2 shadow-sm transition-all duration-200
+
+               {% if products_by_category|get_item:category.slug %}
+                    bg-amber-600 border-amber-600 text-white
+               {% else %}
+                    bg-white border-gray-300 text-gray-700
+               {% endif %}
+
+               hover:bg-amber-600 hover:text-white hover:border-amber-600
+           "
+        >
+            {{ sub.name }}
+        </a>
+        {% endfor %}
+
+    </div>
+    {% endif %}
+</div>
+
+
+
+    <!-- RIGHT: View Collection + Arrows -->
+    <div class="flex-1 flex justify-end items-center gap-4 mt-4 md:mt-0">
+
+        <a href="{% url 'category_products' category.slug %}"
+            class="hidden md:inline-block text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors">
+            View Collection →
+        </a>
+
+        <div class="flex gap-2">
+            <button onclick="scrollCat('{{ category.slug }}', -1)" 
+                class="h-9 w-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:border-amber-500 hover:text-amber-500 transition-all shadow-sm">
+                <i class="fas fa-chevron-left text-xs"></i>
+            </button>
+
+            <button onclick="scrollCat('{{ category.slug }}', 1)"
+                class="h-9 w-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:border-amber-500 hover:text-amber-500 transition-all shadow-sm">
+                <i class="fas fa-chevron-right text-xs"></i>
+            </button>
+        </div>
+
+    </div>
+
+        </div>
+
+
+
+        {% with products=products_by_category|get_item:category.slug %}
+        {% if products and products|length > 0 %}
+
+        <div class="relative group/section">
             
-          </div>
-        </div>
+            <!-- Scroll Container -->
+            <div id="cat-{{ category.slug }}"
+                 class="flex gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-4 py-4 ">
 
-    
-
-    <!-- Scrollable Product Slider -->
-    <div class="relative">
-      <!-- Left Arrow -->
-      <button onclick="scrollProducts(-1)" class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:scale-110 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <!-- Product Cards -->
-      {% if no_results_women %}
-      <p class="text-center text-red-500 font-semibold py-4">No products found.</p>
-      {% endif %}
-      <div id="products-scroll" class="flex overflow-x-auto gap-6 scroll-smooth scroll-px-6 snap-x snap-mandatory px-2 pb-4">
-
-        {% for product in products %}
-          <div class="min-w-[250px] snap-start bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition duration-300 overflow-hidden">
-            <div class="relative pt-4 px-4">
-              <span class="absolute top-2 left-2 z-10 bg-amber-600 text-white text-xs px-2 py-1 rounded-full">-10%</span>
-
-              <!-- Wishlist -->
-              <a href="{% url 'add_to_wishlist' 'women' product.id %}" class="text-amber-600">
-                <button type="button" class="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/90 backdrop-blur-sm text-gray-600 hover:text-amber-600 hover:bg-white transition-colors duration-200">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </button>
-              </a>
-
-              <a href="{% url 'women_product_detail' product.id %}">
-                <div class="relative h-40 w-full mb-4 overflow-hidden rounded-lg">
-                  <img src="{{ product.image.url }}" alt="{{ product.name }}" class="object-contain w-full h-full transition-transform duration-300 hover:scale-105">
-                </div>
-              </a>
-            </div>
-
-            <div class="p-4">
-              <a href="{% url 'product_reviews' 'women' product.id %}" class="flex items-center mb-2 hover:underline">
-                <div class="flex items-center text-amber-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 fill-current" viewBox="0 0 24 24" stroke="none">
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                  <span class="ml-1 text-sm font-medium">{{ product.average_rating|floatformat:1 }}</span>
-                </div>
-                <span class="text-xs text-gray-500 ml-2">({{ product.total_reviews }} reviews)</span>
-              </a>
-
-              <h3 class="font-medium text-gray-900 hover:text-amber-600 transition duration-200">{{ product.name }}</h3>
-              <p class="text-sm text-gray-500 mb-2">{{ product.category|title }}</p>
-              <p class="text-sm text-gray-500 mt-1">In Stock: {{ product.available_stock }}</p>
-
-              <div class="flex items-center justify-between mt-2">
-                <span class="text-lg font-bold text-gray-900">₹{{ product.price }}</span>
-                {% if user.is_authenticated %}
-                  <a href="{% url 'add_to_cart' 'women' product.id %}" class="bg-amber-600 text-white px-3 py-1 text-sm rounded-md hover:bg-amber-700 transition">Add to Cart</a>
-                {% else %}
-                  <span class="text-sm text-red-500">Login to add</span>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-
-      <!-- Right Arrow -->
-      <button onclick="scrollProducts(1)" class="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:scale-110 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-    </div>
-  </div>
-  </section>
+                {% for product in products %}
+                <!-- Product Card Wrapper -->
+                <div class="min-w-[250px] max-w-[260px] flex-shrink-0 snap-start h-full">
 
 
+                    
+                    <!-- Modern Product Card -->
+                    <div class="group relative bg-white rounded-xl border border-black/20 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full flex flex-col overflow-hidden">
+
+                        
+                        <!-- Image Area -->
+                        <div class="relative aspect-[4/5] overflow-hidden bg-gray-100">
+                            <a href="{% url 'product_detail' product.pk product.slug %}" class="block h-full w-full">
+                                {% if product.image %}
+                                    <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" 
+                                         class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110">
+                                {% else %}
+                                    <div class="flex items-center justify-center h-full text-gray-400 bg-gray-50">
+                                        <i class="fas fa-image text-3xl opacity-50"></i>
+                                    </div>
+                                {% endif %}
+                            </a>
+
+                            <!-- Badges -->
+                            <div class="absolute top-3 left-3 flex flex-col gap-2 pointer-events-none">
+                                {% if product.old_price %}
+                                <span class="bg-red-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-sm shadow-sm">
+                                    Sale
+                                </span>
+                                {% endif %}
+                                <!-- Example: Add logic for 'New' if available in backend -->
+                                <!-- {% if product.is_new %} <span class="bg-blue-600 ...">New</span> {% endif %} -->
+                            </div>
+
+                            <!-- Floating Actions (Wishlist/QuickView) -->
+                            <div class="absolute top-3 right-3 flex flex-col gap-2
+                                  transition-opacity duration-300 
+                                  lg:opacity-0 lg:translate-x-2 
+                                  lg:group-hover:opacity-100 lg:group-hover:translate-x-0">
+
+                                <a href="{% url 'add_to_wishlist' product.pk %}" class="h-9 w-9 bg-white rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Add to Wishlist">
+                                    <i class="fas fa-heart"></i>
+                                </a>
+                                <a href="{% url 'product_detail' product.pk product.slug %}" 
+                                   class="h-9 w-9 bg-white rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-colors" title="Quick View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+
+                            <!-- Desktop Quick Add Overlay -->
+                            <div class="absolute bottom-0 left-0 right-0 p-4 translate-y-full transition-transform duration-300 group-hover:translate-y-0 bg-gradient-to-t from-black/60 to-transparent hidden lg:block">
+                                {% if product.available_stock|default:0 > 0 %}
+                                    {% if user.is_authenticated %}
+                                        {% if product.has_variants %}
+                                        <a href="{% url 'product_detail' product.pk product.slug %}" 
+                                           class="block w-full py-2.5 rounded-lg text-sm font-semibold shadow-lg transition-colors bg-amber-600 text-white hover:bg-amber-700 text-center">
+                                            Select Options
+                                        </a>
+                                        {% else %}
+                                        <a href="{% url 'add_to_cart' product.pk %}" 
+                                           class="block w-full py-2.5 rounded-lg text-sm font-semibold shadow-lg transition-colors bg-amber-600 text-white hover:bg-amber-700 text-center">
+                                            Add to Cart
+                                        </a>
+                                        {% endif %}
+                                    {% else %}
+                                        <a href="/" 
+                                           class="block w-full py-2.5 rounded-lg text-sm font-semibold shadow-lg transition-colors bg-gray-800 text-white hover:bg-gray-900 text-center">
+                                            Login to Buy
+                                        </a>
+                                    {% endif %}
+                                {% else %}
+                                    <button disabled class="w-full py-2.5 rounded-lg text-sm font-semibold shadow-lg transition-colors bg-gray-400 text-gray-200 cursor-not-allowed">
+                                        Out of Stock
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Card Content -->
+                        <div class="p-4 flex flex-col flex-grow">
+                            <div class="text-xs text-gray-500 mb-1">{{ product.category }}</div>
+                            
+                            <h3 class="font-medium text-gray-900 text-base leading-snug mb-2 line-clamp-2 min-h-[2.5em] group-hover:text-amber-700 transition-colors">
+                                <a href="{% url 'product_detail' product.pk product.slug %}">{{ product.name }}</a>
+                            </h3>
+
+                            <!-- Rating -->
+                            <div class="flex items-center gap-1 mb-2">
+                                <div class="text-amber-400 text-xs">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">{{ product.avg_rating }}</span>
+                                <span class="text-xs text-gray-400">({{ product.review_count|default:0 }})</span>
+                            </div>
+
+                            <!-- Price & Mobile Action -->
+                            <div class="mt-auto pt-2 flex items-center justify-between border-t border-gray-50">
+                                <div class="flex flex-col">
+                                    {% if product.old_price %}
+                                    <span class="text-xs text-gray-400 line-through">₹{{ product.old_price }}</span>
+                                    {% endif %}
+                                    <span class="text-lg font-bold text-gray-900">₹{{ product.price }}</span>
+
+                                    {% if product.available_stock > 0 %}
+                                        <span class="text-xs text-green-600 font-medium">In Stock: {{ product.available_stock }}</span>
+                                    {% else %}
+                                        <span class="text-xs text-red-600 font-medium">Out of Stock</span>
+                                    {% endif %}
+                                </div>
 
 
-    <!-- Featured section for Electronics -->
+                                <!-- Mobile Cart Icon (Visible only on small screens) -->
+                                <!-- Mobile Action (Visible only on small screens) -->
+                                <div class="lg:hidden">
+                                    {% if product.available_stock|default:0 > 0 %}
+                                        
+                                        {% if user.is_authenticated %}
+                                            <!-- Authenticated user → show ICON -->
+                                            <a href="{% if product.has_variants %}
+                                                        {% url 'product_detail' product.pk product.slug %}
+                                                    {% else %}
+                                                        {% url 'add_to_cart' product.pk %}
+                                                    {% endif %}" 
+                                              class="h-8 w-8 rounded-full flex items-center justify-center
+                                                      transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200">
+                                                <i class="fas fa-shopping-bag text-xs"></i>
+                                            </a>
 
-    <section class="py-16 bg-gray-50" id="electronics-products">
-      <div class="container mx-auto px-4">
-        <div class="flex flex-col items-center mb-12">
-          <h2 class="text-4xl md:text-5xl font-bold mb-4 text-center heading-serif text-slate-900">Our Electronics and Groceries</h2>
-          <p class="text-gray-600 text-center max-w-2xl mb-8">
-            Discover the latest gadgets and premium electronic products for your lifestyle.
-          </p>
-        </div>
-        
+                                        {% else %}
+                                            <!-- NOT LOGGED IN → Show TEXT instead -->
+                                            <a href="/"
+                                              class="text-red-600 text-xs font-semibold underline">
+                                              Login to Buy
+                                            </a>
+                                        {% endif %}
 
-        <form action="{% url 'home' %}#electronics-products" method="get" class="mb-8 flex justify-center gap-2">
-          <input
-            type="text"
-            name="q_electronic"
-            placeholder="Search Electronics..."
-            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 w-64"
-            value="{{ request.GET.q_electronic }}"
-          >
-          <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-md hover:bg-amber-700">
-            Search
-          </button>
-        </form>
+                                    {% else %}
+                                        <span class="text-red-600 text-xs font-semibold">Out of Stock</span>
+                                    {% endif %}
+                                </div>
 
-
-        <!-- Scrollable Product Slider -->
-        <div class="relative">
-          <!-- Left Arrow -->
-          <button onclick="scrollProducts('electronics', -1)" class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:scale-110 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          <!-- Product Cards Scroll Container -->
-
-          {% if no_results_electronics %}
-          <p class="text-center text-red-500 font-semibold py-4">No products found.</p>
-          {% endif %}
-          
-          <div id="electronics-scroll" class="flex overflow-x-auto gap-6 scroll-smooth scroll-px-6 snap-x snap-mandatory px-2 pb-4">
-            {% for product in electronics_products %}
-            <div class="min-w-[250px] snap-start bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition duration-300 overflow-hidden">
-              <div class="relative pt-4 px-4">
-                <span class="absolute top-2 left-2 z-10 bg-amber-600 text-white text-xs px-2 py-1 rounded-full">New</span>
-
-                <!-- Wishlist Button -->
-                <a href="{% url 'add_to_wishlist' 'electronic' product.id %}" class="text-amber-600">
-                  <button type="button" class="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/90 backdrop-blur-sm text-gray-600 hover:text-amber-600 hover:bg-white transition-colors duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  </button>
-                </a>
-
-                <a href="{% url 'electronic_product_detail' product.id %}">
-                  <div class="relative h-40 w-full mb-4 overflow-hidden rounded-lg">
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="object-contain w-full h-full transition-transform duration-300 hover:scale-105">
-                  </div>
-                </a>
-              </div>
-
-              <a href="{% url 'product_reviews' 'electronic' product.id %}" class="flex items-center mb-2 hover:underline">
-                <div class="flex items-center text-amber-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 fill-current" viewBox="0 0 24 24" stroke="none">
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                  <span class="ml-1 text-sm font-medium">{{ product.average_rating|floatformat:1 }}</span>
-                </div>
-                <span class="text-xs text-gray-500 ml-2">({{ product.total_reviews }} reviews)</span>
-              </a>
-
-
-              <div class="p-4">
-                <h3 class="font-medium text-gray-900 hover:text-amber-600 transition duration-200">{{ product.name }}</h3>
-                <p class="text-sm text-gray-500 mb-2">{{ product.category|title }}</p>
-                <p class="text-sm text-gray-500 mt-1">In Stock: {{ product.available_stock }}</p>
-                <div class="flex items-center justify-between mt-2">
-                  <span class="text-lg font-bold text-gray-900">₹{{ product.price }}</span>
-                  {% if user.is_authenticated %}
-                  <a href="{% url 'add_to_cart' 'electronic' product.id %}" class="bg-amber-600 text-white px-3 py-1 text-sm rounded-md hover:bg-amber-700 transition">
-                    Add to Cart
-                  </a>
-                  {% else %}
-                  <span class="text-sm text-red-500">Login to add</span>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-
-          <!-- Right Arrow -->
-          <button onclick="scrollProducts('electronics', 1)" class="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:scale-110 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </section>
-
-
-    <!-- Featured section for Toys --> 
-
-
-    <section class="py-16 bg-white" id="toys-products">
-      <div class="container mx-auto px-4">
-        <div class="flex flex-col items-center mb-12">
-          <h2 class="text-4xl md:text-5xl font-bold mb-4 text-center heading-serif text-slate-900">Our Toy Collection</h2>
-          <p class="text-gray-600 text-center max-w-2xl mb-8">
-            Bring joy to every moment with our colorful and fun toy collection.
-          </p>
-        </div>
-
-        <!-- Scrollable Product Slider -->
-        <div class="relative">
-          <!-- Left Arrow -->
-          <button onclick="scrollProducts('toys', -1)" class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:scale-110 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          <form action="{% url 'home' %}#toys-products" method="get" class="mb-8 flex justify-center gap-2">
-            <input
-              type="text"
-              name="q_toy"
-              placeholder="Search Toys..."
-              class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 w-64"
-              value="{{ request.GET.q_toy }}"
-            >
-            <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-md hover:bg-amber-700">
-              Search
-            </button>
-          </form>
-          {% if no_results_toys %}
-          <p class="text-center text-red-500 font-semibold py-4">No products found.</p>
-          {% endif %}
-
-
-          <!-- Product Cards Scroll Container -->
-          <div id="toys-scroll" class="flex overflow-x-auto gap-6 scroll-smooth scroll-px-6 snap-x snap-mandatory px-2 pb-4">
-            {% for product in toys_products %}
-            <div class="min-w-[250px] snap-start bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition duration-300 overflow-hidden">
-              <div class="relative pt-4 px-4">
-                <span class="absolute top-2 left-2 z-10 bg-pink-600 text-white text-xs px-2 py-1 rounded-full">Hot</span>
-
-                <!-- Wishlist Button -->
-                <a href="{% url 'add_to_wishlist' 'toy' product.id %}" class="text-amber-600">
-                  <button type="button" class="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/90 backdrop-blur-sm text-gray-600 hover:text-amber-600 hover:bg-white transition-colors duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  </button>
-                </a>
-
-                <a href="{% url 'toy_product_detail' product.id %}">
-                  <div class="relative h-40 w-full mb-4 overflow-hidden rounded-lg">
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="object-contain w-full h-full transition-transform duration-300 hover:scale-105">
-                  </div>
-                </a>
-              </div>
-
-                  <a href="{% url 'product_reviews' 'toy' product.id %}" class="flex items-center mb-2 hover:underline">
-                    <div class="flex items-center text-amber-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 fill-current" viewBox="0 0 24 24" stroke="none">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
-                      <span class="ml-1 text-sm font-medium">{{ product.average_rating|floatformat:1 }}</span>
+                            </div>
+                        </div>
                     </div>
-                    <span class="text-xs text-gray-500 ml-2">({{ product.total_reviews }} reviews)</span>
-                  </a>
+                    <!-- End Product Card -->
 
-
-              <div class="p-4">
-                <h3 class="font-medium text-gray-900 hover:text-amber-600 transition duration-200">{{ product.name }}</h3>
-                <p class="text-sm text-gray-500 mb-2">{{ product.category|title }}</p>
-                <p class="text-sm text-gray-500 mt-1">In Stock: {{ product.available_stock }}</p>
-                <div class="flex items-center justify-between mt-2">
-                  <span class="text-lg font-bold text-gray-900">₹{{ product.price }}</span>
-                  {% if user.is_authenticated %}
-                  <a href="{% url 'add_to_cart' 'toy' product.id %}" class="bg-amber-600 text-white px-3 py-1 text-sm rounded-md hover:bg-amber-700 transition">
-                    Add to Cart
-                  </a>
-                  {% else %}
-                  <span class="text-sm text-red-500">Login to add</span>
-                  {% endif %}
                 </div>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
+                {% endfor %}
 
-          <!-- Right Arrow -->
-          <button onclick="scrollProducts('toys', 1)" class="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:scale-110 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+                <!-- "See All" Card at end of scroll -->
+                
+
+            </div>
         </div>
-      </div>
+
+        {% else %}
+        <div class="text-center py-10 bg-white rounded-xl border border-dashed border-gray-200">
+            <p class="text-gray-400">No products available in this category.</p>
+        </div>
+        {% endif %}
+        {% endwith %}
+
     </section>
+    {% endfor %}
 
-
-
-
-    
-    <script>
-      function scrollProducts(direction) {
-        const container = document.getElementById('products-scroll');
-        const scrollAmount = 300;
-        container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
-      }
-    </script>
-
-    <!-- Testimonials -->
-    <section class="py-12 sm:py-16 md:py-20 bg-gray-50">
-      <div class="container mx-auto px-3 sm:px-4">
-        <div class="text-center mb-8 sm:mb-12">
-          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4">Customer Stories</h2>
-          <p class="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
-            Hear from customers who love shopping with us
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <!-- Testimonial 1 -->
-          <div class="testimonial-card bg-white rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-            <div class="flex items-center mb-4">
-              <div class="relative h-10 sm:h-12 w-10 sm:w-12 rounded-full overflow-hidden mr-3 sm:mr-4">
-                <img src="https://via.placeholder.com/48x48?text=AK" alt="Customer" class="object-cover w-full h-full">
-              </div>
-              <div>
-                <h3 class="font-medium text-gray-900 text-sm sm:text-base">Anjali Kumar</h3>
-                <p class="text-xs text-gray-500">Fashion Enthusiast</p>
-              </div>
-            </div>
-            <div class="flex mb-3 gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-            </div>
-            <p class="text-gray-600 text-xs sm:text-sm">Sona Enterprises has the best collection of women's clothing. Quality is exceptional and prices are fair!</p>
-          </div>
-
-          <!-- Testimonial 2 -->
-          <div class="testimonial-card bg-white rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-            <div class="flex items-center mb-4">
-              <div class="relative h-10 sm:h-12 w-10 sm:w-12 rounded-full overflow-hidden mr-3 sm:mr-4">
-                <img src="https://via.placeholder.com/48x48?text=RS" alt="Customer" class="object-cover w-full h-full">
-              </div>
-              <div>
-                <h3 class="font-medium text-gray-900 text-sm sm:text-base">Ravi Sharma</h3>
-                <p class="text-xs text-gray-500">Tech Lover</p>
-              </div>
-            </div>
-            <div class="flex mb-3 gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-            </div>
-            <p class="text-gray-600 text-xs sm:text-sm">Great electronics selection with authentic products. Reliable delivery and excellent customer service!</p>
-          </div>
-
-          <!-- Testimonial 3 -->
-          <div class="testimonial-card bg-white rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-            <div class="flex items-center mb-4">
-              <div class="relative h-10 sm:h-12 w-10 sm:w-12 rounded-full overflow-hidden mr-3 sm:mr-4">
-                <img src="https://via.placeholder.com/48x48?text=MP" alt="Customer" class="object-cover w-full h-full">
-              </div>
-              <div>
-                <h3 class="font-medium text-gray-900 text-sm sm:text-base">Meera Patel</h3>
-                <p class="text-xs text-gray-500">Parent</p>
-              </div>
-            </div>
-            <div class="flex mb-3 gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-            </div>
-            <p class="text-gray-600 text-xs sm:text-sm">My kids love the toys from Sona! Safe, affordable, and delivered quickly. Highly recommended!</p>
-          </div>
-
-          <!-- Testimonial 4 -->
-          <div class="testimonial-card bg-white rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-            <div class="flex items-center mb-4">
-              <div class="relative h-10 sm:h-12 w-10 sm:w-12 rounded-full overflow-hidden mr-3 sm:mr-4">
-                <img src="https://via.placeholder.com/48x48?text=VG" alt="Customer" class="object-cover w-full h-full">
-              </div>
-              <div>
-                <h3 class="font-medium text-gray-900 text-sm sm:text-base">Vikram Gupta</h3>
-                <p class="text-xs text-gray-500">Regular Shopper</p>
-              </div>
-            </div>
-            <div class="flex mb-3 gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24" stroke="none">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-            </div>
-            <p class="text-gray-600 text-xs sm:text-sm">Everything I need in one place! Fashion, gadgets, toys - Sona has become my go-to store.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Newsletter -->
-    <section class="py-12 sm:py-16 md:py-20 bg-amber-50">
-      <div class="container mx-auto px-3 sm:px-4">
-        <div class="max-w-3xl mx-auto text-center">
-          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4">Stay Updated</h2>
-          <p class="text-gray-600 text-sm sm:text-base mb-6 sm:mb-8">
-            Subscribe for exclusive offers and new arrivals
-          </p>
-
-          <form 
-            @submit.prevent="submitForm"
-            class="flex flex-col sm:flex-row gap-2 sm:gap-3 max-w-md mx-auto px-2">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              class="flex-grow py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
-              x-model="email"
-              required
-            >
-            <button 
-              type="submit" 
-              class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md font-medium text-sm whitespace-nowrap transition">
-              Subscribe
-            </button>
-          </form>
-
-          <div 
-            x-show="submitted"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 transform translate-y-4"
-            x-transition:enter-end="opacity-100 transform translate-y-0"
-            x-transition:leave="transition ease-in duration-300"
-            x-transition:leave-start="opacity-100 transform translate-y-0"
-            x-transition:leave-end="opacity-0 transform translate-y-4"
-            class="flex items-center justify-center mt-4 text-amber-600 text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-            <span>Thank you for subscribing!</span>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
+
+  <script>
+    function scrollCat(slug, dir) {
+        const el = document.getElementById('cat-' + slug);
+        if (!el) return;
+        // Scroll amount: slightly less than full width to show preview of next item
+        const amount = window.innerWidth > 768 ? 600 : 280;
+        el.scrollBy({ left: dir * amount, behavior: 'smooth' });
+    }
+  </script>
+
 
   <!-- Footer -->
   <footer id="contact" class="bg-gray-900 text-gray-300">

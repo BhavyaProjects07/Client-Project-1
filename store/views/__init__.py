@@ -9,3 +9,4 @@ from .product_detail import *
 from .review import *
 from .misc import *
 from .delievery import *
+from .category_products import * 

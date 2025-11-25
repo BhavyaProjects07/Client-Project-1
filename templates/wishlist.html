@@ -27,310 +27,153 @@
               800: '#1e293b',
               900: '#0f172a',
             }
-          },
-          animation: {
-            'float': 'float 3s ease-in-out infinite',
-          },
-          keyframes: {
-            float: {
-              '0%, 100%': { transform: 'translateY(0)' },
-              '50%': { transform: 'translateY(-10px)' },
-            }
           }
         }
       }
     }
   </script>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
 
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'Playfair Display', serif;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Playfair Display', serif; }
+
     @keyframes scaleIn {
       from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
     }
-    
-    .fade-in {
-      animation: fadeIn 0.5s ease-out forwards;
-    }
-    
-    .slide-up {
-      animation: slideUp 0.5s ease-out forwards;
-    }
-    
-    .scale-in {
-      animation: scaleIn 0.5s ease-out forwards;
-    }
-    
-    .staggered-item {
-      opacity: 0;
-    }
-    
-    .wishlist-item {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .wishlist-item:hover {
-      transform: translateY(-5px);
-    }
-    
-    .product-image {
-      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .wishlist-item:hover .product-image {
-      transform: scale(1.05);
-    }
-    
-    .image-overlay {
-      transition: opacity 0.3s ease;
-      opacity: 0;
-    }
-    
-    .wishlist-item:hover .image-overlay {
-      opacity: 1;
-    }
+    .scale-in { animation: scaleIn 0.5s ease-out forwards; }
+    .wishlist-item { transition: all 0.3s ease; }
+    .wishlist-item:hover { transform: translateY(-5px); }
+    .product-image { transition: transform 0.6s ease; }
+    .wishlist-item:hover .product-image { transform: scale(1.05); }
   </style>
 </head>
+
 <body class="bg-slate-50 min-h-screen flex flex-col">
-  <!-- Header -->
-  {% include 'nav.html' %}
 
-  <!-- Main Content -->
-  <main class="flex-grow py-6 md:py-12 px-4">
-    <div class="container mx-auto max-w-7xl">
-      <div class="mb-8 fade-in">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Your Wishlist</h1>
-            <p class="text-slate-600 mt-2 text-sm md:text-base">Save your favorite items for later</p>
-          </div>
-          {% if items %}
-          <div class="hidden sm:block">
-            <span class="bg-amber-100 text-amber-800 text-sm font-semibold px-4 py-2 rounded-full">
-              {{ items|length }} item{% if items|length != 1 %}s{% endif %}
+{% include 'nav.html' %}
+
+<main class="flex-grow py-6 md:py-12 px-4">
+  <div class="container mx-auto max-w-7xl">
+
+    <div class="mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Your Wishlist</h1>
+      <p class="text-slate-600 mt-2">Save your favorite items for later</p>
+    </div>
+
+    {% if items %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
+
+      {% for item in items %}
+        {% with product=item.product %}
+
+        {% if product %}
+
+        <div class="wishlist-item bg-white rounded-lg shadow-sm overflow-hidden border border-slate-100 scale-in">
+          
+          <!-- IMAGE -->
+          <div class="relative overflow-hidden">
+
+            {% if product.get_primary_image_url %}
+              <img src="{{ product.get_primary_image_url }}" class="product-image h-32 md:h-40 w-full object-cover" alt="{{ product.name }}">
+            {% elif product.image %}
+              <img src="{{ product.image }}" class="product-image h-32 md:h-40 w-full object-cover" alt="{{ product.name }}">
+            {% else %}
+              <div class="h-32 md:h-40 w-full bg-slate-200 flex items-center justify-center text-slate-500 text-xs">
+                No Image
+              </div>
+            {% endif %}
+
+            <a href="{% url 'remove_from_wishlist' item.id %}"
+              class="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md hover:bg-red-50 hover:text-red-600">
+              ✖
+            </a>
+
+            <span class="absolute bottom-2 left-2 bg-amber-600 text-white text-xs px-2 py-1 rounded">
+              {{ product.category.name }}
             </span>
           </div>
-          {% endif %}
-        </div>
-      </div>
 
-      {% if items %}
-      <!-- Wishlist Filters -->
-      <div class="mb-6 bg-white rounded-lg shadow-sm p-4 fade-in border border-slate-100">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div class="flex items-center space-x-2">
-            <span class="text-sm font-semibold text-slate-700">Sort by:</span>
-            <select class="text-sm border border-slate-200 rounded-md focus:border-amber-500 focus:ring focus:ring-amber-200 focus:ring-opacity-50 px-3 py-1.5">
-              <option>Recently Added</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>Name: A to Z</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Wishlist Items Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6" id="wishlist-items">
-  {% for item in items %}
-    {% with product=item.get_product %}
-      {% if product %}
-      <div class="staggered-item wishlist-item bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 border border-slate-100">
-        <div class="relative overflow-hidden">
-          <img 
-            src="{{ product.image.url }}" 
-            alt="{{ product.name }}" 
-            class="product-image h-32 md:h-40 w-full object-cover bg-slate-100"
-          />
-          
-          <div class="image-overlay absolute inset-0 bg-black bg-opacity-5"></div>
-          
-          <a href="{% url 'remove_from_wishlist' item.id %}" class="absolute top-2 right-2 bg-white p-1.5 md:p-2 rounded-full shadow-md hover:bg-red-50 hover:text-red-600 transition-all duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </a>
-          
-          <div class="absolute bottom-2 left-2">
-            <span class="bg-amber-600 text-white text-xs font-semibold px-1.5 md:px-2 py-0.5 md:py-1 rounded-md uppercase tracking-wide">
-              {{ product.category|title }}
-            </span>
-          </div>
-        </div>
-        
-        <div class="p-2.5 md:p-3">
-          <h3 class="text-xs md:text-sm font-semibold text-slate-800 line-clamp-2">{{ product.name }}</h3>
-          
-          <div class="flex items-center mt-1.5 md:mt-2 mb-2 md:mb-3">
-            <div class="flex text-yellow-400">
-              {% for i in "12345" %}
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-              {% endfor %}
+          <!-- CONTENT -->
+          <div class="p-3">
+
+            <h3 class="text-sm font-semibold text-slate-800 line-clamp-2">
+              {{ product.name }}
+            </h3>
+
+            <div class="flex items-center text-yellow-400 mt-2">
+              ★★★★★  
+              <span class="text-xs text-slate-500 ml-1">(4.9)</span>
             </div>
-            <span class="text-xs text-slate-500 ml-1">(4.9)</span>
+
+            <div class="flex justify-between items-center mt-3">
+              <span class="font-bold text-amber-600 text-sm">₹{{ product.price }}</span>
+
+              <!-- DYNAMIC ADD TO CART -->
+              <a href="{% url 'add_to_cart' product.id %}"
+                 class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded text-xs font-semibold">
+                Add
+              </a>
+
+            </div>
+
           </div>
-          
-          <div class="flex justify-between items-center gap-2">
-            <span class="text-xs md:text-sm font-bold text-amber-600">₹{{ product.price }}</span>
-            <a href="{% url 'add_to_cart' item.product_type product.id %}" class="bg-amber-600 hover:bg-amber-700 text-white px-2 md:px-3 py-1.5 md:py-2 rounded text-xs font-semibold transition-all duration-300 flex items-center justify-center flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </a>
-          </div>
+
+        </div>
+
+        {% endif %}
+        {% endwith %}
+      {% endfor %}
+
+    </div>
+
+    <div class="mt-8">
+      <a href="/" class="text-amber-600 hover:text-amber-700 font-semibold text-sm flex items-center">
+        ← Continue Shopping
+      </a>
+    </div>
+
+    {% else %}
+    <!-- EMPTY WISHLIST -->
+    <div class="bg-white rounded-xl shadow-sm p-8 text-center max-w-xl mx-auto border border-slate-100 scale-in">
+      <div class="mb-4">
+        <div class="w-20 h-20 bg-slate-100 rounded-full mx-auto flex items-center justify-center">
+          ❤️
         </div>
       </div>
-      {% endif %}
-    {% endwith %}
-  {% empty %}
-    <p class="text-center text-gray-500 col-span-full">Your wishlist is empty 💔</p>
+      <h2 class="text-2xl font-bold text-slate-900">Your wishlist is empty</h2>
+      <p class="text-slate-600 mt-2">Add products to view them here.</p>
+
+      <a href="/" class="mt-6 inline-block bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold">
+        Start Shopping
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</main>
+
+{% include 'footer.html' %}
+
+<script>
+  document.getElementById("current-year").textContent = new Date().getFullYear();
+</script>
+
+{% if messages %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  {% for message in messages %}
+  Swal.fire({
+    toast: true,
+    icon: "{{ message.tags }}",
+    title: "{{ message }}",
+    position: 'top',
+    timer: 2000,
+    showConfirmButton: false
+  });
   {% endfor %}
-</div>
+</script>
+{% endif %}
 
-      
-      <!-- Bulk Actions -->
-      <div class="mt-8 bg-white rounded-lg shadow-sm p-4 fade-in border border-slate-100">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          
-          
-          <div>
-            <a href="/" class="inline-flex items-center text-amber-600 hover:text-amber-700 font-semibold text-sm transition-colors duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Continue Shopping
-            </a>
-          </div>
-        </div>
-      </div>
-      {% else %}
-      <!-- Empty Wishlist -->
-      <div class="bg-white rounded-xl shadow-sm p-8 text-center max-w-2xl mx-auto slide-up border border-slate-100">
-        <div class="mb-6">
-          <div class="inline-flex items-center justify-center w-24 h-24 bg-slate-100 rounded-full mb-4 animate-float">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </div>
-          <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Your wishlist is empty</h2>
-          <p class="text-slate-600 mb-6 text-sm md:text-base">Discover fashion, electronics, and toys you love and add them to your wishlist</p>
-          <a href="/" class="inline-block bg-amber-600 hover:bg-amber-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors duration-300 transform hover:scale-105 active:scale-95 text-sm md:text-base">
-            Start Shopping
-          </a>
-        </div>
-      </div>
-      {% endif %}
-    </div>
-  </main>
-
-  <!-- Footer -->
-  <footer class="bg-slate-900 text-slate-300 mt-12">
-    <div class="container mx-auto px-4 py-12">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div>
-          <h3 class="text-lg md:text-xl font-bold text-white mb-4">Sona Enterprises</h3>
-          <p class="text-sm">Your destination for premium fashion, electronics, and toys.</p>
-        </div>
-
-        <div>
-          <h3 class="text-lg md:text-xl font-bold text-white mb-4">Quick Links</h3>
-          <ul class="space-y-2 text-sm">
-            <li><a href="#" class="hover:text-amber-500 transition-colors">Home</a></li>
-            <li><a href="#" class="hover:text-amber-500 transition-colors">About Us</a></li>
-            <li><a href="#" class="hover:text-amber-500 transition-colors">Products</a></li>
-            <li><a href="#" class="hover:text-amber-500 transition-colors">Contact</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-lg md:text-xl font-bold text-white mb-4">Support</h3>
-          <ul class="space-y-2 text-sm">
-            <li><a href="#" class="hover:text-amber-500 transition-colors">FAQ</a></li>
-            <li><a href="#" class="hover:text-amber-500 transition-colors">Shipping & Delivery</a></li>
-            <li><a href="#" class="hover:text-amber-500 transition-colors">Returns</a></li>
-            <li><a href="#" class="hover:text-amber-500 transition-colors">Privacy Policy</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-lg md:text-xl font-bold text-white mb-4">Contact</h3>
-          <ul class="space-y-3 text-sm">
-            <li class="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 mt-0.5 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              </svg>
-              <span>123 Premium Road, Retail City</span>
-            </li>
-            <li class="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-              <span>(123) 456-7890</span>
-            </li>
-            <li class="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <span>info@sona.com</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="border-t border-slate-800 mt-12 pt-8 text-center text-xs md:text-sm">
-        <p>&copy; <span id="current-year">2025</span> Sona Enterprises. All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    document.getElementById('current-year').textContent = new Date().getFullYear();
-    
-    document.addEventListener('DOMContentLoaded', function() {
-      const items = document.querySelectorAll('.staggered-item');
-      
-      items.forEach((item, index) => {
-        setTimeout(() => {
-          item.style.animation = 'scaleIn 0.5s ease-out forwards';
-        }, 100 * index);
-      });
-    });
-  </script>
-
-
-  {% if messages %}
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    {% for message in messages %}
-      Swal.fire({
-        toast: true,
-        icon: "{{ message.tags }}",
-        title: "{{ message }}",
-        position: 'top',
-        showConfirmButton: false,
-        timer: 2000,
-        timerProgressBar: true,
-      });
-    {% endfor %}
-  </script>
-  {% endif %}
 </body>
 </html>

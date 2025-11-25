@@ -226,11 +226,11 @@
     <div class="orders-grid">
       {% for order in orders %}
         {% for item in order.items.all %}
-          {% with product=item.get_product %}
+          {% with product=item.product %}
           <div class="order-card">
             <!-- Product Image -->
             <div class="card-image-container">
-              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+              <img src="{{ product.image }}" alt="{{ product.name }}" class="product-image">
               {% if item.quantity > 1 %}
               <div class="quantity-badge">{{ item.quantity }}</div>
               {% endif %}
@@ -304,7 +304,7 @@
         Looks like you haven't placed any orders yet. Start shopping to see your orders here.
       </p>
 
-      <a href="/home#women-products" class="inline-flex w-full sm:w-auto justify-center items-center px-4 sm:px-6 py-2 sm:py-3 border border-transparent text-xs sm:text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors">
+      <a href="/home#women-products" class="inline-flex w-full sm:w-auto justify-center items-center px-4 sm:px-6 py-2 sm:py-3 border border-transparent text-xs sm:text-base font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 transition-colors">
         <i class='bx bx-shopping-bag mr-2'></i> Start Shopping
       </a>
     </div>

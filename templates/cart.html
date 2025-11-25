@@ -8,6 +8,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Alpine.js for minimal interactions -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Custom styles -->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap');
@@ -15,7 +20,7 @@
     body {
       font-family: 'Inter', sans-serif;
     }
-
+  
     .fade-in {
       animation: fadeIn 0.5s ease forwards;
     }
@@ -76,6 +81,14 @@
     h1, h2, h3 {
       font-family: 'Playfair Display', serif;
     }
+
+    /* small responsive fix for long product names */
+    .truncate-multi {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
   </style>
   <!-- Tailwind config -->
   <script>
@@ -114,6 +127,9 @@
         <p class="text-slate-600 mt-2">Review and manage your selected items</p>
       </div>
 
+      {# ensure csrf token exists on page so template variable is set if needed #}
+      {% csrf_token %}
+
       {% if items %}
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Cart Items -->
@@ -128,20 +144,35 @@
 
             <div class="divide-y divide-slate-100">
   {% for item in items %}
-    {% with product=item.get_product %}
+    {% with product=item.product %}
       {% if product %}
       <div class="cart-item p-4 md:grid md:grid-cols-12 md:gap-4 md:items-center" x-data="{ quantity: {{ item.quantity }} }">
         <!-- Product Info -->
-        <div class="md:col-span-6 flex items-center mb-4 md:mb-0">
+        <div class="md:col-span-6 flex items-start mb-4 md:mb-0">
           <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden mr-4 flex-shrink-0">
-            <img src="{{ product.image.url }}" 
-                 alt="{{ product.name }}" 
-                 class="object-contain w-full h-full transition-transform duration-300 hover:scale-105">
+            {# prefer dynamic primary image helper if available else fallback #}
+            {% if product.get_primary_image_url %}
+              <img src="{{ product.get_primary_image_url }}" alt="{{ product.name }}" class="object-contain w-full h-full transition-transform duration-300 hover:scale-105">
+            {% elif product.image and product.image.url %}
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="object-contain w-full h-full transition-transform duration-300 hover:scale-105">
+            {% else %}
+              <div class="text-gray-400 text-xs">No Image</div>
+            {% endif %}
           </div>
-          <div>
-            <h3 class="font-semibold text-slate-900">{{ product.name }}</h3>
-            <p class="text-xs text-slate-500 mt-1">{{ product.category|title }}</p>
-            <p class="text-sm text-slate-500 mt-1 md:hidden">₹{{ product.price }}</p>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-slate-900 truncate-multi">{{ product.name }}</h3>
+            <p class="text-xs text-slate-500 mt-1">
+                {{ product.category.name|default:"" }}
+            </p>
+
+
+            {# show variant info if exists on item #}
+            <div class="text-xs text-slate-500 mt-2 space-y-1">
+              {% if item.size %}<div>Size: <span class="font-medium text-slate-700">{{ item.size }}</span></div>{% endif %}
+              {% if item.color %}<div>Color: <span class="font-medium text-slate-700">{{ item.color }}</span></div>{% endif %}
+              {% if item.fabric %}<div>Fabric: <span class="font-medium text-slate-700">{{ item.fabric }}</span></div>{% endif %}
+            </div>
+            <p class="text-sm text-slate-500 mt-1 md:hidden">₹{{ item.price }}</p>
           </div>
         </div>
 
@@ -151,9 +182,11 @@
           <div class="flex items-center border border-slate-200 rounded-md">
             <!-- Decrease Button -->
             <button 
+              type="button"
               class="cart-update px-2 py-1 text-slate-600 hover:text-amber-600"
               data-url="{% url 'update_cart_quantity' item.id %}"
-              data-action="decrease">
+              data-action="decrease"
+              aria-label="Decrease quantity">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
               </svg>
@@ -164,9 +197,11 @@
 
             <!-- Increase Button -->
             <button 
+              type="button"
               class="cart-update px-2 py-1 text-slate-600 hover:text-amber-600"
               data-url="{% url 'update_cart_quantity' item.id %}"
-              data-action="increase">
+              data-action="increase"
+              aria-label="Increase quantity">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
@@ -177,23 +212,31 @@
         <!-- Price -->
         <div class="md:col-span-2 flex items-center justify-between md:justify-end mb-4 md:mb-0">
           <span class="text-sm text-slate-500 md:hidden">Price:</span>
-          <span class="text-slate-900 font-semibold">₹{{ product.price }}</span>
+          <span class="text-slate-900 font-semibold">₹{{ item.price }}</span>
         </div>
 
         <!-- Subtotal -->
         <div class="md:col-span-2 flex items-center justify-between md:justify-end">
           <span class="text-sm text-slate-500 md:hidden">Subtotal:</span>
-          <span class="text-slate-900 font-semibold">₹{{ item.subtotal }}</span>
+          {# prefer item.subtotal if view provided, else compute using quantity*price if available #}
+          <span class="text-slate-900 font-semibold">₹
+            {% if item.subtotal %}{{ item.subtotal }}
+            {% else %}{{ item.quantity|add:"0"|floatformat:0|floatformat }}{% comment %} fallback: we'll show quantity*price via template math not supported easily {% endcomment %}
+             ₹{{ item.subtotal }}
+            {% endif %}
+          </span>
         </div>
 
         <!-- Remove Button -->
-        <a href="{% url 'remove_from_cart' item.id %}" 
-           class="text-amber-600 hover:text-amber-700 text-xs flex items-center space-x-1 mt-1 font-medium">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-          <span>Remove</span>
-        </a>
+        <div class="md:col-span-12 mt-3">
+          <a href="{% url 'remove_from_cart' item.id %}" 
+             class="text-amber-600 hover:text-amber-700 text-xs flex items-center space-x-1 mt-1 font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span>Remove</span>
+          </a>
+        </div>
       </div>
       {% endif %}
     {% endwith %}
@@ -348,31 +391,59 @@
   <!-- JavaScript -->
   <script>
     document.getElementById('current-year').textContent = new Date().getFullYear();
-    
+
+    // helper: get csrf token from cookie (works without injecting token string)
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
     document.querySelectorAll('.cart-update').forEach(button => {
       button.addEventListener('click', function () {
         const url = this.dataset.url;
         const action = this.dataset.action;
-  
+
         fetch(url, {
           method: 'POST',
           headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json'
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
           body: JSON.stringify({ action: action })
         })
         .then(response => response.json())
         .then(data => {
-          if (data.success) {
-            document.getElementById(`qty-${data.item_id}`).textContent = data.quantity;
+          if (data && data.success) {
+            // update quantity in DOM if provided
+            if (data.quantity !== undefined && data.item_id) {
+              const qEl = document.getElementById(`qty-${data.item_id}`);
+              if (qEl) qEl.textContent = data.quantity;
+            }
+            // reload to keep prices/summary consistent
             location.reload();
+          } else if (data && data.error) {
+            alert(data.error);
           }
+        })
+        .catch(err => {
+          console.error('Cart update failed', err);
+          alert('Unable to update cart right now. Try again.');
         });
       });
     });
   </script>
-
 
 {% if messages %}
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -389,6 +460,6 @@
       });
     {% endfor %}
   </script>
-  {% endif %}
+{% endif %}
 </body>
 </html>

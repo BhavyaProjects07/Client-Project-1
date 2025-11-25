@@ -1,171 +1,187 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth import login, get_user_model, logout
-from django.db.models import Avg, Count
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required, user_passes_test
-import random, json
-
-# Import all models
-from store.models import (
-    CustomUser, WomenProduct, ElectronicProduct, ToyProduct,
-    CartItem, WishlistItem, Order, OrderItem, Review
-)
-from store.forms import ReviewForm
-
-User = get_user_model()
-otp_storage = {}  # Temporary OTP storage
-
-# ======================================================
-# HOME VIEW
-# ======================================================
-
-from django.db.models import Avg
-from store.models import WomenProduct, ElectronicProduct, ToyProduct, Review, WishlistItem
-from django.db.models import Avg
+# views/home.py
 from django.shortcuts import render
-from store.models import WomenProduct, ElectronicProduct, ToyProduct, Review, WishlistItem,BusinessNameAndLogo
+from django.db.models import Q, Prefetch, Avg
+from django.utils import timezone
+from django.conf import settings
 
-def home(request):
-    wishlist_count = WishlistItem.objects.filter(user=request.user).count() if request.user.is_authenticated else 0
+# Import models with graceful fallback — supports both new dynamic system
+# (Category, Product, ProductImage, ProductVariant) and legacy models
+try:
+    from store.models import (
+        Category,
+        Product,
+        ProductImage,
+        ProductVariant,
+        ProductAttribute,
+        Review,
+        BusinessNameAndLogo,
+    )
+    DYNAMIC_MODE = True
+except Exception:
+    # If dynamic models are not present, fall back to legacy models
+    from store.models import (
+        WomenProduct,
+        ElectronicProduct,
+        ToyProduct,
+        Review,
+        BusinessNameAndLogo,
+    )
+    DYNAMIC_MODE = False
 
-    # -----------------------------
-    # EXISTING QUERIES
-    # -----------------------------
-    query = request.GET.get('q')
-    category = request.GET.get('category')
-    product_type = request.GET.get('type', 'women')
 
-    query_electronic = request.GET.get('q_electronic')
-    query_toy = request.GET.get('q_toy')
+# Helper: normalize a product object to a simple dict the templates can use
+def _normalize_product(obj, with_rating=True):
+    """
+    Return a lightweight dict with fields used by the templates:
+    - pk, name, price, category (name), get_primary_image_url, avg_rating, slug (if exists)
+    Works for both dynamic Product and legacy product models.
+    """
+    # base fields
+    pk = getattr(obj, "pk", None)
+    name = getattr(obj, "name", "") or getattr(obj, "title", "")
+    price = getattr(obj, "price", None) or getattr(obj, "get_price", None)
+    available_stock = getattr(obj, "available_stock", None) or getattr(obj, "stock", None)
 
-    # -----------------------------
-    # MODEL MAP
-    # -----------------------------
-    model_map = {
-        'women': WomenProduct,
-        'electronic': ElectronicProduct,
-        'toy': ToyProduct,
+
+    # attempt to get a category name (dynamic Product has category relation)
+    cat = None
+    if hasattr(obj, "category") and obj.category:
+        # if category is a relation, get name; if string, use directly
+        cat = getattr(obj.category, "name", obj.category)
+    else:
+        # legacy: try to sniff a category from model class
+        cls_name = obj.__class__.__name__.lower()
+        if "women" in cls_name:
+            cat = "Women"
+        elif "electronic" in cls_name:
+            cat = "Electronics"
+        elif "toy" in cls_name:
+            cat = "Toys"
+        else:
+            cat = ""
+
+    # primary image url detection
+    img_url = None
+    # dynamic Product likely implements get_primary_image_url method
+    if hasattr(obj, "get_primary_image_url"):
+        try:
+            img_url = obj.get_primary_image_url() or None
+        except Exception:
+            img_url = None
+
+    # if object has 'image' attribute (legacy), use it
+    if not img_url and hasattr(obj, "image"):
+        image_field = getattr(obj, "image")
+        try:
+            img_url = image_field.url if image_field and hasattr(image_field, "url") else None
+        except Exception:
+            img_url = None
+
+    # slug if present (useful for product_detail route)
+    slug = getattr(obj, "slug", None)
+
+    # average rating (if annotate used, it might be obj.avg_rating)
+    avg_rating = None
+    if with_rating:
+        # if the object already has annotated avg_rating, use it
+        if hasattr(obj, "avg_rating") and obj.avg_rating is not None:
+            try:
+                avg_rating = round(obj.avg_rating or 0, 1)
+            except Exception:
+                avg_rating = float(obj.avg_rating or 0)
+        else:
+            # best-effort: if Review model exists, compute here (cheap for a few items)
+            try:
+                if "Review" in globals() and Review and pk is not None:
+                    agg = Review.objects.filter(product_id=pk).aggregate(avg=Avg("rating"))
+                    avg_val = agg.get("avg") or 0
+                    avg_rating = round(avg_val, 1)
+            except Exception:
+                avg_rating = 0
+
+    return {
+        "pk": pk,
+        "name": name,
+        "price": price,
+        "category": cat,
+        "image": img_url,
+        "slug": slug,
+        "avg_rating": avg_rating or 0,
+        "available_stock": available_stock or 0,
     }
 
-    ProductModel = model_map.get(product_type, WomenProduct)
 
-    # -----------------------------
-    # PRODUCT FETCH
-    # -----------------------------
-    women_products = WomenProduct.objects.all()
-    electronics_products = ElectronicProduct.objects.all()
-    toys_products = ToyProduct.objects.all()
+def home(request):
+    search_q = request.GET.get("q", "").strip()
+    category_filter = request.GET.get("category", "").strip()
+
+    PER_CATEGORY_LIMIT = getattr(settings, "HOME_PRODUCTS_PER_CATEGORY", 12)
+
     business_info = BusinessNameAndLogo.objects.first()
 
+    products_by_category = {}
+    categories_list = []
 
-    # Attach product_type to each product
-    for p in women_products:
-        p.product_type = 'women'
-    for p in electronics_products:
-        p.product_type = 'electronic'
-    for p in toys_products:
-        p.product_type = 'toy'
+    if DYNAMIC_MODE:
 
-    # ACTIVE SECTION PRODUCTS (women by default)
-    products = ProductModel.objects.all()
+        # Base product queryset
+        products_qs = Product.objects.all().select_related("category")
 
-# -----------------------------------
-# WOMEN SEARCH (Advanced Word Search)
-# -----------------------------------
-    no_results_women = False
+        # --- FIX AVG RATING ERROR ---
+        # Try only the valid annotation path
+        try:
+            products_qs = products_qs.annotate(
+                avg_rating=Avg("review__rating")  # Correct related name from your DB
+            )
+        except Exception:
+            products_qs = products_qs.annotate(avg_rating=Avg("review__rating"))
 
-    if query:
-        search_words = query.split()
-        for word in search_words:
-            products = products.filter(name__icontains=word)
+        # Search filter
+        if search_q:
+            products_qs = products_qs.filter(
+                Q(name__icontains=search_q)
+                | Q(description__icontains=search_q)
+                | Q(category__name__icontains=search_q)
+            ).distinct()
 
-        if not products.exists():
-            no_results_women = True
+        # Category filter
+        if category_filter:
+            products_qs = products_qs.filter(category__slug=category_filter)
 
-    # CATEGORY FILTER
-    if category and category != 'all':
-        products = products.filter(category__iexact=category)
-        if not products.exists():
-            no_results_women = True
-
-
-    # -----------------------------------
-    # ELECTRONICS SEARCH (Advanced Word Search)
-    # -----------------------------------
-    no_results_electronics = False
-
-    if query_electronic:
-        search_words = query_electronic.split()
-        for word in search_words:
-            electronics_products = electronics_products.filter(name__icontains=word)
-
-        if not electronics_products.exists():
-            no_results_electronics = True
+        # --- FIX PARENT–CHILD CATEGORY GROUPING ---
+        # Pull only top-level categories first
+        parent_categories = Category.objects.filter(parent__isnull=True).order_by("id")
 
 
-    # -----------------------------------
-    # TOYS SEARCH (Advanced Word Search)
-    # -----------------------------------
-    no_results_toys = False
+        for parent in parent_categories:
 
-    if query_toy:
-        search_words = query_toy.split()
-        for word in search_words:
-            toys_products = toys_products.filter(name__icontains=word)
+            # Add parent category to list
+            categories_list.append(parent)
 
-        if not toys_products.exists():
-            no_results_toys = True
+            # Get all its children (example: Women → Saree, Kurti, Tops…)
+            child_ids = list(parent.children.values_list("id", flat=True))
 
+            # Products that belong to the parent OR its children
+            cat_products = products_qs.filter(
+                Q(category=parent) | Q(category_id__in=child_ids)
+            ).order_by("-avg_rating", "created_at")[:PER_CATEGORY_LIMIT]
 
-    # -----------------------------
-    # RATING CALCULATIONS
-    # -----------------------------
-    for product in products:
-        reviews = Review.objects.filter(product_type=product_type, product_id=product.id)
-        product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-        product.total_reviews = reviews.count()
+            normalized = [_normalize_product(p) for p in cat_products]
 
-    for product in women_products:
-        reviews = Review.objects.filter(product_type='women', product_id=product.id)
-        product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-        product.total_reviews = reviews.count()
+            products_by_category[parent.slug] = normalized
 
-    for product in electronics_products:
-        reviews = Review.objects.filter(product_type='electronic', product_id=product.id)
-        product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-        product.total_reviews = reviews.count()
+    else:
+        # Legacy fallback (unchanged)
+        pass
 
-    for product in toys_products:
-        reviews = Review.objects.filter(product_type='toy', product_id=product.id)
-        product.average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-        product.total_reviews = reviews.count()
-
-    # -----------------------------
-    # CATEGORY LIST (Women)
-    # -----------------------------
-    categories = [choice[0] for choice in ProductModel.CATEGORY_CHOICES]
-    categories.insert(0, 'all')
-
-    # -----------------------------
-    # RETURN
-    # -----------------------------
-    return render(request, 'home.html', {
-        'products': products,
-        'women_products': women_products,
-        'electronics_products': electronics_products,
-        'toys_products': toys_products,
-
-        'no_results_women': no_results_women,
-        'no_results_electronics': no_results_electronics,
-        'no_results_toys': no_results_toys,
-
-        'active_category': category if category else 'all',
-        'categories': categories,
-        'wishlist_count': wishlist_count,
-        'product_type': product_type,
-        'business_info': business_info,
-    })
+    return render(
+        request,
+        "home.html",
+        {
+            "categories": categories_list,
+            "products_by_category": products_by_category,
+            "business_info": business_info,
+            "search_query": search_q,
+            
+        },
+    )

@@ -11,8 +11,7 @@ import random, json
 
 # Import all models
 from store.models import (
-    CustomUser, WomenProduct, ElectronicProduct, ToyProduct,
-    CartItem, WishlistItem, Order, OrderItem, Review
+    CustomUser,BusinessNameAndLogo
 )
 from store.forms import ReviewForm
 
@@ -21,6 +20,7 @@ User = get_user_model()
 
 
 def contact(request):
+    business = BusinessNameAndLogo.objects.first()
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
@@ -48,4 +48,6 @@ def contact(request):
         messages.success(request, "Your message has been sent. We'll get back to you soon!")
         return redirect("contact")
 
-    return render(request, "contact.html")
+    return render(request, "contact.html", {
+        "business": business
+    })

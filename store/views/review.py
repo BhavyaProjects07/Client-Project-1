@@ -1,57 +1,93 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth import login, get_user_model, logout
+from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required, user_passes_test
-import random, json
+from django.http import Http404
 
-# Import all models
-from store.models import (
-    CustomUser, WomenProduct, ElectronicProduct, ToyProduct,
-    CartItem, WishlistItem, Order, OrderItem, Review
-)
+from store.models import Product, ProductVariant, Order, Review
 from store.forms import ReviewForm
 
-User = get_user_model()
-
-
 
 # ======================================================
-# REVIEW SYSTEM
+# SUBMIT REVIEW (Dynamic Product System)
 # ======================================================
-
 @login_required
-def submit_review(request, order_id, product_type, product_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user, order_status='Delivered')
+def submit_review(request, order_id, product_id):
+    """
+    User can submit a review ONLY IF:
+    - The order belongs to them
+    - The order is Delivered
+    - The product exists in that order
+    """
 
-    try:
-        review = Review.objects.get(user=request.user, product_type=product_type, product_id=product_id)
-        created = False
-    except Review.DoesNotExist:
-        review = None
-        created = True
+    # 1️⃣ Validate order
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user,
+        order_status="Delivered"
+    )
 
-    if request.method == 'POST':
+    # 2️⃣ Validate product
+    product = get_object_or_404(Product, id=product_id)
+
+    # 3️⃣ Check if the product exists in the order
+    order_product_ids = order.items.values_list("product_id", flat=True)
+    if product_id not in order_product_ids:
+        raise Http404("This product is not part of your delivered order.")
+
+    # 4️⃣ Check if review already exists
+    review = Review.objects.filter(
+        user=request.user,
+        product=product,
+        order=order
+    ).first()
+
+    is_new_review = review is None
+
+    if request.method == "POST":
         form = ReviewForm(request.POST, instance=review)
         if form.is_valid():
-            new_review = form.save(commit=False)
-            new_review.user = request.user
-            new_review.product_type = product_type
-            new_review.product_id = product_id
-            new_review.order = order
-            new_review.save()
-            messages.success(request, "Your review has been submitted." if created else "Your review has been updated.")
-            return redirect('my_orders')
+            review_obj = form.save(commit=False)
+            review_obj.user = request.user
+            review_obj.product = product
+            review_obj.order = order
+            review_obj.save()
+
+            messages.success(
+                request,
+                "Your review has been submitted." if is_new_review else "Your review has been updated."
+            )
+            return redirect("my_orders")
     else:
         form = ReviewForm(instance=review)
 
-    return render(request, 'submit_review.html', {'form': form, 'order': order})
+    return render(request, "submit_review.html", {
+        "form": form,
+        "order": order,
+        "product": product,
+    })
 
 
-def product_reviews_view(request, product_type, product_id):
-    reviews = Review.objects.filter(product_type=product_type, product_id=product_id).select_related('user')
-    return render(request, 'product_reviews.html', {'reviews': reviews})
+# ======================================================
+# PRODUCT REVIEWS PAGE
+# ======================================================
+def product_reviews_view(request, product_id):
+    """
+    Shows all reviews for a given product.
+    """
+    product = get_object_or_404(Product, id=product_id)
+
+    reviews = Review.objects.filter(product=product).select_related("user").order_by("-created_at")
+
+    # Product rating summary
+    rating_summary = reviews.aggregate(
+        avg_rating=Avg("rating"),
+        total_reviews=Count("id")
+    )
+
+    return render(request, "product_reviews.html", {
+        "product": product,
+        "reviews": reviews,
+        "rating_summary": rating_summary,
+    })

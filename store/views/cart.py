@@ -1,106 +1,135 @@
+# store/views/cart.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth import login, get_user_model, logout
-from django.db.models import Avg, Count
-from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required, user_passes_test
-import random, json
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+import json
 
-# Import all models
-from store.models import (
-    CustomUser, WomenProduct, ElectronicProduct, ToyProduct,
-    CartItem, WishlistItem, Order, OrderItem, Review
-)
-from store.forms import ReviewForm
-
-User = get_user_model()
-otp_storage = {}
+from store.models import Product, CartItem , ProductVariant
 
 
-
-# ======================================================
-# CART SYSTEM
-# ======================================================
-
+# ===================================================================
+# 🛒 ADD TO CART (Dynamic Product System)
+# ===================================================================
 @login_required
-def add_to_cart(request, product_type, product_id):
-    CartItem.objects.create(
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    # Check if a variant was selected
+    variant_id = request.POST.get("variant_id")
+    variant = None
+
+    if variant_id:
+        variant = get_object_or_404(
+            ProductVariant,
+            id=variant_id,
+            product=product
+        )
+
+    # Check if item already exists in cart
+    existing = CartItem.objects.filter(
         user=request.user,
-        product_type=product_type,
-        product_id=product_id
-    )
-    messages.success(request, "Item added to cart.")
-    return redirect('view_cart')
+        product=product,
+        variant=variant
+    ).first()
+
+    if existing:
+        existing.quantity += 1
+        existing.save()
+        messages.success(request, "Quantity updated in your cart.")
+    else:
+        CartItem.objects.create(
+            user=request.user,
+            product=product,
+            variant=variant,
+            quantity=1
+        )
+        messages.success(request, "Item added to cart.")
+
+    return redirect("view_cart")
 
 
+# ===================================================================
+# 🛒 VIEW CART
+# ===================================================================
 @login_required
 def view_cart(request):
-    if not request.user.is_authenticated:
-        messages.warning(request, "⚠️ Please login to view your cart.")
-        return redirect('home')
-    items = CartItem.objects.filter(user=request.user)
-    total = sum(item.subtotal() for item in items)
-    return render(request, 'cart.html', {'items': items, 'total': total})
+    items = CartItem.objects.filter(user=request.user).select_related("product")
+
+    total = sum(item.total_price() for item in items)
+
+    return render(request, "cart.html", {
+        "items": items,
+        "total": total,
+    })
 
 
+# ===================================================================
+# ❌ REMOVE FROM CART
+# ===================================================================
 @login_required
 def remove_from_cart(request, item_id):
     CartItem.objects.filter(id=item_id, user=request.user).delete()
-    return redirect('view_cart')
+    messages.success(request, "Item removed from cart.")
+    return redirect("view_cart")
 
 
+# ===================================================================
+# 🔄 UPDATE QUANTITY (AJAX)
+# ===================================================================
 @require_POST
+@login_required
 def update_cart_quantity(request, item_id):
-    if not request.user.is_authenticated:
-        return JsonResponse({'success': False}, status=401)
+    """Increase/decrease quantity dynamically using AJAX"""
 
     try:
         data = json.loads(request.body)
-        action = data.get('action')
-        cart_item = CartItem.objects.get(id=item_id, user=request.user)
+        action = data.get("action")
+
+        item = CartItem.objects.get(id=item_id, user=request.user)
 
         if action == "increase":
-            cart_item.quantity += 1
-        elif action == "decrease" and cart_item.quantity > 1:
-            cart_item.quantity -= 1
-        cart_item.save()
+            item.quantity += 1
+        elif action == "decrease":
+            if item.quantity > 1:
+                item.quantity -= 1
 
-        return JsonResponse({'success': True, 'item_id': item_id, 'quantity': cart_item.quantity})
+        item.save()
+
+        return JsonResponse({
+            "success": True,
+            "item_id": item_id,
+            "quantity": item.quantity,
+            "item_total": item.total_price()
+        })
+
     except CartItem.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+        return JsonResponse({"success": False, "error": "Item not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
+# ===================================================================
+# 🛍 BUY NOW (1-click Checkout)
+# ===================================================================
 @login_required
-def buy_now(request, product_type, product_id):
-    """Direct purchase from product detail page"""
-    product = None
-    if product_type == 'women':
-        product = WomenProduct.objects.filter(id=product_id).first()
-    elif product_type == 'electronic':
-        product = ElectronicProduct.objects.filter(id=product_id).first()
-    elif product_type == 'toy':
-        product = ToyProduct.objects.filter(id=product_id).first()
+def buy_now(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
 
-    if not product:
-        messages.error(request, "Product not found.")
-        return redirect('home')
+    variant_id = request.POST.get("variant_id")
+    variant = None
 
-    # Extract size/color/fabric from form
-    size = request.POST.get('size')
-    color = request.POST.get('color')
-    fabric = request.POST.get('fabric')
+    if variant_id:
+        variant = get_object_or_404(ProductVariant, id=variant_id, product=product)
 
-    # Temporarily store product info in session
-    request.session['buy_now'] = {
-        'product_type': product_type,
-        'product_id': product.id,
-        'size': size,
-        'color': color,
-        'fabric': fabric,
-        'price': float(product.price),
+    request.session["buy_now"] = {
+        "product_id": product.id,
+        "variant_id": variant.id if variant else None,
+        "name": product.name,
+        "price": float(variant.display_price() if variant else product.price),
     }
 
-    return redirect('checkout')
+    return redirect("checkout")

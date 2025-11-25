@@ -11,8 +11,8 @@ import random, json
 
 # Import all models
 from store.models import (
-    CustomUser, WomenProduct, ElectronicProduct, ToyProduct,
-    CartItem, WishlistItem, Order, OrderItem, Review
+    CustomUser, 
+    CartItem, 
 )
 from store.forms import ReviewForm
 
@@ -68,7 +68,7 @@ def request_otp_view(request):
         try:
             from store.email_service import send_brevo_email
 
-            subject = "Account Verification OTP - Sona Enterprises"
+            subject = "Account Verification OTP - New way online"
             text_content = f"Hi {username}, your OTP is {otp}"
             html_content = f"""
                 <p>Hi {username},</p>
@@ -191,7 +191,7 @@ def forgot_password(request):
         # Send OTP using Brevo
         from store.email_service import send_brevo_email
 
-        subject = "Reset Password OTP - Sona Enterprises"
+        subject = "Reset Password OTP - New way online"
         html = f"""
             <div style="font-family:Arial;padding:20px;">
                 <h2>Reset Password Request</h2>

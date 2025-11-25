@@ -1,56 +1,55 @@
+# store/views/wishlist.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth import login, get_user_model, logout
-from django.db.models import Avg, Count
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required, user_passes_test
-import random, json
+from django.contrib.auth.decorators import login_required
 
-# Import all models
-from store.models import (
-    CustomUser, WomenProduct, ElectronicProduct, ToyProduct,
-    CartItem, WishlistItem, Order, OrderItem, Review
-)
-from store.forms import ReviewForm
-
-User = get_user_model()
+from store.models import Product, WishlistItem
 
 
-
-
-
-# ======================================================
-# WISHLIST SYSTEM
-# ======================================================
-
+# ===================================================================
+# ❤️ ADD TO WISHLIST
+# ===================================================================
 @login_required
-def add_to_wishlist(request, product_type, product_id):
-    if WishlistItem.objects.filter(
-        user=request.user, product_type=product_type, product_id=product_id
-    ).exists():
-        messages.info(request, "Item already in your wishlist.")
+def add_to_wishlist(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    exists = WishlistItem.objects.filter(
+        user=request.user,
+        product=product
+    ).exists()
+
+    if exists:
+        messages.info(request, "This item is already in your wishlist.")
     else:
         WishlistItem.objects.create(
-            user=request.user, product_type=product_type, product_id=product_id
+            user=request.user,
+            product=product
         )
-        messages.success(request, "Item added to wishlist.")
-    return redirect('view_wishlist')
+        messages.success(request, "Added to wishlist ❤️")
+
+    return redirect("view_wishlist")
 
 
-
+# ===================================================================
+# ❤️ VIEW WISHLIST
+# ===================================================================
+@login_required
 def view_wishlist(request):
+    items = WishlistItem.objects.filter(user=request.user).select_related("product")
+    count = items.count()
 
-    if not request.user.is_authenticated:
-        messages.warning(request, "⚠️ Please login to view your wishlist.")
-        return redirect('home')
-    wishlist_count = WishlistItem.objects.filter(user=request.user).count() if request.user.is_authenticated else 0
-    items = WishlistItem.objects.filter(user=request.user)
-    return render(request, 'wishlist.html', {'items': items,'wishlist_count': wishlist_count})
+    return render(request, "wishlist.html", {
+        "items": items,
+        "wishlist_count": count,
+    })
 
+
+# ===================================================================
+# ❌ REMOVE FROM WISHLIST
+# ===================================================================
 @login_required
 def remove_from_wishlist(request, item_id):
     WishlistItem.objects.filter(id=item_id, user=request.user).delete()
-    return redirect('view_wishlist')
+    messages.success(request, "Removed from wishlist.")
+    return redirect("view_wishlist")
