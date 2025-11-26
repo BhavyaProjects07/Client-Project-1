@@ -107,7 +107,7 @@ urlpatterns = [
      views.delivery_update_order_status, name='delivery_update_order_status'),
 
      path('delivery/order/<int:order_id>/update-payment/', 
-     views.delivery_update_payment_status, name='delivery_update_payment'),
+     views.delivery_update_payment_status, name='delivery_update_payment_status'),
 
     path('delivery-profile/', views.delivery_profile, name='delivery_profile'),
     path('delivery-history/', views.delivery_order_history, name='delivery_order_history'),

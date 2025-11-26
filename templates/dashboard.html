@@ -254,7 +254,7 @@
                     <i class='bx bx-detail mr-1'></i> Details
                   </a>
                   
-                  <form method="POST" action="{% url 'update_order_status' order.id %}" class="flex flex-wrap items-center gap-2">
+                  <form method="POST" action="{% url 'admin_update_order_status' order.id %}" class="flex flex-wrap items-center gap-2">
                     {% csrf_token %}
                     
                     <select name="status" class="border border-gray-300 px-2 py-1 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
@@ -291,7 +291,7 @@
 
 
                   <!-- payment status update  -->
-                  <form method="POST" action="{% url 'update_order_status' order.id %}" class="flex flex-wrap items-center gap-2">
+                  <form method="POST" action="{% url 'admin_update_payment_status' order.id %}" class="flex flex-wrap items-center gap-2">
                     {% csrf_token %}
                     <select name="paid" class="border border-gray-300 px-2 py-1 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                       <option value="True" {% if order.paid %}selected{% endif %}>Paid</option>

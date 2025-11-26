@@ -297,7 +297,7 @@
                         
                         <!-- Order Status Form -->
                         <div class="lg:col-span-5">
-                            <form method="post" action="{% url 'update_order_status' order.id %}" class="relative">
+                            <form method="post" action="{% url 'delivery_update_order_status' order.id %}" class="relative">
                                 {% csrf_token %}
                                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Update Status</label>
                                 <div class="flex shadow-sm rounded-lg">
@@ -316,7 +316,7 @@
 
                         <!-- Payment Status Form -->
                         <div class="lg:col-span-4">
-                            <form method="post" action="{% url 'update_payment_status' order.id %}" class="relative">
+                            <form method="post" action="{% url 'delivery_update_payment_status' order.id %}" class="relative">
                                 {% csrf_token %}
                                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Update Payment</label>
                                 <div class="flex shadow-sm rounded-lg">
