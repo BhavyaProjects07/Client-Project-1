@@ -175,7 +175,7 @@ def delivery_order_detail(request, order_id):
 # ======================================================
 
 @secure_delivery
-def update_order_status(request, order_id):
+def delivery_update_order_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     new_status = request.POST.get("order_status")
 
@@ -234,7 +234,7 @@ def update_order_status(request, order_id):
 # ======================================================
 
 @secure_delivery
-def update_payment_status(request, order_id):
+def delivery_update_payment_status(request, order_id):
 
     order = get_object_or_404(Order, id=order_id)
     pay_value = request.POST.get("payment_status")

@@ -155,7 +155,7 @@ def admin_order_detail(request, order_id):
 # Update order status
 # -------------------------
 @secure_admin
-def update_order_status(request, order_id):
+def admin_update_order_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
     if request.method != "POST":
@@ -214,7 +214,7 @@ def update_order_status(request, order_id):
 # Update payment status (separate endpoint)
 # -------------------------
 @secure_admin
-def update_payment_status(request, order_id):
+def admin_update_payment_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
     if request.method != "POST":
