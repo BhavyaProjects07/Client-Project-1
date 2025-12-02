@@ -128,13 +128,12 @@ def home(request):
         products_qs = Product.objects.all().select_related("category")
 
         # --- FIX AVG RATING ERROR ---
-        # Try only the valid annotation path
-        try:
-            products_qs = products_qs.annotate(
-                avg_rating=Avg("review__rating")  # Correct related name from your DB
-            )
-        except Exception:
-            products_qs = products_qs.annotate(avg_rating=Avg("review__rating"))
+        products_qs = Product.objects.all().select_related("category").prefetch_related("images")
+
+        # Correct avg rating annotation
+        products_qs = products_qs.annotate(
+            avg_rating=Avg("reviews__rating")
+        )
 
         # Search filter
         if search_q:
@@ -144,31 +143,46 @@ def home(request):
                 | Q(category__name__icontains=search_q)
             ).distinct()
 
-        # Category filter
-        if category_filter:
-            products_qs = products_qs.filter(category__slug=category_filter)
+        # ------------------------------------------
+        # ❌ REMOVE global category filtering
+        # (breaks all other sections)
+        # if category_filter:
+        #     products_qs = products_qs.filter(category__slug=category_filter)
+        # ------------------------------------------
 
         # --- FIX PARENT–CHILD CATEGORY GROUPING ---
-        # Pull only top-level categories first
         parent_categories = Category.objects.filter(parent__isnull=True).order_by("id")
 
+        parent_categories_list = []      # For TOP NAV only
+        category_sections = []           # ONLY parents
+        products_by_category = {}
 
         for parent in parent_categories:
 
-            # Add parent category to list
-            categories_list.append(parent)
+            parent_categories_list.append(parent)
+            category_sections.append(parent)
 
-            # Get all its children (example: Women → Saree, Kurti, Tops…)
+            # Collect child category IDs + SLUGS
             child_ids = list(parent.children.values_list("id", flat=True))
+            child_slugs = list(parent.children.values_list("slug", flat=True))
 
-            # Products that belong to the parent OR its children
-            cat_products = products_qs.filter(
-                Q(category=parent) | Q(category_id__in=child_ids)
-            ).order_by("-avg_rating", "created_at")[:PER_CATEGORY_LIMIT]
+            # ---------------------------------------------------
+            # 🔥 FIX: Subcategory filtering MUST only apply here
+            # ---------------------------------------------------
+            if category_filter and category_filter in child_slugs:
+                # User clicked a subcategory → show only that child category
+                parent_products = products_qs.filter(
+                    category__slug=category_filter
+                ).order_by("-avg_rating", "created_at")[:PER_CATEGORY_LIMIT]
+            else:
+                # Default → show parent + child products
+                parent_products = products_qs.filter(
+                    Q(category=parent) | Q(category_id__in=child_ids)
+                ).order_by("-avg_rating", "created_at")[:PER_CATEGORY_LIMIT]
 
-            normalized = [_normalize_product(p) for p in cat_products]
+            products_by_category[parent.slug] = parent_products
 
-            products_by_category[parent.slug] = normalized
+        # --------------------------- END LOOP ---------------------------
 
     else:
         # Legacy fallback (unchanged)
@@ -178,10 +192,12 @@ def home(request):
         request,
         "home.html",
         {
-            "categories": categories_list,
+            "categories": category_sections,              # ONLY parents → sections
+            "parent_categories": parent_categories_list,  # TOP NAV
             "products_by_category": products_by_category,
             "business_info": business_info,
             "search_query": search_q,
-            
+            "active_subcategory": category_filter,        # for highlighting button
         },
     )
+

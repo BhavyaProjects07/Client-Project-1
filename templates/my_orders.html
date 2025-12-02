@@ -230,7 +230,8 @@
           <div class="order-card">
             <!-- Product Image -->
             <div class="card-image-container">
-              <img src="{{ product.image }}" alt="{{ product.name }}" class="product-image">
+              <img src="{{ product.get_primary_image_url }}" alt="{{ product.name }}" class="product-image">
+
               {% if item.quantity > 1 %}
               <div class="quantity-badge">{{ item.quantity }}</div>
               {% endif %}
@@ -263,7 +264,8 @@
               {% endif %}
 
               {% if order.order_status == 'Delivered' %}
-                <a href="{% url 'submit_review' order.id item.product_type product.id %}" class="mt-auto">
+                <a href="{% url 'submit_review' order.id product.id %}" class="mt-auto">
+
                   <button class="card-button">
                     <i class='bx bx-star' style="font-size: 0.8rem;"></i> Rate
                   </button>

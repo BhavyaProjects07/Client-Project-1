@@ -277,23 +277,41 @@ def delivery_update_payment_status(request, order_id):
 # ======================================================
 # DELIVERY HISTORY
 # ======================================================
+from django.db.models import Q
 
 @secure_delivery
 def delivery_order_history(request):
 
+    # Base queryset: Only delivered orders for this delivery boy
     orders = Order.objects.filter(
         assigned_to=request.user,
         order_status="Delivered"
     ).order_by("-created_at")
 
-    total_revenue = sum(
-        order.total_amount() for order in orders if order.paid
-    )
+    # ---- FILTERS ----
+    q = request.GET.get("q", "").strip()     # name or email
+    date_q = request.GET.get("date", "").strip()  # date
+
+    if q:
+        orders = orders.filter(
+            Q(full_name__icontains=q) |
+            Q(user__email__icontains=q)
+        )
+
+
+    if date_q:
+        orders = orders.filter(created_at__date=date_q)
+
+    # ---- TOTAL REVENUE ----
+    total_revenue = sum(order.total_amount() for order in orders if order.paid)
 
     return render(request, "delievery_history_partial.html", {
         "orders": orders,
-        "total_revenue": total_revenue
+        "total_revenue": total_revenue,
+        "q": q,
+        "date_q": date_q,
     })
+
 
 
 # ======================================================

@@ -35,10 +35,8 @@ def my_orders_view(request):
 # ======================================================
 @login_required
 def track_order_view(request, order_id):
-    """
-    Detailed order tracking page.
-    Includes dynamic product + variant data.
-    """
+    from datetime import timedelta
+
     order = get_object_or_404(
         Order.objects.prefetch_related(
             "items",
@@ -50,12 +48,43 @@ def track_order_view(request, order_id):
         user=request.user
     )
 
-    # Calculate total price of order
-    subtotal = sum(item.total_price for item in order.items.all())
+    subtotal = sum(item.total_price() for item in order.items.all())
+
+
+    # Expected delivery
+    try:
+        if hasattr(order, "get_delivery_days"):
+            days = order.get_delivery_days()   # CALL THE FUNCTION
+        else:
+            days = 2
+        expected_delivery = order.created_at + timedelta(days=days)
+    except Exception as e:
+        print("ERROR:", e)
+        expected_delivery = None
+
+
+    # -----------------------
+    # SEND STEPS TO TEMPLATE
+    # -----------------------
+    steps = [
+    {"label": "Order Placed", "completed": True},
+
+    # Step 2: Packed (completed AFTER order leaves pending)
+    {"label": "Packed", "completed": order.order_status in ["Out for delivery", "Delivered"]},
+
+    # Step 3: Out for delivery
+    {"label": "Out for delivery", "completed": order.order_status in ["Out for delivery", "Delivered"]},
+
+    # Step 4: Delivered
+    {"label": "Delivered", "completed": order.order_status == "Delivered"},
+]
+
 
     return render(request, "track_order.html", {
         "order": order,
         "subtotal": subtotal,
+        "expected_delivery": expected_delivery,
+        "steps": steps,        # <<<<<<==== FIX
     })
 
 

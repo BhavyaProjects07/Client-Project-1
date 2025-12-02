@@ -367,55 +367,58 @@
     </thead>
 
     <tbody>
-      {% for item in order_items %}
-      <tr class="border-b border-gray-100 hover:bg-amber-50 transition">
-        <!-- Product Name -->
-        <td class="px-8 py-6 whitespace-nowrap">
-          <div class="font-semibold text-gray-900">
-            {% if item.product_obj %}
-              {{ item.product_obj.name }}
-            {% else %}
-              <span class="text-gray-400 italic">Product Not Found</span>
-            {% endif %}
-          </div>
-        </td>
+  {% for item in order_items %}
+  <tr class="border-b border-gray-100 hover:bg-amber-50 transition">
 
-        <!-- Product Image -->
-        <td class="px-8 py-6 whitespace-nowrap">
-          {% if item.product_obj and item.product_obj.image %}
-            <img src="{{ item.product_obj.image.url }}" 
-                 alt="{{ item.product_obj.name }}" 
-                 class="h-16 w-16 object-cover rounded-lg border border-gray-200 shadow-sm">
-          {% else %}
-            <div class="h-16 w-16 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg border border-gray-200 text-sm">
-              No Image
-            </div>
-          {% endif %}
-        </td>
+    <!-- Product Name -->
+    <td class="px-8 py-6 whitespace-nowrap">
+      <div class="font-semibold text-gray-900">
+        {% if item.product_obj %}
+          {{ item.product_obj.name }}
+        {% else %}
+          <span class="text-gray-400 italic">Product Not Found</span>
+        {% endif %}
+      </div>
+    </td>
 
-        <!-- Quantity -->
-        <td class="px-8 py-6 whitespace-nowrap">
-          <span class="px-3 py-1 bg-amber-100 text-amber-800 text-sm font-semibold rounded-lg">
-            {{ item.quantity }}
-          </span>
-        </td>
+    <!-- Product Image -->
+    <td class="px-8 py-6 whitespace-nowrap">
+      {% if item.image %}
+        <img src="{{ item.image }}"
+             alt="{{ item.product_obj.name }}"
+             class="h-16 w-16 object-contain rounded-lg border border-gray-200 shadow-sm bg-white p-1">
+      {% else %}
+        <div class="h-16 w-16 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg border border-gray-200 text-sm">
+          No Image
+        </div>
+      {% endif %}
+    </td>
 
-        <!-- Price -->
-        <td class="px-8 py-6 whitespace-nowrap">
-          <div class="font-semibold text-gray-900">
-            ₹{{ item.price|floatformat:2 }}
-          </div>
-        </td>
+    <!-- Quantity -->
+    <td class="px-8 py-6 whitespace-nowrap">
+      <span class="px-3 py-1 bg-amber-100 text-amber-800 text-sm font-semibold rounded-lg">
+        {{ item.quantity }}
+      </span>
+    </td>
 
-        <!-- Total -->
-        <td class="px-8 py-6 whitespace-nowrap text-right">
-          <div class="font-bold text-amber-700 text-lg">
-            ₹{{ item.total_price|floatformat:2 }}
-          </div>
-        </td>
-      </tr>
-      {% endfor %}
+    <!-- Unit Price -->
+    <td class="px-8 py-6 whitespace-nowrap">
+      <div class="font-semibold text-gray-900">
+        ₹{{ item.price|floatformat:2 }}
+      </div>
+    </td>
+
+    <!-- Total -->
+    <td class="px-8 py-6 whitespace-nowrap text-right">
+      <div class="font-bold text-amber-700 text-lg">
+        ₹{{ item.total_price|floatformat:2 }}
+      </div>
+    </td>
+
+  </tr>
+  {% endfor %}
     </tbody>
+
   </table>
 </div>
 

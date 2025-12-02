@@ -318,6 +318,9 @@ class Order(models.Model):
 
     def total_amount(self):
         return sum(item.total_price() for item in self.items.all())
+    def get_delivery_days(self):
+        return 2   # or however many days you want
+
 
 
 
@@ -342,7 +345,8 @@ class OrderItem(models.Model):
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+
     variant = models.ForeignKey(ProductVariant, null=True, blank=True, on_delete=models.SET_NULL)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
 

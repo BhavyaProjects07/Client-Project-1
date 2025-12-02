@@ -90,6 +90,10 @@ def admin_dashboard_view(request):
     total_users = CustomUser.objects.count()
     total_products = Product.objects.count()
     total_categories = Category.objects.count()
+    pending_orders = Order.objects.filter(order_status="Pending pickup").count()
+    delivered_orders = Order.objects.filter(order_status="Delivered").count()
+
+
 
     # low stock products (example: stock <=5)
     low_stock = ProductVariant.objects.filter(stock__lte=5).select_related('product')[:10]
@@ -109,6 +113,8 @@ def admin_dashboard_view(request):
         'low_stock': low_stock,
         'revenue': revenue,
         'search_query': q,
+        'pending_orders': pending_orders,
+        'delivered_orders': delivered_orders,
     }
     return render(request, 'dashboard.html', context)
 
@@ -122,33 +128,40 @@ def admin_order_detail(request, order_id):
     order_items = order.items.select_related('product', 'variant').all()
 
     # Attach product/variant safe attributes for template
+    raw_items = order.items.select_related("product", "variant")
+
     items_for_template = []
-    for it in order_items:
-        product = getattr(it, 'product', None)
-        variant = getattr(it, 'variant', None)
-        name = product.name if product else "Unknown product"
-        variant_label = variant.variant_options if variant and variant.variant_options else None
-        price_snapshot = it.price
+
+    for it in raw_items:
+        product = it.product
+        variant = it.variant
         qty = it.quantity
-        total_price = price_snapshot * qty
+        price_snapshot = it.price
+
+        # IMAGE LOGIC
+        if variant and hasattr(variant, "images") and variant.images.exists():
+            image_url = variant.images.first().image.url
+        elif hasattr(product, "main_image") and product.main_image:
+            image_url = product.main_image.url
+        elif product.images.exists():
+            image_url = product.images.first().image.url
+        else:
+            image_url = ""
+
         items_for_template.append({
-            'id': it.id,
-            'name': name,
-            'product': product,
-            'variant': variant,
-            'variant_label': variant_label,
-            'price': price_snapshot,
-            'quantity': qty,
-            'total_price': total_price,
+            "product_obj": product,      # ✔ FIXED
+            "image": image_url,          # ✔ FIXED
+            "variant": variant,
+            "quantity": qty,
+            "price": price_snapshot,
+            "total_price": price_snapshot * qty,
         })
 
-    expected_delivery = order.created_at + timedelta(days=2)
-
-    return render(request, 'order_detail.html', {
-        'order': order,
-        'order_items': items_for_template,
-        'expected_delivery': expected_delivery
+    return render(request, "order_detail.html", {
+        "order": order,
+        "order_items": items_for_template,
     })
+
 
 
 # -------------------------
