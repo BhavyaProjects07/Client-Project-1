@@ -33,32 +33,104 @@
     <div class="bg-gradient-to-r from-orange-500 to-orange-400 p-6">
       <h1 class="text-3xl font-semibold text-white">Track Your Order</h1>
       <h2 class="text-white mt-1">
-        {% if expected_delivery %}
+        {% if expected_delivery and order.order_status != "Cancelled" %}
           <h2 class="text-white mt-1">Expected delivery: {{ expected_delivery|date:"F j, Y" }}</h2>
         {% else %}
-          <h2 class="text-white mt-1">Expected delivery: Within 2 days</h2>
+          <h2 class="text-white mt-1">
+            {% if order.order_status == "Cancelled" %}
+              Order Cancelled
+            {% else %}
+              Expected delivery: Within 2 days
+            {% endif %}
+          </h2>
         {% endif %}
-
       </h2>
-
     </div>
 
     <div class="p-8">
+
       <!-- Order Status -->
       <div class="flex justify-between items-center mb-10 border-b pb-6">
         <div>
           <p class="text-gray-600">Order placed successfully! You can track your order progress below.</p>
         </div>
-        <div class="bg-orange-100 text-orange-700 px-4 py-2 rounded-full font-semibold">
+        <div class="bg-orange-100 text-orange-700 px-4 py-2 rounded-full font-semibold uppercase tracking-wide">
           {{ order.order_status }}
         </div>
       </div>
 
-      
-      
 
-      <!-- Progress Timeline -->
-      <!-- Enhanced Tracking Timeline -->
+      <!-- ======================= -->
+      <!-- 📌 CANCEL + REFUND TIMELINE -->
+      <!-- ======================= -->
+      {% if order.order_status == "Cancelled" %}
+      <div class="relative mb-12 mt-10">
+        
+        <!-- FULL BASE LINE -->
+        <div class="absolute inset-x-0 top-6 h-1 bg-gray-300 rounded"></div>
+
+        <!-- PROGRESS BAR FOR REFUND -->
+        <div class="absolute top-6 h-1 bg-red-500 rounded transition-all duration-500"
+             style="width:
+             {% if order.paid and order.refunded %} 100%
+             {% elif order.paid %} 50%
+             {% else %} 100%
+             {% endif %}
+             ">
+        </div>
+
+        <ol class="relative flex justify-between items-center z-10">
+
+          <!-- Step 1: Cancelled -->
+          <li class="flex flex-col items-center text-center w-1/3">
+            <div class="flex items-center justify-center w-14 h-14 bg-red-500 text-white ring-4 ring-red-200 scale-105 shadow-md rounded-full">
+              <i class="bx bx-x-circle text-2xl"></i>
+            </div>
+            <p class="text-sm font-semibold mt-3 text-red-600">Order Cancelled</p>
+          </li>
+
+          {% if order.paid %}
+          <!-- Step 2: Refund Initiated -->
+          <li class="flex flex-col items-center text-center w-1/3">
+            <div class="flex items-center justify-center w-14 h-14 rounded-full shadow-md
+                        {% if order.refunded %}
+                          bg-red-500 text-white ring-4 ring-red-200 scale-105
+                        {% else %}
+                          bg-gray-200 text-gray-500
+                        {% endif %}">
+              <i class="bx bx-rotate-left text-2xl"></i>
+            </div>
+            <p class="text-sm font-semibold mt-3 
+              {% if order.refunded %} text-red-600 {% else %} text-gray-400 {% endif %}">
+              Refund Initiated
+            </p>
+          </li>
+
+          <!-- Step 3: Refund Credited -->
+          <li class="flex flex-col items-center text-center w-1/3">
+            <div class="flex items-center justify-center w-14 h-14 rounded-full shadow-md
+                        {% if order.refunded %}
+                          bg-green-500 text-white ring-4 ring-green-200 scale-105
+                        {% else %}
+                          bg-gray-200 text-gray-500
+                        {% endif %}">
+              <i class="bx bx-credit-card text-2xl"></i>
+            </div>
+            <p class="text-sm font-semibold mt-3 
+            {% if order.refunded %} text-green-600 {% else %} text-gray-400 {% endif %}">
+              Refund Credited
+            </p>
+          </li>
+          {% endif %}
+
+        </ol>
+      </div>
+
+      {% else %}
+      <!-- ======================= -->
+      <!-- ORIGINAL DELIVERY TIMELINE -->
+      <!-- ======================= -->
+
       <div class="relative mb-12 mt-10">
 
         <!-- FULL GRAY BASE LINE -->
@@ -79,8 +151,6 @@
 
           {% for step in steps %}
           <li class="flex flex-col items-center text-center w-1/4 relative">
-
-            <!-- ICON CIRCLE -->
             <div class="flex items-center justify-center w-14 h-14 
                         rounded-full transition-all duration-300 shadow-md
                         {% if step.completed %}
@@ -89,7 +159,6 @@
                           bg-gray-200 text-gray-500
                         {% endif %}
                         ">
-              <!-- Dynamic Icons -->
               <i class="bx 
                   {% if forloop.counter == 1 %}bx-shopping-bag
                   {% elif forloop.counter == 2 %}bx-package
@@ -100,7 +169,6 @@
               </i>
             </div>
 
-            <!-- LABEL -->
             <p class="text-sm font-semibold mt-3
                 {% if step.completed %} text-orange-600 {% else %} text-gray-400 {% endif %}">
               {{ step.label }}
@@ -111,6 +179,8 @@
 
         </ol>
       </div>
+
+      {% endif %}
 
 
       <!-- Order Info -->
@@ -143,11 +213,10 @@
         </div>
       </div>
 
-      <!-- Map -->
-      
 
       <!-- CTA -->
       <div class="mt-12 text-center">
+
         {% if "pending" in order.order_status|lower %}
         <div class="mt-8 text-center">
           <form method="POST" action="{% url 'cancel_order' order.id %}">
@@ -158,22 +227,24 @@
             </button>
           </form>
         </div>
+        {% elif order.order_status == "Cancelled" %}
+        <p class="mt-6 text-red-500 font-semibold text-lg">
+          {% if order.paid %}
+            Refund is being processed. Amount will reflect in 2–7 working days.
+          {% else %}
+            Order cancelled successfully.
+          {% endif %}
+        </p>
         {% endif %}
 
         <br>
-        
-        
-
-
-        <!-- DEBUG -->
-        
-
 
         <a href="/my-orders/"
            class="inline-flex items-center bg-orange-500 text-white font-semibold px-8 py-3 rounded-full shadow-md hover:bg-orange-600 hover:shadow-lg transition duration-300">
           <i class="bx bx-chevron-left text-2xl mr-1"></i> Back to Orders
         </a>
       </div>
+
     </div>
   </div>
 

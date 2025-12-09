@@ -105,6 +105,7 @@ razorpay_client = razorpay.Client(
     )
 )
 
+
 @login_required
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -125,7 +126,7 @@ def cancel_order(request, order_id):
             order.refund_id = refund.get("id")
             order.refunded = True
 
-            # 📩 NEW: Cancellation & Refund Email
+            # 📩 Cancellation & Refund Email (Customer)
             customer_email = order.user.email
             if customer_email:
                 html_msg = f"""
@@ -149,7 +150,7 @@ def cancel_order(request, order_id):
                     to=customer_email,
                     subject=f"Order Cancelled — #{order.id}",
                     html_content=html_msg,
-                    text_content=text_msg
+                    text_content=text_msg,
                 )
 
         except Exception as e:
@@ -160,6 +161,46 @@ def cancel_order(request, order_id):
     # 💾 Now update order status
     order.order_status = "Cancelled"
     order.save()
+
+    # 📩 NEW: Cancellation Email to Admin (for ALL cancellations: COD + Online)
+    admin_email = getattr(settings, "ADMIN_EMAIL", None)
+    if admin_email:
+        if order.paid and order.payment_method != "COD":
+            refund_line_html = f"<p>Refund of <strong>₹{order.total_amount()}</strong> has been initiated via Razorpay.</p>"
+            refund_line_text = f"Refund ₹{order.total_amount()} has been initiated via Razorpay."
+        else:
+            refund_line_html = "<p>This was a Cash On Delivery order. No refund is required.</p>"
+            refund_line_text = "COD order cancelled. No refund required."
+
+        admin_html = f"""
+        <div style='font-family:Arial;padding:20px;background:#f5f5f5;'>
+            <h2>Order Cancelled — #{order.id}</h2>
+            <p><strong>Customer:</strong> {order.full_name} ({order.user.email})</p>
+            <p><strong>Phone:</strong> {order.phone_number}</p>
+            <p><strong>Address:</strong> {order.address}, {order.city} - {order.postal_code}</p>
+            <p><strong>Payment Method:</strong> {order.payment_method}</p>
+            <p><strong>Paid:</strong> {"Yes" if order.paid else "No"}</p>
+            {refund_line_html}
+        </div>
+        """
+
+        admin_text = (
+            f"Order #{order.id} has been cancelled.\n"
+            f"Customer: {order.full_name} ({order.user.email})\n"
+            f"Payment Method: {order.payment_method}\n"
+            f"Paid: {'Yes' if order.paid else 'No'}\n"
+            f"{refund_line_text}"
+        )
+
+        try:
+            send_brevo_email(
+                to=admin_email,
+                subject=f"Order Cancelled — #{order.id}",
+                html_content=admin_html,
+                text_content=admin_text,
+            )
+        except Exception as e:
+            print("Admin cancel email error:", e)
 
     messages.success(request, "Order cancelled successfully.")
     return redirect("track_order", order_id=order.id)

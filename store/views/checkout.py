@@ -494,9 +494,68 @@ def cod_order_view(request):
     </div>
     """
 
+
+        # 📩 SEND EMAIL TO DELIVERY BOY IF ONLY ONE EXISTS
+    from store.models import CustomUser
+    delivery_boys = CustomUser.objects.filter(is_delivery_boy=True)
+
+    if delivery_boys.count() == 1:
+        delivery_boy = delivery_boys.first()
+        delivery_email = delivery_boy.email
+
+        if delivery_email:
+            link = request.build_absolute_uri(
+                f"/delivery/order/{order.id}/"
+            )
+
+            subject = f"New Order Assigned — Order #{order.id}"
+
+            text_content = (
+                f"Hello {delivery_boy.username},\n\n"
+                f"You have been assigned a new order.\n"
+                f"Order ID: #{order.id}\n"
+                f"Customer: {order.full_name}\n"
+                f"Delivery Address: {order.address}, {order.city}, {order.postal_code}\n\n"
+                f"Open Dashboard: {link}\n\n"
+                "Thank you!"
+            )
+
+            html_content = f"""
+            <div style="font-family:Arial;padding:16px;background:#f7f7f7;">
+              <div style="max-width:600px;background:white;padding:20px;border-radius:8px;">
+                <h2>New Order Assigned — #{order.id}</h2>
+                <p><strong>Customer:</strong> {order.full_name}</p>
+                <p><strong>Address:</strong> {order.address}, {order.city}</p>
+                <p><strong>Postal Code:</strong> {order.postal_code}</p>
+                <p><strong>Phone:</strong> {order.phone_number}</p>
+                <br>
+                <a href="{link}" 
+                   style="background:#f59e0b;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;">
+                   Open Delivery Dashboard
+                </a>
+              </div>
+            </div>
+            """
+
+            try:
+                send_brevo_email(
+                    to=delivery_email,
+                    subject=subject,
+                    html_content=html_content,
+                    text_content=text_content
+                )
+            except Exception as e:
+                print("Delivery boy email error:", e)
+
+
     if customer_email:
         try:
-            send_brevo_email(to=customer_email, subject=f"Order #{order.id} Confirmed 🎉", html_content=customer_html)
+            send_brevo_email(
+                to=customer_email, 
+                subject=f"Order #{order.id} Confirmed 🎉", 
+                html_content=customer_html,
+                text_content=f"Your order #{order.id} has been successfully placed!"
+            )
         except Exception as e:
             print("Customer email error:", e)
 
@@ -506,7 +565,8 @@ def cod_order_view(request):
             send_brevo_email(
                 to=admin_email,
                 subject=f"NEW COD Order #{order.id}",
-                html_content=f"<p>COD Order #{order.id} placed by {order.full_name}</p>"
+                html_content=f"<p>COD Order #{order.id} placed by {order.full_name}</p>",
+                text_content="A new order has been received in Devki Mart."
             )
         except Exception as e:
             print("Admin email error:", e)
