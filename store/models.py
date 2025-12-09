@@ -295,15 +295,34 @@ ORDER_STATUS_CHOICES = [
 ]
 
 class Order(models.Model):
+
+    PAYMENT_METHOD_CHOICES = [
+        ('COD', 'Cash On Delivery'),
+        ('CARD', 'Credit / Debit Card'),
+        ('UPI', 'UPI Payment'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     full_name = models.CharField(max_length=100)
     address = models.TextField()
     city = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=10)
+    postal_code = models.CharField(max_length=15)
     phone_number = models.CharField(max_length=15)
 
-    payment_method = models.CharField(max_length=50, default='Cash On Delivery')
+    razorpay_order_id = models.CharField(max_length=255, blank=True, null=True)
+    payment_id = models.CharField(max_length=255, blank=True, null=True)
+
+    # Refund tracking
+    refund_id = models.CharField(max_length=100, null=True, blank=True)
+    refunded = models.BooleanField(default=False)
+
+
+    payment_method = models.CharField(
+        max_length=50,
+        choices=PAYMENT_METHOD_CHOICES,
+        default='COD'
+    )
     paid = models.BooleanField(default=False)
 
     order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Pending pickup')
@@ -318,8 +337,9 @@ class Order(models.Model):
 
     def total_amount(self):
         return sum(item.total_price() for item in self.items.all())
+
     def get_delivery_days(self):
-        return 2   # or however many days you want
+        return 2
 
 
 

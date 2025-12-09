@@ -128,11 +128,14 @@
             </div>
             
             <button 
+                id="verifyBtn"
                 type="submit" 
                 class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg"
+                onclick="startOtpLoader(event)"
             >
                 Verify OTP
             </button>
+
         </form>
         
         <div class="mt-6 text-center">
@@ -147,5 +150,23 @@
     <div class="mt-8 text-center text-sm text-gray-600 animate-fade-in">
         <p>&copy; 2023 DevkiMart. All rights reserved.</p>
     </div>
+
+
+    <script>
+function startOtpLoader(event) {
+    const btn = document.getElementById("verifyBtn");
+
+    // Prevent multiple form submissions
+    btn.disabled = true;
+
+    // Show loading text and animation
+    btn.innerHTML = `
+        <span class="animate-pulse">Verifying...</span>
+    `;
+
+    // Allow form to submit normally
+}
+</script>
+
 </body>
 </html>

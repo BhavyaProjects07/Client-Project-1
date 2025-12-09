@@ -322,42 +322,55 @@
       </div>
 
       <!-- Related Products -->
-      <section class="mt-20 mb-12">
-        <div class="flex items-center justify-between mb-8">
-            <h3 class="text-2xl font-bold text-slate-900">You Might Also Like</h3>
-            <div class="flex gap-2">
-                <button onclick="scrollProducts(-1)" class="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                </button>
-                <button onclick="scrollProducts(1)" class="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition-all shadow-sm">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                </button>
-            </div>
-        </div>
+      <!-- 🔥 Recommended Products Slider -->
+<section class="mt-20 mb-12">
+    <div class="flex items-center justify-between mb-8">
+        <h3 class="text-2xl font-bold text-slate-900">
+            Recommended Products
+        </h3>
 
-        <div id="related-scroll" class="flex gap-6 overflow-x-auto scrollbar-hide pb-8 -mx-4 px-4 scroll-smooth">
-            {% for related in related_products %}
-            <a href="{% url 'women_product_detail' related.id %}" class="group min-w-[240px] w-[240px] bg-white rounded-2xl border border-slate-200 hover:border-brand-300 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex-shrink-0 flex flex-col">
-                
-                <div class="h-48 w-full bg-slate-50 p-4 flex items-center justify-center relative overflow-hidden">
-                    <img src="{{ related.image.url }}" alt="{{ related.name }}" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110">
-                </div>
-                
-                <div class="p-4 flex-1 flex flex-col">
-                    <h3 class="font-semibold text-slate-900 text-sm mb-1 line-clamp-2 group-hover:text-brand-600 transition-colors">{{ related.name }}</h3>
-                    <div class="mt-auto pt-3 flex items-center justify-between">
-                        <span class="font-bold text-slate-900">₹{{ related.price }}</span>
-                        <span class="text-xs font-medium text-brand-600 bg-brand-50 px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">View</span>
-                    </div>
-                </div>
-            </a>
-            {% empty %}
-            <div class="w-full py-10 text-center text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
-                <p>No related products found at this time.</p>
-            </div>
-            {% endfor %}
+        <!-- Scroll Controls -->
+        <div class="flex gap-2">
+            <button onclick="scrollRecommended(-1)"
+                class="h-9 w-9 rounded-full border border-gray-300 bg-white flex items-center justify-center 
+                       text-gray-600 hover:border-amber-500 hover:text-amber-500 transition-all shadow-sm">
+                <i class="fas fa-chevron-left text-xs"></i>
+            </button>
+            <button onclick="scrollRecommended(1)"
+                class="h-9 w-9 rounded-full border border-gray-300 bg-white flex items-center justify-center 
+                       text-gray-600 hover:border-amber-500 hover:text-amber-500 transition-all shadow-sm">
+                <i class="fas fa-chevron-right text-xs"></i>
+            </button>
         </div>
-      </section>
+    </div>
+
+    <!-- Horizontal Product Scroll -->
+    <div id="recommended-scroll"
+         class="flex gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-2 pb-8">
+
+        {% for item in recommended_products %}
+        <a href="{% url 'product_detail' item.id item.slug %}"
+           class="group product-card-wrapper min-w-[240px] snap-start bg-white rounded-xl border border-black/20 shadow-sm 
+                  h-full flex flex-col overflow-hidden hover:shadow-xl transition-all duration-300">
+
+            <div class="relative h-48 bg-gray-50 overflow-hidden">
+                <img src="{{ item.image }}" alt="{{ item.name }}"
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+            </div>
+
+            <div class="p-4 flex flex-col">
+                <h4 class="text-sm font-semibold text-gray-900 leading-tight mb-2 line-clamp-2 group-hover:text-amber-600">
+                    {{ item.name }}
+                </h4>
+
+                <span class="text-lg font-bold text-gray-900 mb-2">₹{{ item.price }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+</section>
+
 
     </div>
   </section>
@@ -475,12 +488,12 @@
     })();
 
     // 4. Related Products Horizontal Scroll
-    function scrollProducts(direction) {
-      const container = document.getElementById('related-scroll');
-      if (!container) return;
-      const scrollAmount = 264; // Card width + gap roughly
-      container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
-    }
+    function scrollRecommended(dir) {
+    const el = document.getElementById("recommended-scroll");
+    const amount = window.innerWidth > 768 ? 600 : 260;
+    el.scrollBy({ left: dir * amount, behavior: "smooth" });
+}
+
   </script>
 </body>
 </html>

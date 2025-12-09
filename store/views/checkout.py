@@ -2,62 +2,64 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.http import JsonResponse
+from django.db.models import Sum
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from store.models import (
     Product,
     ProductVariant,
     CartItem,
     Order,
-    OrderItem,BusinessNameAndLogo
+    OrderItem,
+    BusinessNameAndLogo
 )
 
+import razorpay
+import os
+from dotenv import load_dotenv
 
-# ============================
-# CHECKOUT PAGE
-# ============================
+from decouple import config
+
+# Razorpay client
+RAZORPAY_KEY_ID = config("RAZORPAY_KEY_ID_TEST")
+RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET_TEST")
+
+razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+print("LOADED RAZORPAY KEY:", RAZORPAY_KEY_ID)
 
 @login_required
 def checkout_view(request):
-
     business = BusinessNameAndLogo.objects.first()
     allowed_pincodes = business.allowed_pincodes if business and business.allowed_pincodes else []
 
     buy_now = request.session.get("buy_now")
     items = CartItem.objects.filter(user=request.user)
 
-    # ---------- BUY NOW ----------
     if buy_now:
         product = get_object_or_404(Product, id=buy_now["product_id"])
         variant = None
-
         if buy_now.get("variant_id"):
             variant = ProductVariant.objects.filter(id=buy_now["variant_id"]).first()
-
         price = variant.display_price() if variant else product.price
         total = float(price)
-
         context_items = [{
             "product": product,
             "variant": variant,
             "quantity": 1,
             "price": price,
         }]
-
     else:
-        # ---------- NORMAL CART ----------
         if not items:
             messages.warning(request, "Your cart is empty.")
             return redirect("home")
-
         total = sum(item.subtotal() for item in items)
         context_items = items
 
-    # ---------- FORM SUBMIT ----------
     if request.method == "POST":
-
         postal_code = request.POST.get("postal_code", "")
-        try:
-            postal_code = int(postal_code)
+        try: postal_code = int(postal_code)
         except:
             messages.warning(request, "Please enter a valid postal code.")
             return render(request, "checkout.html", {"items": context_items, "total": total})
@@ -67,7 +69,6 @@ def checkout_view(request):
             return render(request, "checkout.html", {"items": context_items, "total": total})
 
         phone_number = request.POST.get("phone_number", "").strip()
-
         if not (phone_number.isdigit() and len(phone_number) == 10 and phone_number[0] in "6789"):
             messages.error(request, "Enter a valid phone number.")
             return redirect("checkout")
@@ -86,13 +87,9 @@ def checkout_view(request):
     return render(request, "checkout.html", {
         "items": context_items,
         "total": total,
+        "busness": business,
     })
 
-
-
-# ============================
-# PAYMENT PAGE
-# ============================
 
 @login_required
 def payment_view(request):
@@ -101,110 +98,163 @@ def payment_view(request):
         messages.error(request, "Missing checkout information.")
         return redirect("checkout")
 
+    total = checkout_info["total"]
+    return render(request, "payment.html", {
+        "total": total,
+        "razorpay_key": RAZORPAY_KEY_ID
+    })
+
+
+# ======================
+# CREATE Razorpay Order (AJAX)
+# ======================
+@csrf_exempt
+@login_required
+def razorpay_create_order(request):
+    try:
+        if request.method != "POST":
+            return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+        checkout_info = request.session.get("checkout_info")
+        if not checkout_info:
+            return JsonResponse({"success": False, "error": "Session expired"}, status=400)
+
+        # ✔ Safe number conversion
+        from decimal import Decimal
+        total = Decimal(str(checkout_info["total"]))
+        total_paise = int(total * 100)
+
+        print("Creating Razorpay Order: ", total_paise)  # DEBUG
+
+        # ✔ Create Razorpay order successfully
+        razorpay_order = razorpay_client.order.create({
+            "amount": total_paise,
+            "currency": "INR",
+            "payment_capture": 1,
+            "notes": {"customer": request.user.username}
+        })
+
+        print("Razorpay Order Created: ", razorpay_order)  # DEBUG
+
+        return JsonResponse({
+            "success": True,
+            "order_id": razorpay_order["id"],
+            "amount": total_paise,
+            "razorpay_key": RAZORPAY_KEY_ID
+        })
+
+    except Exception as e:
+        print("RAZORPAY ERROR (create order):", str(e))  # DEBUG LOGGING
+        return JsonResponse({"success": False, "error": str(e)})
+
+
+
+# ======================
+# VERIFY PAYMENT + CREATE ORDER
+# ======================
+from decimal import Decimal
+@csrf_exempt
+@login_required
+def payment_verify_view(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+    data = request.POST
+    rp_order_id = data.get("razorpay_order_id")
+    rp_payment_id = data.get("razorpay_payment_id")
+    rp_signature = data.get("razorpay_signature")
+
+    try:
+        razorpay_client.utility.verify_payment_signature({
+            "razorpay_order_id": rp_order_id,
+            "razorpay_payment_id": rp_payment_id,
+            "razorpay_signature": rp_signature
+        })
+        print("Signature Verified!")  # DEBUG
+
+        # Confirm payment status from Razorpay server
+        payment_info = razorpay_client.payment.fetch(rp_payment_id)
+        print("Razorpay Payment Data:", payment_info) # DEBUG
+
+        if payment_info.get("status") != "captured":
+            print("Payment not captured automatically, capturing now...") # DEBUG
+            razorpay_client.payment.capture(rp_payment_id, int(Decimal(str(request.session['checkout_info']['total'])) * 100))
+
+    except Exception as e:
+        print("Signature ERROR:", str(e)) # DEBUG
+        return JsonResponse({"success": False, "error": "Signature verification failed"})
+
+
     buy_now = request.session.get("buy_now")
+    checkout_info = request.session.get("checkout_info")
     cart_items = CartItem.objects.filter(user=request.user)
     total = checkout_info["total"]
 
-    if request.method == "POST":
-        # Create order
-        order = Order.objects.create(
-            user=request.user,
-            full_name=checkout_info["full_name"],
-            address=checkout_info["address"],
-            city=checkout_info["city"],
-            postal_code=checkout_info["postal_code"],
-            phone_number=checkout_info["phone_number"],
-            payment_method="Cash On Delivery",
-            paid=False,
-        )
+    # Create order now only after success
+    order = Order.objects.create(
+        user=request.user,
+        full_name=checkout_info["full_name"],
+        address=checkout_info["address"],
+        city=checkout_info["city"],
+        postal_code=checkout_info["postal_code"],
+        phone_number=checkout_info["phone_number"],
+        payment_method="card/upi",
+        paid=True,
+        razorpay_order_id=rp_order_id,
+        payment_id=rp_payment_id,
+    )
 
-        items_for_email = []
-        admin_rows = []
+    items_for_email = []
+    admin_rows = []
 
-        # ---------------------------------------------------
-        # BUY NOW
-        # ---------------------------------------------------
-        if buy_now:
-            product = get_object_or_404(Product, id=buy_now["product_id"])
-            variant = None
+    # BUY NOW
+    if buy_now:
+        product = get_object_or_404(Product, id=buy_now["product_id"])
+        variant = None
+        if buy_now.get("variant_id"):
+            variant = ProductVariant.objects.filter(id=buy_now["variant_id"]).first()
 
-            if buy_now.get("variant_id"):
-                variant = ProductVariant.objects.filter(id=buy_now["variant_id"]).first()
-
-            price = variant.display_price() if variant else product.price
-
-            OrderItem.objects.create(
-                order=order,
-                product=product,
-                variant=variant,
-                quantity=1,
-                price=price
-            )
-
-            items_for_email.append(f"- {product.name} (x1) — ₹{price}")
-            admin_rows.append(
-                f"<tr><td>{product.name}</td><td>1</td><td>₹{price}</td></tr>"
-            )
-
-            request.session.pop("buy_now", None)
-
-        # ---------------------------------------------------
-        # NORMAL CART
-        # ---------------------------------------------------
+        price = variant.display_price() if variant else product.price
+        OrderItem.objects.create(order=order, product=product, variant=variant, quantity=1, price=price)
+        if variant:
+            variant.stock -= 1
+            variant.save()
         else:
-            for item in cart_items:
-                product = item.product
-                variant = item.variant
+            product.available_stock -= 1
+            product.save()
 
-                price = variant.display_price() if variant else product.price
+        items_for_email.append(f"- {product.name} (x1) — ₹{price}")
+        admin_rows.append(f"<tr><td>{product.name}</td><td>1</td><td>₹{price}</td></tr>")
 
-                # reduce stock
-                if variant:
-                    if variant.stock < item.quantity:
-                        messages.warning(request, f"Not enough stock for {product.name}.")
-                        continue
-                    variant.stock -= item.quantity
-                    variant.save()
-                else:
-                    if product.available_stock < item.quantity:
-                        messages.warning(request, f"Not enough stock for {product.name}.")
-                        continue
-                    product.available_stock -= item.quantity
-                    product.save()
+        request.session.pop("buy_now", None)
 
-                # create order item
-                OrderItem.objects.create(
-                    order=order,
-                    product=product,
-                    variant=variant,
-                    quantity=item.quantity,
-                    price=price
-                )
+    else:
+        for item in cart_items:
+            p = item.product
+            v = item.variant
+            price = v.display_price() if v else p.price
 
-                items_for_email.append(f"- {product.name} (x{item.quantity}) — ₹{price}")
-                admin_rows.append(
-                    f"<tr><td>{product.name}</td><td>{item.quantity}</td><td>₹{price}</td></tr>"
-                )
+            OrderItem.objects.create(order=order, product=p, variant=v, quantity=item.quantity, price=price)
+            if v:
+                v.stock -= item.quantity
+                v.save()
+            else:
+                p.available_stock -= item.quantity
+                p.save()
 
-            cart_items.delete()
+            items_for_email.append(f"- {p.name} (x{item.quantity}) — ₹{price}")
+            admin_rows.append(f"<tr><td>{p.name}</td><td>{item.quantity}</td><td>₹{price}</td></tr>")
 
-        # Emails (you already have Brevo service) → unchanged
-        # SEND CUSTOMER + ADMIN EMAIL HERE
+        cart_items.delete()
 
-        # ============================
-# SEND ADMIN NOTIFICATION EMAIL
-# ============================
+    # SEND EMAILS — your exact original logic
+    from store.email_service import send_brevo_email
+    from django.conf import settings
+    admin_email = settings.ADMIN_EMAIL
 
-        from django.urls import reverse
-        from email_service import send_brevo_email
+    dashboard_link = request.build_absolute_uri(reverse("delivery_dashboard"))
 
-        admin_email = "youradmin@gmail.com"   # change to your admin email
-
-        dashboard_link = request.build_absolute_uri(
-            reverse("delivery_dashboard")  # your admin dashboard url name
-        )
-
-        admin_html = f"""
+    admin_html = f"""
         <h2>📦 New Order Received</h2>
 
         <p><strong>Order ID:</strong> #{order.id}</p>
@@ -238,74 +288,234 @@ def payment_view(request):
 
         <p style="margin-top:20px;">This is an automated message from Sona Enterprises.</p>
         """
+    # Only send if admin_email exists
+    if admin_email:
+        try:
+            send_brevo_email(to=admin_email, subject="New", htmlContent=admin_html)
 
-        send_brevo_email(
-            to=admin_email,
-            subject=f"New Order Received #{order.id}",
-            html_content=admin_html
-        )
+        except Exception as e:
+            print("Brevo admin email error:", e)
+    else:
+        print("ADMIN_EMAIL not set – skipping admin email")
 
+    customer_items_html = "".join(
+        [f"<li>{line}</li>" for line in items_for_email]
+    )
 
+    customer_html = f"""
+    <div style="font-family:Arial, sans-serif; padding:20px; background:#f7f7f7;">
+        <div style="max-width:600px; margin:auto; background:white; padding:25px; border-radius:10px;">
 
-        # ============================
-        # SEND CUSTOMER ORDER EMAIL
-        # ============================
+            <h2 style="color:#ff8c00;">🎉 Order Confirmed!</h2>
+            <p>Hi <strong>{order.full_name}</strong>,</p>
 
-        customer_email = order.user.email
+            <p>Thank you for shopping with <strong>Sona Enterprises</strong>!  
+            Your order has been successfully placed.</p>
 
-        customer_items_html = "".join(
-            [f"<li>{line}</li>" for line in items_for_email]
-        )
+            <h3>📦 Order Details</h3>
+            <p><strong>Order ID:</strong> #{order.id}</p>
 
-        customer_html = f"""
-        <div style="font-family:Arial, sans-serif; padding:20px; background:#f7f7f7;">
-            <div style="max-width:600px; margin:auto; background:white; padding:25px; border-radius:10px;">
+            <h3>🛒 Items Ordered:</h3>
+            <ul style="padding-left:20px; line-height:1.6;">
+                {customer_items_html}
+            </ul>
 
-                <h2 style="color:#ff8c00;">🎉 Order Confirmed!</h2>
-                <p>Hi <strong>{order.full_name}</strong>,</p>
+            <h3>💰 Total Amount: ₹{total}</h3>
 
-                <p>Thank you for shopping with <strong>Sona Enterprises</strong>!  
-                Your order has been successfully placed.</p>
+            <h3>📍 Delivery Details:</h3>
+            <p>
+            <strong>Name:</strong> {order.full_name} <br>
+            <strong>Phone:</strong> {order.phone_number} <br>
+            <strong>Address:</strong> {order.address}, {order.city}, {order.postal_code}
+            </p>
 
-                <h3>📦 Order Details</h3>
-                <p><strong>Order ID:</strong> #{order.id}</p>
+            <p>This is a Cash On Delivery order. You will receive updates as your order progresses.</p>
 
-                <h3>🛒 Items Ordered:</h3>
-                <ul style="padding-left:20px; line-height:1.6;">
-                    {customer_items_html}
-                </ul>
+            <p style="margin-top:30px;">Thank you for choosing us! 😊</p>
 
-                <h3>💰 Total Amount: ₹{total}</h3>
-
-                <h3>📍 Delivery Details:</h3>
-                <p>
-                <strong>Name:</strong> {order.full_name} <br>
-                <strong>Phone:</strong> {order.phone_number} <br>
-                <strong>Address:</strong> {order.address}, {order.city}, {order.postal_code}
-                </p>
-
-                <p>This is a Cash On Delivery order. You will receive updates as your order progresses.</p>
-
-                <p style="margin-top:30px;">Thank you for choosing us! 😊</p>
-
-                <hr style="border:none; border-top:1px solid #ddd; margin:25px 0;">
-                <p style="font-size:12px; color:#555;">This is an automated email from Sona Enterprises.</p>
-            </div>
+            <hr style="border:none; border-top:1px solid #ddd; margin:25px 0;">
+            <p style="font-size:12px; color:#555;">This is an automated email from Sona Enterprises.</p>
         </div>
+    </div>
+    """
+    customer_email = request.user.email
+    if customer_email:
+        try:
+            send_brevo_email(to=customer_email, subject=f"Order #{order.id} Successful!", htmlContent=customer_html)
+
+        except Exception as e:
+            print("Brevo customer email error:", e)
+    else:
+        print("Customer email missing – skipping customer email send")
+
+    return JsonResponse({"success": True})
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+from store.models import Product, ProductVariant, CartItem, Order, OrderItem
+from django.conf import settings
+
+
+@login_required
+def cod_order_view(request):
+    checkout_info = request.session.get("checkout_info")
+    if not checkout_info:
+        messages.error(request, "Missing checkout data")
+        return redirect("checkout")
+
+    buy_now = request.session.get("buy_now")
+    cart_items = CartItem.objects.filter(user=request.user)
+    total = checkout_info["total"]
+
+    # Create COD order
+    order = Order.objects.create(
+        user=request.user,
+        full_name=checkout_info["full_name"],
+        address=checkout_info["address"],
+        city=checkout_info["city"],
+        postal_code=checkout_info["postal_code"],
+        phone_number=checkout_info["phone_number"],
+        payment_method="COD",
+        paid=False
+    )
+
+    items_for_email = []
+
+    if buy_now:
+        product = get_object_or_404(Product, id=buy_now["product_id"])
+        variant = None
+        if buy_now.get("variant_id"):
+            variant = ProductVariant.objects.filter(id=buy_now["variant_id"]).first()
+
+        price = variant.display_price() if variant else product.price
+
+        OrderItem.objects.create(order=order, product=product, variant=variant, quantity=1, price=price)
+
+        # Stock update
+        if variant:
+            variant.stock -= 1
+            variant.save()
+        else:
+            product.available_stock -= 1
+            product.save()
+
+        items_for_email.append(f"- {product.name} (x1) — ₹{price}")
+
+        request.session.pop("buy_now", None)
+
+    else:
+        for item in cart_items:
+            p = item.product
+            v = item.variant
+            price = v.display_price() if v else p.price
+
+            OrderItem.objects.create(order=order, product=p, variant=v, quantity=item.quantity, price=price)
+
+            if v:
+                v.stock -= item.quantity
+                v.save()
+            else:
+                p.available_stock -= item.quantity
+                p.save()
+
+            items_for_email.append(f"- {p.name} (x{item.quantity}) — ₹{price}")
+
+        cart_items.delete()
+
+    # ======================
+    # ✉ SEND EMAIL — Amazon Style
+    # ======================
+    from store.email_service import send_brevo_email
+
+    admin_email = settings.ADMIN_EMAIL
+    customer_email = request.user.email
+
+    # Items Table
+    rows_html = "".join(
+        f"""
+        <tr>
+            <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{line.split(' (')[0][2:]}</td>
+            <td style='padding:6px 10px;border-bottom:1px solid #eee;'>{line.split('x')[1].split(')')[0]}</td>
+            <td style='padding:6px 10px;border-bottom:1px solid #eee;text-align:right;'>{line.split('— ')[1]}</td>
+        </tr>
         """
+        for line in items_for_email
+    )
 
-        send_brevo_email(
-            to=customer_email,
-            subject=f"Your Order #{order.id} Has Been Placed Successfully!",
-            html_content=customer_html
-        )
+    customer_html = f"""
+    <div style="font-family:Arial, sans-serif;max-width:600px;margin:auto;background:#fff;border-radius:10px;
+    padding:25px;border:1px solid #ddd;">
+        
+        <div style="text-align:center;margin-bottom:20px;">
+            <h2 style="color:#ff8800;font-size:24px;">Order Confirmed 🎉</h2>
+            <p>Hello <strong>{order.full_name}</strong>,</p>
+            <p>Thank you for shopping with <b>Devki Mart</b>!</p>
+        </div>
 
+        <p><strong>Order ID:</strong> #{order.id}</p>
+        <p><strong>Payment Method:</strong> Cash On Delivery</p>
 
+        <h3 style="margin-top:20px;font-size:16px;color:#111;">Ordered Items</h3>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;border-collapse:collapse;">
+            <tr style="background:#fff7e6;color:#111;font-weight:bold;">
+                <td style="padding:10px;">Product</td>
+                <td style="padding:10px;">Qty</td>
+                <td style="padding:10px;text-align:right;">Price</td>
+            </tr>
+            {rows_html}
+        </table>
 
-        messages.success(request, "Order placed successfully!")
-        return redirect("order_success")
+        <h3 style="text-align:right;margin-top:15px;">
+            Total: <span style="color:#ff8c00;font-size:22px;">₹{total}</span>
+        </h3>
 
-    return render(request, "payment.html", {"total": total})
+        <h3 style="margin-top:20px;">Delivery Address</h3>
+        <p>
+            {order.full_name} <br>
+            {order.address}, {order.city} <br>
+            {order.postal_code} <br>
+            📞 {order.phone_number}
+        </p>
+
+        <a href="{request.build_absolute_uri(reverse('my_orders'))}"
+           style="display:inline-block;margin-top:20px;padding:12px 20px;background:#ff8c00;color:white;
+           font-size:16px;border-radius:6px;text-decoration:none;">
+           Track My Order 🚚
+        </a>
+
+        <p style="font-size:12px;color:#777;margin-top:20px;text-align:center;">
+            This is an automated email from Devki Mart.
+        </p>
+    </div>
+    """
+
+    if customer_email:
+        try:
+            send_brevo_email(to=customer_email, subject=f"Order #{order.id} Confirmed 🎉", html_content=customer_html)
+        except Exception as e:
+            print("Customer email error:", e)
+
+    # Admin email notification
+    if admin_email:
+        try:
+            send_brevo_email(
+                to=admin_email,
+                subject=f"NEW COD Order #{order.id}",
+                html_content=f"<p>COD Order #{order.id} placed by {order.full_name}</p>"
+            )
+        except Exception as e:
+            print("Admin email error:", e)
+
+    # Clear only checkout session
+    request.session.pop("checkout_info", None)
+
+    return redirect("order_success")
+
 
 
 def order_success_view(request):

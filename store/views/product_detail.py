@@ -60,35 +60,34 @@ def product_detail(request, product_id, slug=None):
     avg_rating = round(avg_rating, 1)
 
     # Similar products in same category
-    similar_products_qs = (
-        Product.objects
-        .filter(category=product.category)
-        .exclude(id=product.id)
-        .select_related("category")
-        .prefetch_related("images")
-        .order_by("-id")[:12]
-    )
+    # Get category and determine filter
+    current_cat = product.category
 
-    similar_products = []
-    for p in similar_products_qs:
-        similar_products.append({
+    similar_products_qs = Product.objects.filter(
+        Q(category=current_cat) |
+        Q(category__parent=current_cat) |
+        Q(category=current_cat.parent)
+    ).exclude(id=product.id)\
+     .select_related("category")\
+     .prefetch_related("images")\
+     .annotate(avg_rating=Avg("reviews__rating"))\
+     .order_by("-avg_rating", "-id")[:20]
+
+    recommended_products = [
+        {
             "id": p.id,
             "slug": p.slug,
             "name": p.name,
             "price": p.price,
             "image": p.get_primary_image_url(),
-        })
+            "avg_rating": round((p.avg_rating or 0), 1),
+        }
+        for p in similar_products_qs
+    ]
 
-    # User Wishlist check
-    is_in_wishlist = False
-    if request.user.is_authenticated:
-        from store.models import WishlistItem
-        is_in_wishlist = WishlistItem.objects.filter(
-            user=request.user,
-            product=product
-        ).exists()
-
-
+    # ----------------------------------------
+    # CONTEXT FIX 💥
+    # ----------------------------------------
     context = {
         "product": product,
         "primary_image": primary_image,
@@ -96,8 +95,10 @@ def product_detail(request, product_id, slug=None):
         "variants": variants,
         "reviews": reviews,
         "avg_rating": avg_rating,
-        "similar_products": similar_products,
-        "is_in_wishlist": is_in_wishlist,
+
+        # 👇 NEW: scrollable recommended items
+        "recommended_products": recommended_products,
     }
+
 
     return render(request, "product_detail.html", context)

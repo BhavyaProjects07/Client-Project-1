@@ -152,6 +152,12 @@ ADMIN_EMAIL = config("ADMIN_EMAIL")
 DELIVERY_VERIFY_CODE = config("DELIVERY_VERIFY_CODE")
 
 
+
+# razorpay config
+RAZORPAY_KEY_ID = config("RAZORPAY_KEY_ID_TEST")
+RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET_TEST")
+
+
 # -----------------------------
 # DEBUG
 # -----------------------------

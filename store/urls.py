@@ -50,6 +50,9 @@ urlpatterns = [
     path('order-success/', views.order_success_view, name='order_success'),
     path('buy-now/<int:product_id>/', views.buy_now, name='buy_now'),
     path('buy-now/<int:product_id>/<int:variation_id>/', views.buy_now, name='buy_now_variation'),
+    path("razorpay/create/", views.razorpay_create_order, name="razorpay_create_order"),
+    path("razorpay/verify/", views.payment_verify_view, name="razorpay_verify"),
+    path("cod-order/", views.cod_order_view, name="cod_order"),
 
 
     # ================================
@@ -58,6 +61,7 @@ urlpatterns = [
     path('my-orders/', views.my_orders_view, name='my_orders'),
     path('track-order/<int:order_id>/', views.track_order_view, name='track_order'),
     path('order/<int:order_id>/cancel/', views.cancel_order, name='cancel_order'),
+
 
 
     # ================================

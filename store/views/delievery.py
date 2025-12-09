@@ -142,13 +142,25 @@ def delivery_order_detail(request, order_id):
         product = it.product
         variant = it.variant
 
-        # Get product image
-        if variant and variant.images.exists():
-            image_url = variant.images.first().image.url
-        elif hasattr(product, "thumbnail") and product.thumbnail:
-            image_url = product.thumbnail.url
+        # 🔥 Final Cloudinary-Safe Image Logic
+        if variant:   # Try product primary image first
+            if product.main_image:
+                image_url = product.main_image.url
+            elif product.images.exists():
+                image_url = product.images.first().image.url
+            else:
+                image_url = "/static/images/no-image.png"
+
         else:
-            image_url = ""
+            if product.main_image:
+                image_url = product.main_image.url
+            elif product.images.exists():
+                image_url = product.images.first().image.url
+            else:
+                image_url = "/static/images/no-image.png"
+
+        # Debug log
+        
 
         items_for_template.append({
             "product_obj": product,
@@ -156,14 +168,13 @@ def delivery_order_detail(request, order_id):
             "variant": variant,
             "quantity": it.quantity,
             "price": it.price,
-            "total_price": it.price * it.quantity,
+            "total_price": it.quantity * it.price,
         })
 
     return render(request, "delievery_order_detail.html", {
         "order": order,
         "order_items": items_for_template,
     })
-
 
 
 # ======================================================
@@ -188,7 +199,7 @@ def delivery_update_order_status(request, order_id):
     # get business name from DB
     from store.models import BusinessNameAndLogo
     business = BusinessNameAndLogo.objects.first()
-    business_name = business.name if business else "Our Store"
+    Storename = business.business_name if business else "New way online"
 
     # Messages for customer
     messages_map = {
@@ -202,7 +213,7 @@ def delivery_update_order_status(request, order_id):
         text_msg = (
             f"Hello {order.full_name},\n\n"
             f"{messages_map[new_status]}\n\n"
-            f"Thank you for ordering from {business_name}!"
+            f"Thank you for ordering from {Storename}!"
         )
 
         html_msg = f"""
