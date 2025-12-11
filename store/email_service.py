@@ -13,7 +13,7 @@ def send_brevo_email(to, subject, html_content, text_content=None):
     api = TransactionalEmailsApi(client)
 
     email = SendSmtpEmail(
-        sender={"email": settings.BREVO_FROM, "name": "{StoreName}"},
+        sender={"email": settings.BREVO_FROM, "name": f"{StoreName}"},
         to=[{"email": to}],
         subject=subject,
         html_content=html_content,
