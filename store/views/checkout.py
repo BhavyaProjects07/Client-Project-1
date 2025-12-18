@@ -252,42 +252,55 @@ def payment_verify_view(request):
     from django.conf import settings
     admin_email = settings.ADMIN_EMAIL
 
-    dashboard_link = request.build_absolute_uri(reverse("delivery_dashboard"))
+    admin_order_link = request.build_absolute_uri(
+        reverse("admin_order_detail", args=[order.id])
+    )
 
     admin_html = f"""
-        <h2>📦 New Order Received</h2>
+    <h2>📦 New Order Received</h2>
 
-        <p><strong>Order ID:</strong> #{order.id}</p>
+    <p><strong>Order ID:</strong> #{order.id}</p>
 
-        <h3>👤 Customer Details</h3>
-        <p>
-        <strong>Name:</strong> {order.full_name}<br>
-        <strong>Phone:</strong> {order.phone_number}<br>
-        <strong>Address:</strong> {order.address}, {order.city}, {order.postal_code}<br>
-        <strong>Email:</strong> {order.user.email}
-        </p>
+    <h3>👤 Customer Details</h3>
+    <p>
+    <strong>Name:</strong> {order.full_name}<br>
+    <strong>Phone:</strong> {order.phone_number}<br>
+    <strong>Email:</strong> {order.user.email}<br>
+    <strong>Address:</strong> {order.address}, {order.city}, {order.postal_code}
+    </p>
 
-        <h3>🛒 Order Items</h3>
+    <h3>🛒 Order Items</h3>
 
-        <table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse;">
-            <tr>
-                <th>Product</th>
-                <th>Qty</th>
-                <th>Price (₹)</th>
-            </tr>
-            {''.join(admin_rows)}
-        </table>
+    <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;width:100%">
+    <tr>
+    <th>Product</th>
+    <th>Qty</th>
+    <th>Price</th>
+    </tr>
+    {''.join(admin_rows)}
+    </table>
 
-        <h3>💰 Total Amount: ₹{total}</h3>
+    <h3>💰 Total Amount: ₹{total}</h3>
 
-        <br>
-        <a href="{dashboard_link}"
-        style="background:#ff8c00;color:white;padding:10px 18px;border-radius:6px;text-decoration:none">
-        Open Delivery Dashboard
-        </a>
+    <br>
 
-        <p style="margin-top:20px;">This is an automated message from Sona Enterprises.</p>
-        """
+    <a href="{admin_order_link}"
+    style="
+    background:#ff8c00;
+    color:white;
+    padding:12px 20px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    ">
+    View Order in Admin Panel
+    </a>
+
+    <p style="margin-top:20px;color:#555">
+    This is an automated notification from Devki Mart.
+    </p>
+    """
+
     # Only send if admin_email exists
     if admin_email:
         try:
