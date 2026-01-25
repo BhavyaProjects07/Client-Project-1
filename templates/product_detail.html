@@ -121,24 +121,7 @@
           </div>
 
           <!-- Mobile Carousel (Visible only on small screens) -->
-          <div class="md:hidden mt-4 relative group">
-            <div class="carousel-container flex overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-2xl bg-white border border-slate-200 shadow-sm">
-              <div class="carousel-image flex-shrink-0 w-full snap-center p-4 flex items-center justify-center h-80">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-full object-contain">
-              </div>
-              <!-- Simulating more images for carousel structure -->
-              {% for i in "234" %}
-              <div class="carousel-image flex-shrink-0 w-full snap-center p-4 flex items-center justify-center h-80">
-                <img src="{{ product.image.url }}" alt="{{ product.name }} view" class="h-full object-contain opacity-90">
-              </div>
-              {% endfor %}
-            </div>
-            
-            <!-- Dots -->
-            <div class="carousel-dots flex justify-center gap-2 mt-4" id="carousel-dots">
-                <!-- Dots injected by JS -->
-            </div>
-          </div>
+          
         </div>
 
         <!-- RIGHT: Product Info & Actions (cols 8-12) -->
