@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = ['newway-online.onrender.com', 'localhost', '127.0.0.1', 'localhost:8000']
+ALLOWED_HOSTS = ['newway-online.onrender.com', 'localhost', '127.0.0.1', 'localhost:8000', 'newwaysonline.shop','www.newwaysonline.shop']
 
 # -----------------------------
 # INSTALLED APPS
