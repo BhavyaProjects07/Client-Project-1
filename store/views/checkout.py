@@ -23,11 +23,11 @@ from dotenv import load_dotenv
 from decouple import config
 
 # Razorpay client
-RAZORPAY_KEY_ID = config("RAZORPAY_KEY_ID_TEST")
-RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET_TEST")
+RAZORPAY_KEY_ID = config("RAZORPAY_KEY_ID_LIVE")
+RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET_LIVE")
 
 razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
-print("LOADED RAZORPAY KEY:", RAZORPAY_KEY_ID)
+
 
 @login_required
 def checkout_view(request):
