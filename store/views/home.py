@@ -115,7 +115,7 @@ def home(request):
     search_q = request.GET.get("q", "").strip()
     category_filter = request.GET.get("category", "").strip()
 
-    PER_CATEGORY_LIMIT = getattr(settings, "HOME_PRODUCTS_PER_CATEGORY", 12)
+    PER_CATEGORY_LIMIT = getattr(settings, "HOME_PRODUCTS_PER_CATEGORY", 500)
 
     business_info = BusinessNameAndLogo.objects.first()
 
