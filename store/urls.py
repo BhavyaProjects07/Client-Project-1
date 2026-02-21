@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.urls import path
 
 from store import views   # loads from views/__init__.py
-
+from store.views.shop import shop_view
 
 urlpatterns = [
 
@@ -121,6 +121,7 @@ urlpatterns = [
     # MISC
     # ================================
     path('contact/', views.contact, name='contact'),
+    path("shop/", shop_view, name="shop"),
 ]
 
 # MEDIA FILES (dev mode)

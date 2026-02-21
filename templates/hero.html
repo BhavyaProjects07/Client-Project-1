@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewWay Online | Modern Indian Heritage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        display: ['Syne', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            amber: '#D97706',
+                            light: '#FFFBEB',
+                            white: '#FFFFFF',
+                            dark: '#1A1A1A',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #FFFFFF; 
+            color: #1A1A1A; 
+            overflow-x: hidden;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        .reveal-text { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+        
+        /* Background Slider Styles */
+        .bg-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .bg-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 2s ease-in-out, transform 8s linear;
+            transform: scale(1.1);
+        }
+        .bg-slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* Overlay to ensure text readability with dark blur effect */
+        .hero-vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1;
+        }
+
+        /* Stylish Heading with Gradient */
+        .heading-gradient {
+            background: linear-gradient(to right, #FFFFFF 20%, #D97706 50%, #FFFFFF 80%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 5s linear infinite;
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        /* Smooth Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #FFFBEB; }
+        ::-webkit-scrollbar-thumb { background: #D97706; border-radius: 10px; }
+
+        .feature-card-hero {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .feature-card-hero:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-10px);
+            border-color: #D97706;
+        }
+
+        @keyframes pulse-amber {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-amber { animation: pulse-amber 2s infinite; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen lg:h-screen w-full flex flex-col items-center justify-center overflow-hidden py-24 lg:py-0">
+        
+        <!-- Background Slider -->
+        <div class="bg-slider">
+            <div class="bg-slide active" style="background-image: url('https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=1920')"></div>
+            <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=1920')"></div>
+            <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1595967783875-c371f35d8049?auto=format&fit=crop&q=80&w=1920')"></div>
+        </div>
+
+        <!-- Subtle Vignette for Readability -->
+        <div class="hero-vignette"></div>
+
+        <!-- Content -->
+        <div class="relative z-10 w-full max-w-7xl px-6 flex flex-col items-center text-center">
+            <div class="reveal-text mb-6">
+                <span class="inline-block text-[12px] font-bold tracking-[0.8em] uppercase text-brand-amber transform translate-y-full" id="hero-tag">
+                    Modern Indian Heritage
+                </span>
+            </div>
+            
+            <div class="mb-12">
+                <div class="reveal-text">
+                    <h1 class="text-5xl md:text-[11vw] font-display font-black leading-none tracking-tightest heading-gradient transform translate-y-full drop-shadow-[0_10px_30px_rgba(217,119,6,0.3)]" id="hero-title">
+                        NewWay Online
+                    </h1>
+                </div>
+                <div class="reveal-text mt-6">
+                    <p class="text-lg md:text-4xl font-serif italic text-brand-amber transform translate-y-full tracking-wide" id="hero-subtitle">
+                        Crafting the Spirit of Bharat
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-4 md:gap-8 opacity-0 transform translate-y-10 mb-16 md:mb-20" id="hero-actions">
+                <button class="px-10 py-4 md:px-16 md:py-6 bg-brand-amber text-white rounded-full text-xs font-bold tracking-widest uppercase hover:bg-white hover:text-brand-dark transition-all duration-500 shadow-2xl transform hover:-translate-y-1">
+                    Shop Collection
+                </button>
+                <button class="px-10 py-4 md:px-16 md:py-6 border-2 border-white text-white rounded-full text-xs font-bold tracking-widest uppercase hover:bg-white hover:text-brand-dark transition-all duration-500 transform hover:-translate-y-1">
+                    Our Story
+                </button>
+            </div>
+
+            <!-- Feature Cards Row (Fills the "Empty" space) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl opacity-0 transform translate-y-20" id="hero-features">
+                <div class="feature-card-hero p-8 rounded-3xl text-left group">
+                    <div class="w-12 h-12 bg-brand-amber/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-amber transition-colors">
+                        <i data-lucide="award" class="w-6 h-6 text-brand-amber group-hover:text-white"></i>
+                    </div>
+                    <h4 class="text-white font-bold text-lg mb-2">Premium Silks</h4>
+                    <p class="text-white/60 text-xs leading-relaxed">Authentic hand-woven fabrics sourced directly from Banaras.</p>
+                </div>
+                <div class="feature-card-hero p-8 rounded-3xl text-left group">
+                    <div class="w-12 h-12 bg-brand-amber/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-amber transition-colors">
+                        <i data-lucide="users" class="w-6 h-6 text-brand-amber group-hover:text-white"></i>
+                    </div>
+                    <h4 class="text-white font-bold text-lg mb-2">Artisan Led</h4>
+                    <p class="text-white/60 text-xs leading-relaxed">Supporting over 500+ local craftspeople across India.</p>
+                </div>
+                <div class="feature-card-hero p-8 rounded-3xl text-left group">
+                    <div class="w-12 h-12 bg-brand-amber/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-amber transition-colors">
+                        <i data-lucide="globe" class="w-6 h-6 text-brand-amber group-hover:text-white"></i>
+                    </div>
+                    <h4 class="text-white font-bold text-lg mb-2">Global Shipping</h4>
+                    <h4 class="text-white font-bold text-lg mb-2"></h4>
+                    <p class="text-white/60 text-xs leading-relaxed">Bringing the soul of Bharat to your doorstep, worldwide.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Hint -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 opacity-0" id="scroll-hint">
+            <div class="flex flex-col items-center gap-3">
+                <div class="w-5 h-8 border-2 border-white/30 rounded-full flex justify-center p-1">
+                    <div class="w-1 h-2 bg-brand-amber rounded-full animate-bounce"></div>
+                </div>
+                <span class="text-[9px] font-bold tracking-widest uppercase text-white/40">Discover More</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Section: The Artisan Collection -->
+    <section class="py-32 px-8 md:px-20 bg-brand-light relative overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row items-end justify-between mb-24 gap-10">
+                <div class="max-w-2xl">
+                    <h3 class="text-xs font-bold tracking-[0.5em] uppercase text-brand-amber mb-6">Featured Collection</h3>
+                    <h2 class="text-5xl md:text-7xl font-display font-extrabold tracking-tight leading-tight">
+                        The Artisan <br> <span class="italic font-serif font-normal text-brand-amber">Curiosity.</span>
+                    </h2>
+                </div>
+                <div class="flex flex-col gap-6 max-w-xs">
+                    <p class="text-brand-dark/50 text-sm font-light leading-relaxed">
+                        Discover our range of handcrafted wooden toys and fusion wear, reimagined for the modern home.
+                    </p>
+                    <a href="#" class="text-xs font-bold tracking-widest uppercase flex items-center gap-3 group">
+                        <span>Explore Collection</span>
+                        <div class="w-8 h-8 rounded-full border border-brand-amber/20 flex items-center justify-center group-hover:bg-brand-amber group-hover:text-white transition-all">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="relative aspect-[16/10] overflow-hidden rounded-[2rem] shadow-2xl group reveal-card">
+                    <img src="https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&q=80&w=1200" 
+                         alt="Artisanal Toys" 
+                         class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                         referrerpolicy="no-referrer">
+                    <div class="absolute inset-0 bg-brand-dark/20 group-hover:bg-brand-dark/40 transition-colors"></div>
+                    <div class="absolute bottom-10 left-10 text-white z-20">
+                        <p class="text-[10px] font-bold tracking-widest uppercase mb-2">Eco-Friendly</p>
+                        <h4 class="text-3xl font-display font-bold">Hand-Painted Wonders</h4>
+                    </div>
+                </div>
+
+                <div class="relative aspect-[16/10] overflow-hidden rounded-[2rem] shadow-2xl group reveal-card">
+                    <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&q=80&w=1200" 
+                         alt="Women's Fusion Wear" 
+                         class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                         referrerpolicy="no-referrer">
+                    <div class="absolute inset-0 bg-brand-dark/20 group-hover:bg-brand-dark/40 transition-colors"></div>
+                    <div class="absolute bottom-10 left-10 text-white z-20">
+                        <p class="text-[10px] font-bold tracking-widest uppercase mb-2">Fusion Wear</p>
+                        <h4 class="text-3xl font-display font-bold">The Silk Route Edit</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        lucide.createIcons();
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Background Slider Logic
+        const slides = document.querySelectorAll('.bg-slide');
+        let currentSlide = 0;
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        setInterval(nextSlide, 5000);
+
+        window.onload = () => {
+            const tl = gsap.timeline();
+
+            tl.to('#hero-tag', { y: 0, duration: 1, ease: "power4.out" }, 0.2)
+              .to('#hero-title', { y: 0, duration: 1.5, ease: "expo.out" }, 0.4)
+              .to('#hero-subtitle', { y: 0, duration: 1.2, ease: "power3.out" }, 0.6)
+              .to('#hero-actions', { opacity: 1, y: 0, duration: 1, ease: "power3.out" }, 0.9)
+              .to('#hero-features', { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }, 1.2)
+              .to('#scroll-hint', { opacity: 1, duration: 1 }, 1.8);
+
+            // Scroll Animations
+            gsap.utils.toArray('.reveal-card').forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top bottom-=100",
+                    },
+                    opacity: 0,
+                    y: 60,
+                    duration: 1.5,
+                    ease: "expo.out",
+                    delay: i * 0.2
+                });
+            });
+        };
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+
 import os
 from pathlib import Path
 from decouple import config
@@ -6,14 +7,26 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
+
 # -----------------------------
 # BASE CONFIG
 # -----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY")
-DEBUG = config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = ['newway-online.onrender.com', 'localhost', '127.0.0.1', 'localhost:8000', 'newwaysonline.shop','www.newwaysonline.shop']
+
+DEBUG=True
+
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = [
+        'newway-online.onrender.com',
+        'newwaysonline.shop',
+        'www.newwaysonline.shop',
+
+    ]
+
 
 # -----------------------------
 # INSTALLED APPS
@@ -161,7 +174,7 @@ RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET_LIVE")
 # -----------------------------
 # DEBUG
 # -----------------------------
-DEBUG = True
+
 
 
 # Keep users logged in for 15 days

@@ -173,15 +173,24 @@ def home(request):
                 # User clicked a subcategory → show only that child category
                 parent_products = products_qs.filter(
                     category__slug=category_filter
-                ).order_by("-avg_rating", "created_at")[:PER_CATEGORY_LIMIT]
+                ).order_by("-avg_rating", "-created_at")[:PER_CATEGORY_LIMIT]
             else:
                 # Default → show parent + child products
                 parent_products = products_qs.filter(
                     Q(category=parent) | Q(category_id__in=child_ids)
-                ).order_by("-avg_rating", "created_at")[:PER_CATEGORY_LIMIT]
+                ).order_by("-avg_rating", "-created_at")[:PER_CATEGORY_LIMIT]
 
             products_by_category[parent.slug] = parent_products
 
+
+            # Latest 6 products (newest first)
+        latest_products = (
+            Product.objects
+            .select_related("category")
+            .prefetch_related("images")
+            .annotate(avg_rating=Avg("reviews__rating"))
+            .order_by("-created_at")[:6]
+        )
         # --------------------------- END LOOP ---------------------------
 
     else:
@@ -197,7 +206,8 @@ def home(request):
             "products_by_category": products_by_category,
             "business_info": business_info,
             "search_query": search_q,
-            "active_subcategory": category_filter,        # for highlighting button
+            "active_subcategory": category_filter, 
+            "latest_products" : latest_products       # for highlighting button
         },
     )
 

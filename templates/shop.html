@@ -1,0 +1,337 @@
+{% include 'nav.html' %}
+<style>
+/* ============================= */
+/* GLOBAL SHOP LAYOUT */
+/* ============================= */
+
+.shop-wrapper {
+    padding: 80px 60px;
+    background: #f4f6f9;
+    min-height: 100vh;
+}
+
+.shop-container {
+    display: flex;
+    gap: 50px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ============================= */
+/* SIDEBAR */
+/* ============================= */
+
+.shop-sidebar {
+    width: 280px;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    height: fit-content;
+    position: sticky;
+    top: 120px;
+}
+
+.shop-sidebar h3 {
+    font-size: 20px;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.filter-group {
+    margin-bottom: 30px;
+}
+
+.filter-group h4 {
+    margin-bottom: 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+}
+
+.filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.filter-group input[type="radio"] {
+    accent-color: #111;
+}
+
+.filter-group input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    transition: 0.2s ease;
+}
+
+.filter-group input[type="number"]:focus {
+    border-color: #111;
+    outline: none;
+}
+
+.apply-btn {
+    width: 100%;
+    padding: 12px;
+    background: #111;
+    color: #fff;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.3s ease;
+}
+
+.apply-btn:hover {
+    background: #000;
+    transform: translateY(-2px);
+}
+
+.clear-btn {
+    margin-top: 10px;
+    text-align: center;
+    display: block;
+    font-size: 13px;
+    color: #888;
+    text-decoration: none;
+}
+
+/* ============================= */
+/* PRODUCTS */
+/* ============================= */
+
+.shop-products {
+    flex: 1;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 35px;
+}
+
+.product-card {
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: 0.4s cubic-bezier(.23,1,.32,1);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+    position: relative;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+}
+
+.product-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    transition: 0.6s ease;
+}
+
+.product-card:hover img {
+    transform: scale(1.08);
+}
+
+/* Hover overlay button */
+.product-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.65), transparent);
+    opacity: 0;
+    transition: 0.3s ease;
+}
+
+.product-card:hover .product-overlay {
+    opacity: 1;
+}
+
+.overlay-btn {
+    display: block;
+    background: #fff;
+    color: #111;
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.product-info {
+    padding: 20px;
+}
+
+.product-title {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #222;
+    min-height: 40px;
+}
+
+.product-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111;
+}
+
+/* ============================= */
+/* PAGINATION */
+/* ============================= */
+
+.pagination {
+    margin-top: 60px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.pagination a,
+.pagination span {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    color: #333;
+    transition: 0.2s ease;
+}
+
+.pagination a:hover {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+
+.current-page {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+</style>
+<section class="shop-wrapper">
+    <div class="shop-container">
+
+        <!-- ============================= -->
+        <!-- LEFT SIDEBAR -->
+        <!-- ============================= -->
+        <aside class="shop-sidebar">
+
+            <h3>Filters</h3>
+
+            <form method="GET">
+
+                <!-- CATEGORY -->
+                <div class="filter-group">
+                    <h4>Category</h4>
+                    {% for cat in categories %}
+                        <label>
+                            <input type="radio" name="category"
+                                   value="{{ cat.slug }}"
+                                   {% if selected_category == cat.slug %}checked{% endif %}>
+                            {{ cat.name }}
+                        </label>
+                    {% endfor %}
+                </div>
+
+                <!-- PRICE -->
+                <div class="filter-group">
+                    <h4>Price</h4>
+                    <input type="number" name="min_price"
+                           placeholder="Min"
+                           value="{{ min_price }}">
+                    <input type="number" name="max_price"
+                           placeholder="Max"
+                           value="{{ max_price }}">
+                </div>
+
+                
+                <button type="submit" class="apply-btn">
+                    Apply Filters
+                    <a href="{% url 'shop' %}" class="clear-btn">Clear Filters</a>
+                </button>
+
+            </form>
+
+        </aside>
+
+
+        <!-- ============================= -->
+        <!-- PRODUCT GRID -->
+        <!-- ============================= -->
+        <div class="shop-products">
+
+            <div class="product-grid">
+
+                {% for product in page_obj %}
+                <div class="product-card">
+
+    <a href="{% url 'product_detail' product.pk product.slug %}">
+        <div class="product-image">
+            {% if product.get_primary_image_url %}
+                <img src="{{ product.get_primary_image_url }}" alt="{{ product.name }}">
+            {% endif %}
+
+            <div class="product-overlay">
+                <span class="overlay-btn">View Product</span>
+            </div>
+        </div>
+
+        <div class="product-info">
+            <div class="product-title">
+                {{ product.name }}
+            </div>
+
+            <div class="product-price">
+                ₹{{ product.price }}
+            </div>
+        </div>
+    </a>
+
+                </div>
+                {% endfor %}
+
+            </div>
+
+
+            <!-- ============================= -->
+            <!-- PAGINATION -->
+            <!-- ============================= -->
+            <div class="pagination">
+
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}">Prev</a>
+                {% endif %}
+
+                <span class="current-page">
+                    {{ page_obj.number }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
