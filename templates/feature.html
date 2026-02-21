@@ -1,0 +1,250 @@
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+<style>
+    .heritage-page-wrapper { 
+        background-color: #1A1A1A; 
+        color: #FFFFFF; 
+        overflow-x: hidden;
+        font-family: 'Outfit', sans-serif;
+    }
+    .reveal-text { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+    
+    .image-reveal-container {
+        position: relative;
+        overflow: hidden;
+    }
+    .image-reveal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #D97706;
+        z-index: 2;
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+
+    .writing-mode-vertical { writing-mode: vertical-rl; }
+
+    .bg-amber-section { background-color: #D97706; color: #FFFFFF; }
+    .bg-dark-section { background-color: #1A1A1A; color: #FFFFFF; }
+    .bg-light-section { background-color: #FFFBEB; color: #1A1A1A; }
+
+    .section-transition {
+        transition: background-color 1s ease;
+    }
+</style>
+
+<div class="heritage-page-wrapper">
+    <!-- Hero Section: Deep Amber -->
+    <section class="relative min-h-screen w-full flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden bg-amber-section">
+        <div class="absolute top-0 left-0 w-full h-full pointer-events-none z-0 opacity-[0.1] select-none flex items-center justify-center">
+            <h2 class="text-[40vw] font-display font-black uppercase leading-none tracking-tightest text-white">BHARAT</h2>
+        </div>
+
+        <div class="relative z-10 text-center px-6 max-w-6xl">
+            <div class="reveal-text mb-8">
+                <span class="inline-block text-[12px] font-bold tracking-[0.8em] uppercase text-white/80 transform translate-y-full" id="hero-tag">
+                    ESTABLISHED 2026 • NEWWAY ONLINE
+                </span>
+            </div>
+            
+            <h1 class="text-7xl md:text-[13rem] font-display font-black leading-[0.8] tracking-tightest text-white mb-16">
+                <div class="reveal-text"><span class="inline-block transform translate-y-full" id="title-1">Ancient</span></div>
+                <div class="reveal-text"><span class="inline-block transform translate-y-full italic font-serif font-normal text-brand-dark" id="title-2">Roots.</span></div>
+            </h1>
+
+            <div class="reveal-text max-w-3xl mx-auto">
+                <p class="text-xl md:text-3xl text-white/90 font-light leading-relaxed transform translate-y-full" id="hero-desc">
+                    We are the custodians of a legacy that spans millennia. From the sacred ghats of Varanasi to the artisanal clusters of Channapatna.
+                </p>
+            </div>
+        </div>
+
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 opacity-0" id="scroll-hint">
+            <span class="text-[9px] font-bold tracking-widest uppercase text-white/40">Scroll to Journey</span>
+            <div class="w-[1px] h-20 bg-gradient-to-b from-white to-transparent"></div>
+        </div>
+    </section>
+
+    <!-- The Loom Section: Dark -->
+    <section class="py-40 px-8 md:px-20 bg-dark-section relative overflow-hidden">
+        <!-- Floating Background Letter -->
+        <div class="absolute -left-20 top-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none">
+            <h3 class="text-[60vw] font-display font-black">S</h3>
+        </div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
+                <div class="order-2 lg:order-1">
+                    <div class="image-reveal-container rounded-[4rem] aspect-[4/5] shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
+                        <div class="image-reveal-overlay" id="loom-overlay"></div>
+                        <img src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=1200" 
+                             alt="The Loom" 
+                             class="w-full h-full object-cover scale-110 opacity-0" 
+                             id="loom-img"
+                             referrerpolicy="no-referrer">
+                    </div>
+                </div>
+                <div class="order-1 lg:order-2">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-[1px] bg-brand-amber"></div>
+                        <span class="text-[10px] font-bold tracking-widest uppercase text-brand-amber">01. The Loom</span>
+                    </div>
+                    <h2 class="text-6xl md:text-8xl font-display font-black tracking-tightest leading-[0.85] mb-12">
+                        Woven <br> <span class="italic font-serif font-normal text-brand-amber">Whispers.</span>
+                    </h2>
+                    <p class="text-white/60 text-xl font-light leading-relaxed mb-16 max-w-lg">
+                        Each thread is a testament to the patient hands that guide it. Our Banarasi silks carry the weight of history, reimagined for the contemporary soul.
+                    </p>
+                    <div class="grid grid-cols-2 gap-10">
+                        <div>
+                            <h4 class="text-brand-amber font-bold text-sm uppercase tracking-widest mb-4">Technique</h4>
+                            <p class="text-white/40 text-xs leading-relaxed">Traditional Kadwa weaving that ensures no loose threads on the back.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-brand-amber font-bold text-sm uppercase tracking-widest mb-4">Material</h4>
+                            <p class="text-white/40 text-xs leading-relaxed">Sourced from organic mulberry farms, supporting sustainable sericulture.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Wood Section: Warm Cream -->
+    <section class="py-40 px-8 md:px-20 bg-light-section relative overflow-hidden">
+        <!-- Floating Background Letter -->
+        <div class="absolute -right-20 top-1/2 -translate-y-1/2 opacity-[0.05] pointer-events-none text-brand-amber">
+            <h3 class="text-[60vw] font-display font-black">W</h3>
+        </div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
+                <div>
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-[1px] bg-brand-amber"></div>
+                        <span class="text-[10px] font-bold tracking-widest uppercase text-brand-amber">02. The Wood</span>
+                    </div>
+                    <h2 class="text-6xl md:text-8xl font-display font-black tracking-tightest leading-[0.85] mb-12">
+                        Organic <br> <span class="italic font-serif font-normal text-brand-amber">Joy.</span>
+                    </h2>
+                    <p class="text-brand-dark/60 text-xl font-light leading-relaxed mb-16 max-w-lg">
+                        Channapatna toys are more than playthings; they are sculptures of sustainability. Lacquered with natural dyes, they are safe for the earth and the child.
+                    </p>
+                    <button class="group relative px-12 py-6 bg-brand-dark text-white rounded-full overflow-hidden transition-all duration-500 shadow-2xl hover:shadow-brand-amber/40">
+                        <span class="relative z-10 text-[10px] font-bold tracking-widest uppercase">Explore The Craft</span>
+                        <div class="absolute inset-0 bg-brand-amber translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+                    </button>
+                </div>
+                <div>
+                    <div class="image-reveal-container rounded-[4rem] aspect-square shadow-[0_50px_100px_rgba(217,119,6,0.15)]">
+                        <div class="image-reveal-overlay" id="wood-overlay"></div>
+                        <img src="https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&q=80&w=1200" 
+                             alt="Wooden Toys" 
+                             class="w-full h-full object-cover scale-110 opacity-0" 
+                             id="wood-img"
+                             referrerpolicy="no-referrer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Manifesto: Deep Amber -->
+    <section class="py-60 px-8 mb-10 bg-amber-section text-white text-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <img src="https://images.unsplash.com/photo-1595967783875-c371f35d8049?auto=format&fit=crop&q=80&w=1920" 
+                 class="w-full h-full object-cover grayscale" 
+                 alt="Artisan at work"
+                 referrerpolicy="no-referrer">
+        </div>
+        <div class="max-w-5xl mx-auto relative z-10">
+            <div class="w-24 h-24 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center mx-auto mb-16 border border-white/20">
+                <i data-lucide="sparkles" class="w-10 h-10 text-white"></i>
+            </div>
+            <h2 class="text-5xl md:text-8xl font-serif italic leading-[1.1] mb-16">
+                "We don't just sell products; we preserve the dignity of the human hand."
+            </h2>
+            <div class="flex flex-col items-center gap-8">
+                <div class="w-16 h-[1px] bg-white/30"></div>
+                <p class="text-[11px] font-bold tracking-[0.8em] uppercase text-white/60">The NewWay Manifesto</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Initialize Lucide Icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    // GSAP Animations
+    if (typeof gsap !== 'undefined') {
+        gsap.registerPlugin(ScrollTrigger);
+
+        window.addEventListener('load', () => {
+            const tl = gsap.timeline();
+
+            // Hero Entrance
+            tl.to('#hero-tag', { y: 0, duration: 1, ease: "power4.out" }, 0.2)
+              .to(['#title-1', '#title-2'], { 
+                y: 0, 
+                duration: 1.8, 
+                stagger: 0.2,
+                ease: "expo.out" 
+              }, 0.4)
+              .to('#hero-desc', { y: 0, duration: 1.5, ease: "power3.out" }, 0.8)
+              .to('#scroll-hint', { opacity: 1, duration: 1.5 }, 1.5);
+
+            // Image Reveal Logic
+            const revealImage = (overlayId, imgId) => {
+                const tlReveal = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: overlayId,
+                        start: "top bottom-=100",
+                    }
+                });
+
+                tlReveal.to(overlayId, {
+                    scaleX: 1,
+                    duration: 1,
+                    ease: "power3.inOut"
+                })
+                .set(imgId, { opacity: 1 })
+                .to(overlayId, {
+                    scaleX: 0,
+                    transformOrigin: "right",
+                    duration: 1,
+                    ease: "power3.inOut"
+                })
+                .to(imgId, {
+                    scale: 1,
+                    duration: 2.5,
+                    ease: "power2.out"
+                }, "-=1");
+            };
+
+            revealImage('#loom-overlay', '#loom-img');
+            revealImage('#wood-overlay', '#wood-img');
+
+            // Floating letters parallax
+            gsap.utils.toArray('h3').forEach(letter => {
+                gsap.to(letter, {
+                    y: -150,
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: letter,
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: true
+                    }
+                });
+            });
+        });
+    }
+</script>

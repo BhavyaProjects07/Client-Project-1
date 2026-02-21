@@ -2,9 +2,11 @@ from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.db.models import Q, Avg, Min, Max
 from store.models import Product, Category
+import re
 
 
 def shop_view(request):
+
     products = (
         Product.objects
         .select_related("category")
@@ -14,36 +16,82 @@ def shop_view(request):
     )
 
     # -------------------------
-    # Filters
+    # GET PARAMETERS
     # -------------------------
     search_q = request.GET.get("q", "").strip()
     category_slug = request.GET.get("category")
     min_price = request.GET.get("min_price")
     max_price = request.GET.get("max_price")
 
+    # -------------------------
+    # SMART SEARCH LOGIC
+    # -------------------------
+    # -------------------------
+# SMART SEARCH LOGIC (STRICT AND MATCH)
+# -------------------------
     if search_q:
-        products = products.filter(
-            Q(name__icontains=search_q) |
-            Q(description__icontains=search_q)
-        )
+        query = search_q.lower()
 
+        # -------- Price Extraction --------
+        under_match = re.search(r'under\s+(\d+)', query)
+        if under_match:
+            max_price = under_match.group(1)
+
+        above_match = re.search(r'above\s+(\d+)', query)
+        if above_match:
+            min_price = above_match.group(1)
+
+        between_match = re.search(r'between\s+(\d+)\s+and\s+(\d+)', query)
+        if between_match:
+            min_price = between_match.group(1)
+            max_price = between_match.group(2)
+
+        # Remove stop words
+        stop_words = ["for", "the", "and", "with", "in", "on"]
+        keywords = [
+            word for word in re.findall(r'\w+', query)
+            if word not in stop_words and not word.isdigit()
+        ]
+
+        # AND-based filtering
+        for word in keywords:
+            products = products.filter(
+                Q(name__icontains=word) |
+                Q(description__icontains=word) |
+                Q(category__name__icontains=word)
+            )
+
+    # -------------------------
+    # CATEGORY FILTER
+    # -------------------------
     if category_slug:
         products = products.filter(category__slug=category_slug)
 
+    # -------------------------
+    # PRICE FILTER
+    # -------------------------
     if min_price:
-        products = products.filter(price__gte=min_price)
+        try:
+            products = products.filter(price__gte=float(min_price))
+        except ValueError:
+            pass
 
     if max_price:
-        products = products.filter(price__lte=max_price)
+        try:
+            products = products.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
 
     # -------------------------
-    # Pagination
+    # PAGINATION
     # -------------------------
-    paginator = Paginator(products, 12)  # 12 per page
+    paginator = Paginator(products, 12)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    # Sidebar Data
+    # -------------------------
+    # SIDEBAR DATA
+    # -------------------------
     categories = Category.objects.filter(parent__isnull=True)
 
     price_range = Product.objects.aggregate(

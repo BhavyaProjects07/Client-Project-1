@@ -1,337 +1,535 @@
 {% include 'nav.html' %}
+
 <style>
-/* ============================= */
-/* GLOBAL SHOP LAYOUT */
-/* ============================= */
+
+/* ================= DESIGN TOKENS ================= */
+:root {
+    --primary: #1a1a1a;
+    --secondary: #d4a574;
+    --accent: #f5f1ed;
+    --background: #faf8f5;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --border: #e8e3dd;
+    --shadow-sm: 0 2px 8px rgba(26, 26, 26, 0.04);
+    --shadow-md: 0 8px 24px rgba(26, 26, 26, 0.08);
+    --shadow-lg: 0 16px 48px rgba(26, 26, 26, 0.12);
+    --radius: 12px;
+}
+
+/* ================= BASE LAYOUT ================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background: var(--background);
+    color: var(--text-primary);
+}
 
 .shop-wrapper {
-    padding: 80px 60px;
-    background: #f4f6f9;
+    padding: 80px 40px;
+    background: linear-gradient(135deg, var(--background) 0%, var(--accent) 100%);
     min-height: 100vh;
 }
 
 .shop-container {
-    display: flex;
-    gap: 50px;
-    max-width: 1400px;
+    max-width: 1500px;
     margin: 0 auto;
 }
 
-/* ============================= */
-/* SIDEBAR */
-/* ============================= */
+/* ================= HEADER BAR ================= */
 
-.shop-sidebar {
-    width: 280px;
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 18px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-    height: fit-content;
-    position: sticky;
-    top: 120px;
-}
-
-.shop-sidebar h3 {
-    font-size: 20px;
-    margin-bottom: 25px;
-    font-weight: 600;
-}
-
-.filter-group {
-    margin-bottom: 30px;
-}
-
-.filter-group h4 {
-    margin-bottom: 12px;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #888;
-}
-
-.filter-group label {
+.shop-top-bar {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 60px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--border);
+}
+
+.shop-top-bar h2 {
+    font-size: 42px;
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+}
+
+.filter-btn {
+    padding: 12px 32px;
+    border-radius: var(--radius);
+    border: 1px solid var(--primary);
+    background: transparent;
+    color: var(--primary);
+    cursor: pointer;
     font-size: 14px;
-    cursor: pointer;
-}
-
-.filter-group input[type="radio"] {
-    accent-color: #111;
-}
-
-.filter-group input[type="number"] {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    margin-bottom: 10px;
-    transition: 0.2s ease;
-}
-
-.filter-group input[type="number"]:focus {
-    border-color: #111;
-    outline: none;
-}
-
-.apply-btn {
-    width: 100%;
-    padding: 12px;
-    background: #111;
-    color: #fff;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
     font-weight: 500;
-    transition: 0.3s ease;
+    letter-spacing: 0.3px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
 }
 
-.apply-btn:hover {
-    background: #000;
+.filter-btn:hover {
+    background: var(--primary);
+    color: var(--accent);
     transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
-.clear-btn {
-    margin-top: 10px;
-    text-align: center;
-    display: block;
-    font-size: 13px;
-    color: #888;
-    text-decoration: none;
-}
-
-/* ============================= */
-/* PRODUCTS */
-/* ============================= */
-
-.shop-products {
-    flex: 1;
-}
+/* ================= PRODUCTS ================= */
 
 .product-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 35px;
+    gap: 32px;
+    margin-bottom: 80px;
 }
 
 .product-card {
-    background: #ffffff;
-    border-radius: 20px;
+    background: #fff;
+    border-radius: var(--radius);
     overflow: hidden;
-    transition: 0.4s cubic-bezier(.23,1,.32,1);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.04);
-    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+    transform: translateY(-12px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--secondary);
+}
+
+.product-card a {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .product-image {
-    position: relative;
+    width: 100%;
+    height: 360px;
     overflow: hidden;
+    background: var(--accent);
+    position: relative;
 }
 
 .product-image img {
     width: 100%;
-    height: 320px;
+    height: 100%;
     object-fit: cover;
-    transition: 0.6s ease;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.product-card:hover img {
+.product-card:hover .product-image img {
     transform: scale(1.08);
 }
 
-/* Hover overlay button */
-.product-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 20px;
-    background: linear-gradient(to top, rgba(0,0,0,0.65), transparent);
-    opacity: 0;
-    transition: 0.3s ease;
-}
-
-.product-card:hover .product-overlay {
-    opacity: 1;
-}
-
-.overlay-btn {
-    display: block;
-    background: #fff;
-    color: #111;
-    text-align: center;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
 .product-info {
-    padding: 20px;
+    padding: 28px 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .product-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
-    margin-bottom: 8px;
-    color: #222;
-    min-height: 40px;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    color: var(--text-primary);
 }
 
 .product-price {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
-    color: #111;
+    color: var(--secondary);
+    letter-spacing: 0.5px;
 }
 
-/* ============================= */
-/* PAGINATION */
-/* ============================= */
+/* ================= PAGINATION ================= */
 
 .pagination {
     margin-top: 60px;
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .pagination a,
 .pagination span {
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 14px;
-    border: 1px solid #ddd;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
     text-decoration: none;
-    color: #333;
-    transition: 0.2s ease;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 14px;
 }
 
 .pagination a:hover {
-    background: #111;
-    color: #fff;
-    border-color: #111;
+    background: var(--primary);
+    color: var(--accent);
+    border-color: var(--primary);
 }
 
-.current-page {
-    background: #111;
-    color: #fff;
-    border-color: #111;
+.pagination span {
+    background: var(--primary);
+    color: var(--accent);
+    border-color: var(--primary);
+    cursor: default;
 }
+
+/* ================= NO PRODUCTS ================= */
+
+.no-products {
+    text-align: center;
+    padding: 120px 40px;
+    background: #fff;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.no-products h3 {
+    font-size: 32px;
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.no-products p {
+    font-size: 16px;
+    color: var(--text-secondary);
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 1400px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+    
+    .shop-top-bar h2 {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .shop-wrapper {
+        padding: 40px 20px;
+    }
+
+    .shop-container {
+        padding: 0;
+    }
+
+    .shop-top-bar {
+        margin-bottom: 40px;
+        flex-direction: column;
+        gap: 24px;
+        align-items: flex-start;
+    }
+
+    .shop-top-bar h2 {
+        font-size: 28px;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .product-image img {
+        height: 280px;
+    }
+
+    .filter-btn {
+        width: 100%;
+    }
+}
+
+/* ================= FILTER DRAWER ================= */
+
+.mobile-filter-drawer {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 9999;
+}
+
+.mobile-filter-drawer.active {
+    display: block;
+}
+
+.filter-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 26, 26, 0.5);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+}
+
+.filter-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 380px;
+    height: 100%;
+    background: #fff;
+    padding: 40px 30px;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    box-shadow: -8px 0 32px rgba(26, 26, 26, 0.15);
+}
+
+.mobile-filter-drawer.active .filter-panel {
+    transform: translateX(0);
+}
+
+.filter-panel h3 {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 30px;
+    color: var(--text-primary);
+}
+
+.filter-group {
+    margin-bottom: 35px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.filter-group:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.filter-group h4 {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.filter-group label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+}
+
+.filter-group label:hover {
+    color: var(--text-primary);
+}
+
+.filter-group input[type="radio"] {
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: var(--secondary);
+    width: 18px;
+    height: 18px;
+}
+
+.filter-group input[type="number"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.filter-group input[type="number"]:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
+}
+
+.apply-btn {
+    width: 100%;
+    padding: 14px 24px;
+    background: var(--primary);
+    color: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.apply-btn:hover {
+    background: var(--secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.clear-btn {
+    display: block;
+    text-align: center;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    font-weight: 500;
+}
+
+.clear-btn:hover {
+    color: var(--text-primary);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-panel {
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%);
+    }
+
+    .mobile-filter-drawer.active .filter-panel {
+        transform: translateY(0);
+    }
+}
+
 </style>
+
+
 <section class="shop-wrapper">
     <div class="shop-container">
 
-        <!-- ============================= -->
-        <!-- LEFT SIDEBAR -->
-        <!-- ============================= -->
-        <aside class="shop-sidebar">
+        <!-- TOP BAR -->
+        <div class="shop-top-bar">
+            <h2>All Products</h2>
+            <button class="filter-btn" id="openFilter">Filters</button>
+        </div>
 
-            <h3>Filters</h3>
-
-            <form method="GET">
-
-                <!-- CATEGORY -->
-                <div class="filter-group">
-                    <h4>Category</h4>
-                    {% for cat in categories %}
-                        <label>
-                            <input type="radio" name="category"
-                                   value="{{ cat.slug }}"
-                                   {% if selected_category == cat.slug %}checked{% endif %}>
-                            {{ cat.name }}
-                        </label>
-                    {% endfor %}
-                </div>
-
-                <!-- PRICE -->
-                <div class="filter-group">
-                    <h4>Price</h4>
-                    <input type="number" name="min_price"
-                           placeholder="Min"
-                           value="{{ min_price }}">
-                    <input type="number" name="max_price"
-                           placeholder="Max"
-                           value="{{ max_price }}">
-                </div>
-
-                
-                <button type="submit" class="apply-btn">
-                    Apply Filters
-                    <a href="{% url 'shop' %}" class="clear-btn">Clear Filters</a>
-                </button>
-
-            </form>
-
-        </aside>
-
-
-        <!-- ============================= -->
         <!-- PRODUCT GRID -->
-        <!-- ============================= -->
-        <div class="shop-products">
+        <div class="product-grid">
 
-            <div class="product-grid">
-
+            {% if page_obj %}
                 {% for product in page_obj %}
-                <div class="product-card">
-
-    <a href="{% url 'product_detail' product.pk product.slug %}">
-        <div class="product-image">
-            {% if product.get_primary_image_url %}
-                <img src="{{ product.get_primary_image_url }}" alt="{{ product.name }}">
+                    <div class="product-card">
+                        <a href="{% url 'product_detail' product.pk product.slug %}">
+                            <div class="product-image">
+                                {% if product.get_primary_image_url %}
+                                    <img src="{{ product.get_primary_image_url }}" alt="{{ product.name }}">
+                                {% endif %}
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">{{ product.name }}</div>
+                                <div class="product-price">₹{{ product.price }}</div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-products">
+                    <h3>No Products Found</h3>
+                    <p>Try adjusting your filters or search.</p>
+                </div>
             {% endif %}
 
-            <div class="product-overlay">
-                <span class="overlay-btn">View Product</span>
-            </div>
         </div>
 
-        <div class="product-info">
-            <div class="product-title">
-                {{ product.name }}
-            </div>
-
-            <div class="product-price">
-                ₹{{ product.price }}
-            </div>
-        </div>
-    </a>
-
-                </div>
-                {% endfor %}
-
-            </div>
-
-
-            <!-- ============================= -->
-            <!-- PAGINATION -->
-            <!-- ============================= -->
-            <div class="pagination">
-
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}">Prev</a>
-                {% endif %}
-
-                <span class="current-page">
-                    {{ page_obj.number }}
-                </span>
-
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">Next</a>
-                {% endif %}
-
-            </div>
-
+        <!-- PAGINATION -->
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">Prev</a>
+            {% endif %}
+            <span>{{ page_obj.number }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.has_next }}">Next</a>
+            {% endif %}
         </div>
 
     </div>
 </section>
 
+
+<!-- FILTER DRAWER (Now Works for ALL Devices) -->
+<div class="mobile-filter-drawer" id="filterDrawer">
+    <div class="filter-backdrop" id="filterBackdrop"></div>
+
+    <div class="filter-panel">
+        <h3>Filters</h3>
+
+        <form method="GET">
+
+            <div class="filter-group">
+                <h4>Category</h4>
+                {% for cat in categories %}
+                    <label>
+                        <input type="radio" name="category"
+                               value="{{ cat.slug }}"
+                               {% if selected_category == cat.slug %}checked{% endif %}>
+                        {{ cat.name }}
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div class="filter-group">
+                <h4>Price</h4>
+                <input type="number" name="min_price" placeholder="Min" value="{{ min_price }}">
+                <input type="number" name="max_price" placeholder="Max" value="{{ max_price }}">
+            </div>
+
+            <button type="submit" class="apply-btn">Apply Filters</button>
+            <a href="{% url 'shop' %}" class="clear-btn">Clear Filters</a>
+        </form>
+    </div>
+</div>
+
+
+<script>
+const openBtn = document.getElementById("openFilter");
+const drawer = document.getElementById("filterDrawer");
+const backdrop = document.getElementById("filterBackdrop");
+
+openBtn.addEventListener("click", () => {
+    drawer.classList.add("active");
+    document.body.style.overflow = "hidden";
+});
+
+backdrop.addEventListener("click", () => {
+    drawer.classList.remove("active");
+    document.body.style.overflow = "auto";
+});
+</script>
